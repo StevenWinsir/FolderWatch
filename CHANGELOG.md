@@ -1,6 +1,23 @@
 # Changelog
 
-## Unreleased — R2 / P3–P5 (2026-10-02)
+## Unreleased — R3 / P6–P8 (2026-10-02)
+
+### Added
+- Shared bounded Classifier with immutable snapshot classification, UTF-8/control-byte validation, UTF-16/32 BOM recognition and no-read oversized classification.
+- Independent 8 MiB classification/retention and 5 MiB diff defaults, configurable line limits and validated hard ceilings.
+- UI-independent cancellable bounded-LCS Diff with hunks, line numbers, exact newline semantics, explicit resource/status fallbacks, nine golden fixtures and reconstruction fuzzing.
+- One versioned ChangeStore/Resolver for Added/Modified/Deleted, restoration/removal state transitions and deterministic rename fallback.
+- Session Changes/ChangeState/GetDiff APIs, atomic reset/list semantics, on-demand current reads, stale diff rejection, partial-scan protection and bounded recovery retry.
+- Semantic --watch text/NDJSON, reload snapshots and watermark suppression of queued obsolete deltas; default scan remains unchanged.
+- State-transition, concurrent diff/reset, cancellation, permission/disappearance, mixed-root, live filesystem and CLI regression tests; ADR-010–012 and R3 handoff.
+
+### Behavior changes / scope
+- --max-diff-bytes now limits actual diff; --max-snapshot-bytes independently controls classification/retention. Ordinary events do not retain all current contents.
+- --watch JSON uses semantic batches rather than raw path diagnostics; events never include file contents. Diff is a Go API, not an interactive terminal viewer yet.
+- R2 has since merged through PR #1; its previously announced r2-complete.1 tag was not created. Use actual commit 32529a7 or merge 1dbdb5b for the R2 endpoint.
+- TUI, interactive diff/reset, pause/resume, editor/log integrations, GUI and release gates remain later rounds. R3 PR integration is tracked separately from implementation/test acceptance.
+
+## R2 checkpoint — P3–P5 (2026-10-02)
 
 ### Added
 - Recursive fsnotify adapter, directory identity/registration reconciliation, shared runtime Ignore and explicit fatal directory limits.
@@ -18,7 +35,7 @@
 - Reset preserves old baseline on cancellation, missing/unreadable files and capacity failures; waiting captures/resets can be cancelled.
 
 ### Still deferred
-R3 classifier/diff/ChangeStore, R4 TUI and interactive reset, pause/resume, editor integration, file logging and all GUI/release gates. VS Code save-pattern models are tested; an actual VS Code GUI run is not claimed. See R2 acceptance.
+At the R2 checkpoint, classifier/diff/ChangeStore were deferred; R3 above implements them. R4 TUI/interactive reset, pause/resume, editor/logging and GUI/release gates remain deferred. Actual VS Code GUI testing is still not claimed.
 
 ## R1 checkpoint — P0–P2 (2026-10-01)
 
@@ -38,4 +55,4 @@ R3 classifier/diff/ChangeStore, R4 TUI and interactive reset, pause/resume, edit
 - Explicit empty CLI roots are rejected, malformed lower-priority config globs are not hidden by overrides, and cancellation during the final walk callback is preserved.
 
 ### Scope at the R1 checkpoint
-At R1, watcher/debounce/snapshot were deferred; R2 above now implements those layers. Classifier/diff/ChangeStore, TUI, GUI, editor launching and file logging remain deferred. Gate A and Gate B have not been reached.
+At R1, watcher/debounce/snapshot were deferred; R2 above implements those layers, and R3 adds classifier/diff/ChangeStore. TUI, GUI, editor launching and file logging remain deferred. Gate A and Gate B have not been reached.

@@ -9,39 +9,11 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"unicode/utf8"
 
+	"github.com/StevenWinsir/FolderWatch/internal/filetype"
 	"github.com/StevenWinsir/FolderWatch/internal/model"
 	"github.com/StevenWinsir/FolderWatch/internal/pathutil"
 )
-
-// textProbe is only a conservative storage eligibility check. R3 still must
-// classify safely before rendering. It validates the whole byte stream, with
-// up to three bytes carried across chunk boundaries for split UTF-8 runes.
-type textProbe struct {
-	tail   []byte
-	binary bool
-}
-
-func (p *textProbe) write(chunk []byte) {
-	if p.binary {
-		return
-	}
-	data := append(p.tail, chunk...)
-	p.tail = nil
-	for len(data) > 0 {
-		if !utf8.FullRune(data) {
-			p.tail = append([]byte{}, data...)
-			return
-		}
-		r, n := utf8.DecodeRune(data)
-		if r == utf8.RuneError && n == 1 || r < 32 && r != '\n' && r != '\r' && r != '\t' {
-			p.binary = true
-			return
-		}
-		data = data[n:]
-	}
-}
 
 func (s *Store) capture(ctx context.Context, path string) (stored, error) {
 	key, err := pathutil.Key(s.root, path)
@@ -58,6 +30,7 @@ func (s *Store) capture(ctx context.Context, path string) (stored, error) {
 	}
 	s.seq++
 	item := stored{ref: Ref{ID: filepath.Base(s.dir) + fmt.Sprintf("-%x", s.seq), Meta: model.FileMeta{Path: key, Size: before.Size(), Mode: before.Mode(), ModTime: before.ModTime(), Kind: model.Other}, Retention: "metadata"}}
+	item.ref.Class = filetype.Result{Kind: filetype.Unsupported, Reason: "not a regular file"}
 	if before.Mode()&os.ModeSymlink != 0 {
 		item.ref.Meta.Kind = model.Symlink
 		target, err := os.Readlink(absolute)
@@ -120,7 +93,7 @@ func (s *Store) capture(ctx context.Context, path string) (stored, error) {
 	hash := sha256.New()
 	buf := make([]byte, 32<<10)
 	var total int64
-	var probe textProbe
+	var probe filetype.Probe
 	for {
 		if err := ctx.Err(); err != nil {
 			return stored{}, err
@@ -139,8 +112,11 @@ func (s *Store) capture(ctx context.Context, path string) (stored, error) {
 				return stored{}, ErrUnstable
 			}
 			_, _ = hash.Write(buf[:n])
-			probe.write(buf[:n])
-			if retain && !probe.binary {
+			// Oversized files still need a streaming hash, not a full text probe.
+			if before.Size() <= s.opts.MaxFileBytes {
+				probe.Write(buf[:n])
+			}
+			if retain { // bounded provisional bytes; non-text spool is discarded below
 				if disk != nil {
 					if _, err := disk.Write(buf[:n]); err != nil {
 						return stored{}, err
@@ -175,8 +151,11 @@ func (s *Store) capture(ctx context.Context, path string) (stored, error) {
 		return stored{}, err
 	}
 	item.ref.Hash = hex.EncodeToString(hash.Sum(nil))
-	if probe.binary || len(probe.tail) > 0 {
-		item.ref.Retention = "binary"
+	item.ref.Class = probe.Result(total, s.opts.MaxFileBytes)
+	if item.ref.Class.Kind != filetype.Text {
+		if item.ref.Class.Kind != filetype.TooLarge {
+			item.ref.Retention = "binary"
+		}
 		retain = false
 	}
 	if retain {

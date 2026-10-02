@@ -4,8 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"github.com/StevenWinsir/FolderWatch/internal/changes"
+	"github.com/StevenWinsir/FolderWatch/internal/diff"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/StevenWinsir/FolderWatch/internal/debounce"
 	"github.com/StevenWinsir/FolderWatch/internal/eventnorm"
@@ -18,9 +21,11 @@ import (
 
 var ErrSessionClosed = errors.New("monitoring session closed")
 
-// Event reports settled invalidations and baseline generations, NOT R3's
-// semantic changed-file list. Reconcile requires a fresh inventory/current read.
+// Event publishes semantic batches and baseline generations. Paths remains
+// diagnostic compatibility metadata, never a verdict for UI state. On output
+// overflow Batch.Reload requires ChangeState, not reconstruction from Paths.
 type Event struct {
+	Batch         *changes.Batch      `json:"batch,omitempty"`
 	Type          string              `json:"type"`
 	Sequence      uint64              `json:"sequence"`
 	Generation    uint64              `json:"generation"`
@@ -45,6 +50,7 @@ type Session struct {
 	cancel               context.CancelFunc
 	watcher              watcher.Watcher
 	snapshots            *snapshot.Store
+	changes              *changes.Store
 	batches              <-chan debounce.Batch
 	watchErrors          <-chan error
 	events               chan Event
@@ -63,8 +69,12 @@ func StartSession(parent context.Context, prepared Prepared) (*Session, error) {
 	if prepared.Matcher == nil {
 		return nil, &InputError{Err: fmt.Errorf("missing prepared ignore matcher")}
 	}
+	if prepared.Matcher.Root() != cfg.Root {
+		return nil, &InputError{Err: fmt.Errorf("prepared config and matcher roots differ")}
+	}
 	ctx, cancel := context.WithCancel(parent)
-	store, err := snapshot.New(cfg.Root, snapshot.Options{MaxFileBytes: cfg.MaxDiffBytes, MemoryFileBytes: 64 << 10, MemoryBytes: cfg.SnapshotMemoryBytes, DiskBytes: cfg.SnapshotCacheBytes, MaxFiles: cfg.MaxSnapshotFiles})
+	snapshotOpts := snapshot.Options{MaxFileBytes: cfg.MaxSnapshotBytes, MemoryFileBytes: 64 << 10, MemoryBytes: cfg.SnapshotMemoryBytes, DiskBytes: cfg.SnapshotCacheBytes, MaxFiles: cfg.MaxSnapshotFiles}
+	store, err := snapshot.New(cfg.Root, snapshotOpts)
 	if err != nil {
 		cancel()
 		return nil, err
@@ -99,6 +109,18 @@ func StartSession(parent context.Context, prepared Prepared) (*Session, error) {
 		_ = store.Close()
 		return nil, err
 	}
+	diffOpts := diff.Defaults()
+	diffOpts.MaxBytes = cfg.MaxDiffBytes
+	diffOpts.MaxLines = cfg.MaxDiffLines
+	s.changes, err = changes.New(cfg.Root, prepared.Matcher, store, changes.Options{Snapshot: snapshotOpts, Diff: diffOpts, MaxEntries: cfg.MaxSnapshotFiles})
+	if err != nil {
+		cancel()
+		_ = adapter.Close()
+		for range batches {
+		}
+		_ = store.Close()
+		return nil, err
+	}
 	baseline := store.Baseline()
 	s.generation = baseline.Generation
 	s.publish(Event{Type: "ready", Reconcile: true, BaselineFiles: len(baseline.Files)})
@@ -123,10 +145,18 @@ func (s *Session) captureBaseline(ctx context.Context) error {
 	for _, entry := range result.Entries {
 		paths = append(paths, entry.Path)
 	}
+	if s.changes != nil {
+		_, err := s.changes.Reset(ctx, paths)
+		return err
+	}
 	return s.snapshots.Reset(ctx, paths)
 }
 
 func (s *Session) publish(e Event) {
+	if e.Batch == nil && s.changes != nil && (e.Type == "ready" || e.Type == "reset") {
+		g, v := s.changes.Head()
+		e.Batch = &changes.Batch{Generation: g, Version: v, Reload: true}
+	}
 	s.sequence++
 	e.Sequence = s.sequence
 	e.Generation = s.generation
@@ -145,6 +175,10 @@ func (s *Session) publish(e Event) {
 drained:
 	e.Reconcile = true
 	e.Paths = nil
+	if s.changes != nil {
+		generation, version := s.changes.Head()
+		e.Batch = &changes.Batch{Generation: generation, Version: version, Reload: true}
+	}
 	if e.Type == "paths" {
 		e.Type = "reconcile"
 	}
@@ -163,15 +197,52 @@ func (s *Session) loop() {
 		}
 		for range s.batches {
 		} // wait for the coalescer's timer/owner to terminate
+		if s.changes != nil {
+			if err := s.changes.Close(); err != nil {
+				s.fail(err)
+			}
+		}
 		if err := s.snapshots.Close(); err != nil {
 			s.fail(err)
 		}
 	}()
 	errorsIn := s.watchErrors
+	// Retry only failed/transient reconciliation, with bounded backoff. This is
+	// also the post-capture reconciliation closing the startup observation window.
+	retry := time.NewTimer(0)
+	defer retry.Stop()
+	retryC := retry.C
+	retryDelay := 100 * time.Millisecond
+	schedule := func() {
+		if retryC == nil {
+			retry.Reset(retryDelay)
+			retryC = retry.C
+			if retryDelay < 2*time.Second {
+				retryDelay *= 2
+			}
+			if retryDelay > 2*time.Second {
+				retryDelay = 2 * time.Second
+			}
+		}
+	}
 	for {
 		select {
 		case <-s.ctx.Done():
 			return
+		case <-retryC:
+			retryC = nil
+			again, err := s.resolveChanges(debounce.Batch{Reconcile: true})
+			if err != nil {
+				if s.ctx.Err() == nil {
+					s.fail(err)
+				}
+				return
+			}
+			if again {
+				schedule()
+			} else {
+				retryDelay = 100 * time.Millisecond
+			}
 		case call := <-s.commands:
 			ctx, cancel := context.WithCancel(call.ctx)
 			stop := context.AfterFunc(s.ctx, cancel)
@@ -192,6 +263,7 @@ func (s *Session) loop() {
 				}
 			resetDrained:
 				s.publish(Event{Type: "reset", Reconcile: true, BaselineFiles: len(baseline.Files)})
+				schedule()
 			}
 			call.result <- err
 		case batch, ok := <-s.batches:
@@ -201,19 +273,16 @@ func (s *Session) loop() {
 				}
 				return
 			}
-			if batch.Reconcile {
-				if err := s.watcher.Reconcile(s.ctx); err != nil {
-					if s.ctx.Err() != nil {
-						return
-					}
-					if errors.Is(err, watcher.ErrRootGone) || errors.Is(err, watcher.ErrClosed) || errors.Is(err, watcher.ErrDirectoryLimit) {
-						s.fail(err)
-						return
-					}
-					s.publish(Event{Type: "warning", Message: err.Error(), Reconcile: true})
+			again, err := s.resolveChanges(batch)
+			if err != nil {
+				if s.ctx.Err() == nil {
+					s.fail(err)
 				}
+				return
 			}
-			s.publish(Event{Type: "paths", Paths: batch.Paths, Reconcile: batch.Reconcile})
+			if again {
+				schedule()
+			}
 		case err, ok := <-errorsIn:
 			if !ok {
 				errorsIn = nil
@@ -224,8 +293,19 @@ func (s *Session) loop() {
 				return
 			}
 			s.publish(Event{Type: "warning", Message: err.Error(), Reconcile: true})
+			schedule()
 		}
 	}
+}
+
+func (s *Session) Changes() []changes.Summary { return s.changes.View().Changes }
+func (s *Session) ChangeState() changes.View  { return s.changes.View() }
+func (s *Session) GetDiff(ctx context.Context, path string) (diff.Result, error) {
+	combined, cancel := context.WithCancel(ctx)
+	defer cancel()
+	stop := context.AfterFunc(s.ctx, cancel)
+	defer stop()
+	return s.changes.GetDiff(combined, path)
 }
 
 func (s *Session) Events() <-chan Event          { return s.events }

@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 
+	"github.com/StevenWinsir/FolderWatch/internal/filetype"
 	"github.com/StevenWinsir/FolderWatch/internal/model"
 )
 
@@ -17,13 +18,14 @@ var (
 )
 
 // Ref has no filesystem cache path. ReadContent resolves only owned IDs.
-// Retention is a storage decision, NOT R3's text/binary classification API.
+// Retention is a storage decision; Class describes these exact captured bytes.
 type Ref struct {
-	ID         string         `json:"id"`
-	Meta       model.FileMeta `json:"meta"`
-	Hash       string         `json:"hash,omitempty"`
-	HasContent bool           `json:"has_content"`
-	Retention  string         `json:"retention"`
+	ID         string          `json:"id"`
+	Meta       model.FileMeta  `json:"meta"`
+	Hash       string          `json:"hash,omitempty"`
+	HasContent bool            `json:"has_content"`
+	Retention  string          `json:"retention"`
+	Class      filetype.Result `json:"classification"`
 }
 
 type Baseline struct {

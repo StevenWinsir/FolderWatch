@@ -35,6 +35,10 @@ func Parse(args []string) (Request, error) {
 	fs.BoolVar(&r.Watch, "watch", false, "Monitor with settled path events and a baseline")
 	var pending, dirs, files int
 	var memory, cache string
+	var snapshotBytes string
+	var diffLines int
+	fs.StringVar(&snapshotBytes, "max-snapshot-bytes", "8MiB", "Classification/retained snapshot byte cap")
+	fs.IntVar(&diffLines, "max-diff-lines", 20000, "Diff line cap per side")
 	fs.IntVar(&pending, "max-pending-events", 4096, "Bounded pending event capacity")
 	fs.IntVar(&dirs, "max-watch-dirs", 8192, "Maximum watched directories")
 	fs.IntVar(&files, "max-snapshot-files", 100000, "Maximum snapshot references")
@@ -46,7 +50,7 @@ func Parse(args []string) (Request, error) {
 	fs.BoolVar(&respectGit, "respect-gitignore", false, "Read root/nested .gitignore")
 	fs.BoolVar(&includeGit, "include-git", false, "Disable built-in .git/ ignore")
 	fs.BoolVar(&noMouse, "no-mouse", false, "Disable TUI mouse (reserved until R4)")
-	fs.StringVar(&maxBytes, "max-diff-bytes", "5MiB", "Positive byte budget (reserved until R3)")
+	fs.StringVar(&maxBytes, "max-diff-bytes", "5MiB", "Diff byte budget (separate from snapshot retention)")
 	fs.StringVar(&editor, "editor", "", "Editor command text (stored only)")
 	fs.StringVar(&logFile, "log-file", "", "Log destination (validated only)")
 	fs.BoolVar(&debug, "debug", false, "Debug setting (reserved until R4)")
@@ -58,6 +62,12 @@ func Parse(args []string) (Request, error) {
 	}
 	if r.Watch && r.Scan {
 		return Request{}, fmt.Errorf("--watch and --scan cannot be combined")
+	}
+	if fs.Changed("max-snapshot-bytes") {
+		r.Overlay.MaxSnapshotBytes = &snapshotBytes
+	}
+	if fs.Changed("max-diff-lines") {
+		r.Overlay.MaxDiffLines = &diffLines
 	}
 	if fs.Changed("max-pending-events") {
 		r.Overlay.MaxPendingEvents = &pending
@@ -122,24 +132,26 @@ Usage:
   folderwatch [flags] [path]
   folderwatch --scan --json .
 
-R2 (P0–P5): default/--scan scans once; --watch captures a baseline and emits
-settled path invalidations until Ctrl+C. --watch --json emits NDJSON, not a
-semantic changed-file list. Text diff, TUI and GUI are not implemented yet.
-Default path is the current directory. ResetBaseline is available in the Go API.
+R3 (P0–P8): default/--scan scans once; --watch captures a baseline and emits
+versioned Added/Modified/Deleted changes until Ctrl+C. --watch --json emits
+NDJSON metadata, never file contents. Changes/GetDiff/ResetBaseline are Go APIs.
+Default path is the current directory. TUI and GUI are not implemented yet.
 Flags may appear before or after path; -- ends flag parsing.
 
 Options:
   -h, --help                  Show this help; no config or filesystem scan
       --version               Show version, commit and optional build date
       --scan                  Explicit one-shot scan (also the default)
-      --watch                 Capture baseline and continuously report invalidations
+      --watch                 Capture baseline and continuously report semantic changes
       --json                  Scan JSON or streaming --watch NDJSON
       --ignore <pattern>      Repeatable gitignore-style rule; quote globs
       --ignore-file <path>    Additional file, relative to cwd; must exist
       --respect-gitignore     Enable root/nested .gitignore (default false)
       --include-git           Disable default .git/ exclusion (default false)
       --debounce <duration>   Positive settling duration (default 150ms; maximum wait 4x)
-      --max-diff-bytes <size> Per-file retained snapshot cap (default 5MiB); future diff cap
+      --max-diff-bytes <size> Diff byte cap per side (default 5MiB; ceiling 64MiB)
+      --max-snapshot-bytes <size> Classification/retention cap (default 8MiB)
+      --max-diff-lines <n>    Diff lines per side (default 20000; ceiling 200000)
       --no-mouse              Disable mouse (default false; R4 reserved)
       --editor <command>      Store editor text only; not executed
       --log-file <path>       Validate destination only; not created
@@ -151,8 +163,9 @@ Resource limits (also snake_case TOML keys):
       --max-snapshot-files <n>       Default 100000
       --snapshot-memory-bytes <size> Default 32MiB per generation
       --snapshot-cache-bytes <size>  Default 256MiB per generation
-Reset can temporarily retain two bounded generations. Files over limits still
-receive metadata/hash; binary bytes are not retained. Watch startup/reset needs
+Reset can temporarily retain two bounded baseline generations plus one bounded
+on-demand diff snapshot. Current-state resolving retains metadata only.
+Files over limits still receive metadata/hash; non-text bytes are not retained. Watch startup/reset needs
 a complete readable baseline; --scan continues with partial-scan warnings.
 
 Config: CLI flags > root .folderwatch.toml > user config > built-in defaults.

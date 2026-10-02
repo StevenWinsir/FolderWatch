@@ -1,7 +1,9 @@
 # Copy to <root>/.folderwatch.toml or the OS user config directory.
 # FolderWatch does not create this file automatically.
 debounce = "150ms"           # R2 settling window; max wait is 4x
-max_diff_bytes = "5MiB"     # R2 retained-content cap; never filters inventory/hash
+max_diff_bytes = "5MiB"     # R3 diff cap per side, maximum 64MiB
+max_snapshot_bytes = "8MiB" # R3 independent classification/retention cap
+max_diff_lines = 20000      # R3 diff lines per side, maximum 200000
 max_pending_events = 4096
 max_watch_dirs = 8192
 max_snapshot_files = 100000

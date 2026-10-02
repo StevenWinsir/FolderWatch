@@ -22,6 +22,8 @@ type Config struct {
 	IncludeGit          bool
 	NoMouse             bool
 	MaxDiffBytes        int64
+	MaxSnapshotBytes    int64
+	MaxDiffLines        int
 	MaxPendingEvents    int
 	MaxWatchDirs        int
 	MaxSnapshotFiles    int
@@ -41,6 +43,8 @@ type Overlay struct {
 	IncludeGit          *bool    `toml:"include_git"`
 	NoMouse             *bool    `toml:"no_mouse"`
 	MaxDiffBytes        *string  `toml:"max_diff_bytes"`
+	MaxSnapshotBytes    *string  `toml:"max_snapshot_bytes"`
+	MaxDiffLines        *int     `toml:"max_diff_lines"`
 	MaxPendingEvents    *int     `toml:"max_pending_events"`
 	MaxWatchDirs        *int     `toml:"max_watch_dirs"`
 	MaxSnapshotFiles    *int     `toml:"max_snapshot_files"`
@@ -60,7 +64,7 @@ type LoadOptions struct {
 }
 
 func Defaults() Config {
-	return Config{Debounce: 150 * time.Millisecond, MaxDiffBytes: 5 << 20, Ignore: []string{}, MaxPendingEvents: 4096, MaxWatchDirs: 8192, MaxSnapshotFiles: 100000, SnapshotMemoryBytes: 32 << 20, SnapshotCacheBytes: 256 << 20}
+	return Config{Debounce: 150 * time.Millisecond, MaxDiffBytes: 5 << 20, MaxSnapshotBytes: 8 << 20, MaxDiffLines: 20000, Ignore: []string{}, MaxPendingEvents: 4096, MaxWatchDirs: 8192, MaxSnapshotFiles: 100000, SnapshotMemoryBytes: 32 << 20, SnapshotCacheBytes: 256 << 20}
 }
 
 func (c Config) Validate() error {
@@ -76,8 +80,14 @@ func (c Config) Validate() error {
 	if c.SnapshotMemoryBytes <= 0 || c.SnapshotCacheBytes <= 0 {
 		return fmt.Errorf("snapshot memory/cache budgets must be positive")
 	}
-	if c.MaxDiffBytes <= 0 {
-		return fmt.Errorf("max-diff-bytes must be positive")
+	if c.MaxDiffBytes <= 0 || c.MaxDiffBytes > 64<<20 {
+		return fmt.Errorf("max-diff-bytes must be 1..64MiB")
+	}
+	if c.MaxSnapshotBytes <= 0 || c.MaxSnapshotBytes > 64<<20 {
+		return fmt.Errorf("max-snapshot-bytes must be 1..64MiB")
+	}
+	if c.MaxDiffLines < 1 || c.MaxDiffLines > 200000 {
+		return fmt.Errorf("max-diff-lines must be 1..200000")
 	}
 	for _, pattern := range c.Ignore {
 		if strings.TrimSpace(pattern) == "" || strings.ContainsAny(pattern, "\x00\r\n") {

@@ -52,6 +52,13 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer, build Bui
 	if request.Watch {
 		return runWatch(ctx, prepared, request.JSON, stdout, stderr)
 	}
+	if request.TUI || (!request.Scan && !request.JSON && terminalAvailable(stdout)) {
+		if !terminalAvailable(stdout) {
+			diagnostic(stderr, fmt.Errorf("TUI requires terminal stdin and stdout; use --scan or --watch --json for pipes"))
+			return 2
+		}
+		return runTUI(ctx, prepared, stdout, stderr)
+	}
 	if request.JSON {
 		encoder := json.NewEncoder(stdout)
 		encoder.SetIndent("", "  ")

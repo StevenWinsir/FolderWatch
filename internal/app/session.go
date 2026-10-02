@@ -25,6 +25,7 @@ var ErrSessionClosed = errors.New("monitoring session closed")
 // diagnostic compatibility metadata, never a verdict for UI state. On output
 // overflow Batch.Reload requires ChangeState, not reconstruction from Paths.
 type Event struct {
+	Status        Status              `json:"status,omitempty"`
 	Batch         *changes.Batch      `json:"batch,omitempty"`
 	Type          string              `json:"type"`
 	Sequence      uint64              `json:"sequence"`
@@ -37,6 +38,7 @@ type Event struct {
 
 type resetCall struct {
 	ctx    context.Context
+	action string
 	result chan error
 }
 
@@ -58,6 +60,7 @@ type Session struct {
 	done                 chan struct{}
 	mu                   sync.Mutex
 	err                  error
+	status               Status
 	sequence, generation uint64
 }
 
@@ -98,7 +101,7 @@ func StartSession(parent context.Context, prepared Prepared) (*Session, error) {
 		_ = store.Close()
 		return nil, err
 	}
-	s := &Session{root: cfg.Root, filter: prepared.Matcher, ctx: ctx, cancel: cancel, watcher: adapter, snapshots: store, batches: batches, watchErrors: watchErrors, events: make(chan Event, 32), commands: make(chan resetCall), done: make(chan struct{})}
+	s := &Session{root: cfg.Root, filter: prepared.Matcher, ctx: ctx, cancel: cancel, watcher: adapter, snapshots: store, batches: batches, watchErrors: watchErrors, events: make(chan Event, 32), commands: make(chan resetCall), done: make(chan struct{}), status: Monitoring}
 	// A fresh scan happens AFTER watcher registration, never trusting the older
 	// Prepared inventory as a content baseline. Startup-window events remain queued.
 	if err := s.captureBaseline(ctx); err != nil {
@@ -153,6 +156,7 @@ func (s *Session) captureBaseline(ctx context.Context) error {
 }
 
 func (s *Session) publish(e Event) {
+	e.Status = s.Status()
 	if e.Batch == nil && s.changes != nil && (e.Type == "ready" || e.Type == "reset") {
 		g, v := s.changes.Head()
 		e.Batch = &changes.Batch{Generation: g, Version: v, Reload: true}
@@ -191,6 +195,7 @@ func (s *Session) loop() {
 	defer close(s.done)
 	defer close(s.events)
 	defer func() {
+		s.setStatus(Stopping)
 		s.cancel()
 		if err := s.watcher.Close(); err != nil {
 			s.fail(err)
@@ -205,7 +210,13 @@ func (s *Session) loop() {
 		if err := s.snapshots.Close(); err != nil {
 			s.fail(err)
 		}
+		if s.Err() != nil {
+			s.setStatus(Error)
+		} else {
+			s.setStatus(Idle)
+		}
 	}()
+	paused := false // only this event/command owner mutates pause semantics
 	errorsIn := s.watchErrors
 	// Retry only failed/transient reconciliation, with bounded backoff. This is
 	// also the post-capture reconciliation closing the startup observation window.
@@ -231,6 +242,9 @@ func (s *Session) loop() {
 			return
 		case <-retryC:
 			retryC = nil
+			if paused {
+				continue // resume always reconciles; no pending-path accumulation
+			}
 			again, err := s.resolveChanges(debounce.Batch{Reconcile: true})
 			if err != nil {
 				if s.ctx.Err() == nil {
@@ -246,6 +260,43 @@ func (s *Session) loop() {
 		case call := <-s.commands:
 			ctx, cancel := context.WithCancel(call.ctx)
 			stop := context.AfterFunc(s.ctx, cancel)
+			if call.action != "reset" {
+				err := ctx.Err()
+				fatal := false
+				if err == nil {
+					switch call.action {
+					case "pause":
+						paused = true
+						s.setStatus(Paused)
+						s.publish(Event{Type: "paused"})
+					case "resume":
+						if paused {
+							var again bool
+							again, err = s.resolveChangesContext(ctx, debounce.Batch{Reconcile: true})
+							fatal = err != nil && ctx.Err() == nil && s.ctx.Err() == nil
+							if err == nil {
+								paused = false
+								s.setStatus(Monitoring)
+								s.publish(Event{Type: "resumed", Reconcile: true})
+								if again {
+									schedule()
+								}
+							}
+						}
+					}
+				}
+				stop()
+				cancel()
+				if err != nil && s.ctx.Err() != nil {
+					err, fatal = ErrSessionClosed, false
+				}
+				call.result <- err
+				if fatal {
+					s.fail(err)
+					return
+				}
+				continue
+			}
 			err := s.captureBaseline(ctx)
 			stop()
 			cancel()
@@ -263,7 +314,15 @@ func (s *Session) loop() {
 				}
 			resetDrained:
 				s.publish(Event{Type: "reset", Reconcile: true, BaselineFiles: len(baseline.Files)})
-				schedule()
+				if !paused {
+					schedule()
+				}
+			}
+			// Shutdown can close the native watcher before AfterFunc cancels
+			// this command's context. Keep that backend race behind the facade;
+			// never turn an already committed reset (err == nil) into failure.
+			if err != nil && s.ctx.Err() != nil {
+				err = ErrSessionClosed
 			}
 			call.result <- err
 		case batch, ok := <-s.batches:
@@ -272,6 +331,9 @@ func (s *Session) loop() {
 					s.fail(fmt.Errorf("watch pipeline ended unexpectedly"))
 				}
 				return
+			}
+			if paused {
+				continue // drain bounded queues while native watcher stays alive
 			}
 			again, err := s.resolveChanges(batch)
 			if err != nil {
@@ -334,10 +396,14 @@ func (s *Session) ReadBaseline(ctx context.Context, path string) ([]byte, error)
 // await its definitive result even if the caller cancels; a committed reset is
 // returned as success, never as an ambiguous timeout that invites blind retry.
 func (s *Session) ResetBaseline(ctx context.Context) error {
+	return s.control(ctx, "reset")
+}
+
+func (s *Session) control(ctx context.Context, action string) error {
 	if err := ctx.Err(); err != nil {
 		return err
 	}
-	call := resetCall{ctx: ctx, result: make(chan error, 1)}
+	call := resetCall{ctx: ctx, action: action, result: make(chan error, 1)}
 	select {
 	case s.commands <- call:
 	case <-ctx.Done():

@@ -1,6 +1,7 @@
 package app
 
 import (
+	"context"
 	"errors"
 	"fmt"
 
@@ -10,10 +11,14 @@ import (
 )
 
 func (s *Session) resolveChanges(input debounce.Batch) (retry bool, err error) {
+	return s.resolveChangesContext(s.ctx, input)
+}
+
+func (s *Session) resolveChangesContext(ctx context.Context, input debounce.Batch) (retry bool, err error) {
 	if input.Reconcile {
-		if err := s.watcher.Reconcile(s.ctx); err != nil {
-			if s.ctx.Err() != nil {
-				return false, s.ctx.Err()
+		if err := s.watcher.Reconcile(ctx); err != nil {
+			if ctx.Err() != nil {
+				return false, ctx.Err()
 			}
 			if errors.Is(err, watcher.ErrRootGone) || errors.Is(err, watcher.ErrClosed) || errors.Is(err, watcher.ErrDirectoryLimit) {
 				return false, err
@@ -26,9 +31,9 @@ func (s *Session) resolveChanges(input debounce.Batch) (retry bool, err error) {
 	for _, p := range input.Paths {
 		paths = append(paths, p.Path)
 	}
-	batch, warnings, err := s.changes.ResolveBatch(s.ctx, paths, input.Reconcile)
+	batch, warnings, err := s.changes.ResolveBatch(ctx, paths, input.Reconcile)
 	if err != nil {
-		if s.ctx.Err() != nil || errors.Is(err, changes.ErrCapacity) || errors.Is(err, changes.ErrClosed) {
+		if ctx.Err() != nil || errors.Is(err, changes.ErrCapacity) || errors.Is(err, changes.ErrClosed) {
 			return false, err
 		}
 		s.publish(Event{Type: "warning", Message: err.Error(), Reconcile: true})

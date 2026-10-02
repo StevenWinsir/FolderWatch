@@ -23,3 +23,4 @@ smoke: build
 	python3 scripts/smoke.py bin/folderwatch
 	python3 scripts/watch_smoke.py bin/folderwatch
 	python3 scripts/semantic_smoke.py bin/folderwatch
+	python3 scripts/tui_smoke.py bin/folderwatch

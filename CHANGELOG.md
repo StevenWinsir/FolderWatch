@@ -1,6 +1,24 @@
 # Changelog
 
-## Unreleased — R3 / P6–P8 (2026-10-02)
+## Unreleased — R4 / P9–P11 (2026-10-02)
+
+### Added
+- Interactive-terminal default and explicit --tui mode, preserving non-TTY default/--scan/--json and --watch text/NDJSON.
+- Bubble Tea/Lip Gloss changed-file list, keyboard/mouse navigation, filtering, bounded resize/scroll layouts, help and diagnostics.
+- Single-flight cancellable selected unified Diff, epoch/path/generation/version fencing, bounded stale retries, line numbers, newline markers, +/- and NO_COLOR support.
+- Explicit Binary/Unsupported/TooLarge/Unavailable states; safe Unicode cell clipping, terminal-control escaping and bounded preview memory.
+- Serialized Session Pause/Resume/Status, watcher-alive paused semantics, same-baseline full reconciliation and confirmation-protected atomic Reset.
+- Bounded diagnostics ring, metadata-only --debug and explicit new root-external 0600 JSONL capped at 4MiB; no overwrite, symlink alias or root feedback.
+- Model/golden/control/logging tests, real binary PTY lifecycle and keyboard/mouse smoke, and CI integration of all R1–R4 regressions.
+
+### Fixed / compatibility
+- Concurrent Close and control commands normalize native shutdown errors at the Session facade without changing committed Reset success.
+- --no-mouse also ignores preexisting terminal mouse reports; log containment checks directory identity on case-insensitive filesystems.
+- R3 PR #2 is now merged (main 1b52fcc, 2026-10-02 07:08:58 UTC); the old pending-merge handoff was updated from observed remote facts.
+- No dependency versions upgraded; existing x/term and uniseg promoted to direct requirements, fsnotify vendor patch retained.
+- PTY automation is not Terminal.app/iTerm2 human QA. Gate A, P12 performance/long-running tests, packaging, editor execution and GUI remain deferred to their planned rounds.
+
+## R3 checkpoint — P6–P8 (2026-10-02)
 
 ### Added
 - Shared bounded Classifier with immutable snapshot classification, UTF-8/control-byte validation, UTF-16/32 BOM recognition and no-read oversized classification.
@@ -15,7 +33,7 @@
 - --max-diff-bytes now limits actual diff; --max-snapshot-bytes independently controls classification/retention. Ordinary events do not retain all current contents.
 - --watch JSON uses semantic batches rather than raw path diagnostics; events never include file contents. Diff is a Go API, not an interactive terminal viewer yet.
 - R2 has since merged through PR #1; its previously announced r2-complete.1 tag was not created. Use actual commit 32529a7 or merge 1dbdb5b for the R2 endpoint.
-- TUI, interactive diff/reset, pause/resume, editor/log integrations, GUI and release gates remain later rounds. R3 PR integration is tracked separately from implementation/test acceptance.
+- At the R3 checkpoint TUI, interactive diff/reset, pause/resume and logging remained later work; R4 above implements them. Editor execution, GUI and release gates remain deferred. R3 PR #2 has since merged.
 
 ## R2 checkpoint — P3–P5 (2026-10-02)
 
@@ -35,7 +53,7 @@
 - Reset preserves old baseline on cancellation, missing/unreadable files and capacity failures; waiting captures/resets can be cancelled.
 
 ### Still deferred
-At the R2 checkpoint, classifier/diff/ChangeStore were deferred; R3 above implements them. R4 TUI/interactive reset, pause/resume, editor/logging and GUI/release gates remain deferred. Actual VS Code GUI testing is still not claimed.
+At the R2 checkpoint, classifier/diff/ChangeStore were deferred; R3 above implements them. R4 above implements TUI/interactive reset, pause/resume and logging. Editor execution and GUI/release gates remain deferred. Actual VS Code GUI testing is still not claimed.
 
 ## R1 checkpoint — P0–P2 (2026-10-01)
 
@@ -55,4 +73,4 @@ At the R2 checkpoint, classifier/diff/ChangeStore were deferred; R3 above implem
 - Explicit empty CLI roots are rejected, malformed lower-priority config globs are not hidden by overrides, and cancellation during the final walk callback is preserved.
 
 ### Scope at the R1 checkpoint
-At R1, watcher/debounce/snapshot were deferred; R2 above implements those layers, and R3 adds classifier/diff/ChangeStore. TUI, GUI, editor launching and file logging remain deferred. Gate A and Gate B have not been reached.
+At R1, watcher/debounce/snapshot were deferred; R2 implements those layers, R3 adds classifier/diff/ChangeStore, and R4 adds TUI/controls/logging. GUI and editor launching remain deferred. Gate A and Gate B have not been reached.

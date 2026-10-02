@@ -1,0 +1,6 @@
+Size: absent → absent
+@@ -1,2 +1,2 @@
+     1      1  context 世界
+     2        -old
+            2 +new
+              \ No newline at end of file

@@ -1,6 +1,6 @@
 # R4 Acceptance — Terminal/TUI 产品体验（P9–P11）
 
-Status: **实现与本地自动化验收 PASS；Round 集成状态 IN_REVIEW**。独立人工评审、PR 合并与 Gate A 不由本地测试代替。GitHub 的实际提交/PR/CI 结果在末节补记，不预告成功。
+Status: **实现、本地及远端 CI 自动化验收 PASS；Round 集成状态 IN_REVIEW**。PR #3保持OPEN待评审/合并；独立人工评审与 Gate A不由自动化代替。末节给出已完成的远端成功记录，未将首次失败改写为一次全过。
 
 Date: 2026-10-02
 
@@ -104,4 +104,10 @@ Environment: **macOS 26.6.2 / darwin-arm64 / Apple M4 / Go 1.26.6**。
 
 另有状态消息乱序修复：Update读取core短锁Status，避免旧event/control快照暂时回退Pause/Resume或覆盖终止状态；新增确定性回归，保留generation/version列表水位。
 
-最终源码重跑`CI=true make build test race lint smoke`全部通过；全包race连续10轮通过；JSON计数287/129、失败0/跳过0，总覆盖率85.7%；四target构建、tidy-diff、mod verify、diff check通过。前表已原文更新，不沿用修复前280/125与85.6%的旧数字。最终远端结果按实际完成后记录。
+最终源码重跑`CI=true make build test race lint smoke`全部通过；全包race连续10轮通过；JSON计数287/129、失败0/跳过0，总覆盖率85.7%；四target构建、tidy-diff、mod verify、diff check通过。前表已原文更新，不沿用修复前280/125与85.6%的旧数字。
+
+### 最终成功的远端证据
+
+修复提交 **`9592658bd9a60961c06fc42d00a21e03d5d69cc0`** 已推送；[PR CI 36982861222](https://github.com/StevenWinsir/FolderWatch/actions/runs/36982861222) 与 [push CI 36982857314](https://github.com/StevenWinsir/FolderWatch/actions/runs/36982857314) 均已实查为 **completed / success**。两个run各5个job全通过：macOS/Linux × Go1.23.x/1.26.x的4个test job及cross-build。测试job包含lint/vendor guard、build、全量unit、race、关键包重复回归和四组smoke；Linux原暂停cwd-root删除、非零退出及终端恢复断言保留并通过。
+
+交付链：`305b097`初始P9–P11 → `e3b22c0`隔离PTY继承环境 → `9592658`修复无事件根丢失与状态乱序。本文此次证据收尾只改Markdown，不改Go源码、测试、脚本或依赖；可复核的源码验收点为`9592658`。PR #3未自动合并，main及历史标签未重写。

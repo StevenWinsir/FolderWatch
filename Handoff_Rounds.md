@@ -7,7 +7,7 @@
 > GUI 技术栈：**Wails + Svelte + TypeScript + Monaco Diff Editor**  
 > 开发阶段：**阶段一 Terminal/TUI → 质量闸门 → 阶段二 GUI**
 >
-> **当前工程状态（2026-10-02）：R4 / P0–P11 已实现并通过本地自动化验收；Round 集成状态 IN_REVIEW，PR/远端检查以第 28 节及 R4 acceptance 实测补记为准。** Terminal 文件列表、异步 Diff、键鼠/过滤/滚动、Pause/Resume、确认式 Reset、安全日志均复用唯一 Go core。交互终端默认进入 TUI，管道默认仍单次扫描。R3 PR #2 已合并为 main `1b52fcc`，R4 分支为 `feat/r4-terminal-tui`。P12–P25 尚未完成，Gate A / B 尚未通过。
+> **当前工程状态（2026-10-02）：R4 / P0–P11 已实现并通过本地及远端 CI 自动化验收；Round 集成状态 IN_REVIEW，PR #3 待评审/合并，成功检查与提交见第 28 节及 R4 acceptance。** Terminal 文件列表、异步 Diff、键鼠/过滤/滚动、Pause/Resume、确认式 Reset、安全日志均复用唯一 Go core。交互终端默认进入 TUI，管道默认仍单次扫描。R3 PR #2 已合并为 main `1b52fcc`，R4 分支为 `feat/r4-terminal-tui`。P12–P25 尚未完成，Gate A / B 尚未通过。
 > 本轮完成记录见 **第 28 节**，详细证据见 [`docs/rounds/R4-acceptance.md`](docs/rounds/R4-acceptance.md)，决策见 ADR-013；第 25–27 节保留 R1–R3 历史。原文已同步当前状态及 R3 合并事实。PTY 自动化不等同于 Terminal.app/iTerm2 人工 QA；远端 CI/PR/标签只按实测记录，以下路线目标不代表全部已交付。
 
 ---
@@ -84,7 +84,7 @@ P0–P25 继续作为能力阶段编号；**Round 才是实际开发、Code Revi
 | R1 | Terminal | P0–P2 | 工程基础与输入边界 | 工程骨架、CLI/Config、扫描与 Ignore | **PASS（2026-10-01，本地 + 远端 CI）**，可稳定确定应监控集合 |
 | R2 | Terminal | P3–P5 | 文件事件与 Baseline 内核 | Watcher、Debounce/Coalesce、Snapshot | **PASS，PR #1 已合并（2026-10-02）** |
 | R3 | Terminal | P6–P8 | 内容分析与变更语义 | Classifier、Diff、ChangeStore | **PASS，PR #2 已合并（2026-10-02）**，可获取语义列表与 GetDiff |
-| R4 | Terminal | P9–P11 | TUI 产品体验 | 文件列表、Diff Viewer、Session 控制与日志 | **IN_REVIEW（实现/本地自动化验收 PASS）**，Terminal 主流程与 21 项 PTY 冒烟通过；集成证据见 §28 |
+| R4 | Terminal | P9–P11 | TUI 产品体验 | 文件列表、Diff Viewer、Session 控制与日志 | **IN_REVIEW（实现/本地及远端 CI 自动化验收 PASS）**，Terminal 主流程与 21 项 PTY 冒烟通过；集成证据见 §28 |
 | R5 | Terminal | P12–P14 | 工程硬化与发布 | 性能、测试、CI、Terminal 发布 | **Gate A PASS** |
 | R6 | GUI | P15–P16 | GUI 壳层与 IPC 契约 | Wails/Svelte、Core Facade、DTO/Event | GUI 稳定调用同一 Go Core |
 | R7 | GUI | P17–P18 | GUI 主流程与 Diff | Folder Picker、变化列表、Diff Viewer | GUI 核心用户路径闭环 |
@@ -218,7 +218,7 @@ P0–P25 继续作为能力阶段编号；**Round 才是实际开发、Code Revi
 
 ### 2.6 R4 — Terminal/TUI 产品体验（P9–P11）
 
-**当前状态：IN_REVIEW（实现、本地自动化验收 PASS，2026-10-02）**。287 个 Go 测试/子测试、全包 race 10 轮、R1–R3 原有 60/17/16 项与 R4 新增 21 项真实二进制 PTY 冒烟均通过；四种 target 交叉编译通过。PTY 不是 Terminal.app/iTerm2 人工签字。远端 PR/CI 实测与已知边界见第 28 节、R4 acceptance。
+**当前状态：IN_REVIEW（实现、本地及远端 CI 自动化验收 PASS，2026-10-02）**。287 个 Go 测试/子测试、全包 race 10 轮、R1–R3 原有 60/17/16 项与 R4 新增 21 项真实二进制 PTY 冒烟均通过；四种 target 交叉编译通过。PTY 不是 Terminal.app/iTerm2 人工签字。远端 PR/CI 实测与已知边界见第 28 节、R4 acceptance。
 
 **目标**：把稳定 core 变成可完整使用的 Terminal 产品。
 
@@ -2477,7 +2477,7 @@ P9–P11 TUI、交互Diff/Reset、Pause/Resume、日志/编辑器均未实现；
 
 本轮完整阅读交接后，先核实本地无用户未提交改动及 R3 PR #2 已合并。R3 head=`c0f626b63735fba6ae43feaeb0c860089ffad0ea`，main merge=`1b52fcc23d199f6962206205e585c1d695cc0bae`（2026-10-02 07:08:58 UTC），源码树一致。从该 main 建立 `feat/r4-terminal-tui`，没有重写旧标签、直接提交 main 或提前开发 GUI。
 
-**当前范围：P0–P11 已实现；R4 实现及本地自动化验收 PASS，Round 集成状态 IN_REVIEW。** 实现提交 `305b097005df6635606c68eaa5ebe671e2be7e4d` 已推送，并创建 [PR #3](https://github.com/StevenWinsir/FolderWatch/pull/3)，目标 main、未自动合并。远端检查的修订结果见本节及 [R4 acceptance](docs/rounds/R4-acceptance.md)。独立人工评审/合并、R5 Gate A 不由本轮测试代替。
+**当前范围：P0–P11 已实现；R4 实现、本地及远端 CI 自动化验收 PASS，Round 集成状态 IN_REVIEW。** 实现提交 `305b097005df6635606c68eaa5ebe671e2be7e4d` 已推送，并创建 [PR #3](https://github.com/StevenWinsir/FolderWatch/pull/3)，目标 main、未自动合并。远端检查的修订结果见本节及 [R4 acceptance](docs/rounds/R4-acceptance.md)。独立人工评审/合并、R5 Gate A 不由本轮测试代替。
 
 | P / 能力 | 本轮完成内容 | 主要位置 |
 |---|---|---|
@@ -2528,7 +2528,7 @@ macOS arm64/amd64、Linux amd64、Windows amd64交叉编译通过；Windows只�
 
 随后 `e3b22c0` 的 [PR CI 36981497710](https://github.com/StevenWinsir/FolderWatch/actions/runs/36981497710) 中，macOS两个Go版本通过，Linux在暂停时删除作为cwd的root后没有退出。Linux持有目录引用时可以完全没有root原生事件，不能只检查Chmod。修复在watcher责任层：每个既有事件循环增加一个1秒ticker，只做root的Lstat/目录身份比较；不扫描子树、不读正文、不推进暂停语义状态，退出停止ticker。新增无原生订阅时健康检查不发语义事件/根消失仍fatal、保留open-directory引用、root通知身份回归，保留原PTY断言。1秒是调度间隔，不是慢文件系统上的硬实时承诺。测试fixture使用实际注册的w.root规范路径，不忽略macOS /var→/private/var差异导致的Remove错误。
 
-同时补齐状态消息乱序回归：旧event/control的Status快照不再覆盖更新后的Pause/Resume/Error；UI处理消息时读取core短锁Status，列表仍有generation/version水位保护。最终源码重新执行`CI=true make build test race lint smoke`、全包10轮race/coverage、JSON计数及四target构建，均通过；上方计数已原文更新。修订远端结果按实际完成后补记。
+同时补齐状态消息乱序回归：旧event/control的Status快照不再覆盖更新后的Pause/Resume/Error；UI处理消息时读取core短锁Status，列表仍有generation/version水位保护。最终源码重新执行`CI=true make build test race lint smoke`、全包10轮race/coverage、JSON计数及四target构建，均通过；上方计数已原文更新。修订源码提交 **`9592658bd9a60961c06fc42d00a21e03d5d69cc0`** 已推送：**[PR CI 36982861222](https://github.com/StevenWinsir/FolderWatch/actions/runs/36982861222)** 与 **[push CI 36982857314](https://github.com/StevenWinsir/FolderWatch/actions/runs/36982857314)** 均实测 completed/success；macOS/Linux × Go1.23/1.26四组测试及cross-build全通过，原Linux暂停root删除/终端恢复PTY断言也通过。之后的证据收尾仅更新Markdown，Go源码/测试/脚本与该验证提交相同。PR #3保持OPEN待评审，不自动合并、不创建完成标签。
 
 ### 28.5 明确未完成与下一轮
 

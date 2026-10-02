@@ -1,0 +1,18 @@
+{
+  "$schema": "https://wails.io/schemas/config.v2.json",
+  "name": "FolderWatch",
+  "outputfilename": "FolderWatch",
+  "devServer": "127.0.0.1:34115",
+  "frontend:install": "npm ci --no-audit --no-fund",
+  "frontend:build": "npm run build",
+  "frontend:dev:watcher": "npm run dev",
+  "frontend:dev:serverUrl": "auto",
+  "author": {"name": "FolderWatch contributors"},
+  "info": {
+    "companyName": "FolderWatch",
+    "productName": "FolderWatch",
+    "productVersion": "0.2.0",
+    "copyright": "FolderWatch contributors",
+    "comments": "R6 development shell; not a signed GUI release."
+  }
+}

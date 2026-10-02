@@ -1,0 +1,140 @@
+{
+  "started": "2026-10-02T17:03:11.060599+00:00",
+  "platform": "macOS-26.6.2-arm64-arm-64bit",
+  "base_commit": "88b3541bf4d4b9bc237202276db63613a9ca2aac",
+  "commands": [
+    {
+      "name": "lint",
+      "command": [
+        "make",
+        "lint"
+      ],
+      "exit": 0,
+      "seconds": 0.311
+    },
+    {
+      "name": "scripts-test",
+      "command": [
+        "make",
+        "scripts-test"
+      ],
+      "exit": 0,
+      "seconds": 0.095
+    },
+    {
+      "name": "go-build",
+      "command": [
+        "go",
+        "build",
+        "./..."
+      ],
+      "exit": 0,
+      "seconds": 0.318
+    },
+    {
+      "name": "go-test",
+      "command": [
+        "go",
+        "test",
+        "-count=1",
+        "-json",
+        "-coverprofile=artifacts/r6-final/coverage.out",
+        "./..."
+      ],
+      "exit": 0,
+      "seconds": 11.132,
+      "test_pass_events": 320,
+      "top_level_tests": 158,
+      "failures": 0,
+      "skipped_tests": 0
+    },
+    {
+      "name": "go-race",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "-shuffle=on",
+        "-count=10",
+        "./..."
+      ],
+      "exit": 0,
+      "seconds": 38.942
+    },
+    {
+      "name": "gui-resources",
+      "command": [
+        "go",
+        "test",
+        "-race",
+        "-count=1",
+        "-v",
+        "./gui/backend",
+        "./gui/host"
+      ],
+      "exit": 0,
+      "seconds": 2.874
+    },
+    {
+      "name": "smoke",
+      "command": [
+        "make",
+        "smoke"
+      ],
+      "exit": 0,
+      "seconds": 12.838
+    },
+    {
+      "name": "fuzz",
+      "command": [
+        "make",
+        "fuzz"
+      ],
+      "exit": 0,
+      "seconds": 65.302
+    },
+    {
+      "name": "go-mod-verify",
+      "command": [
+        "go",
+        "mod",
+        "verify"
+      ],
+      "exit": 0,
+      "seconds": 0.687
+    },
+    {
+      "name": "go-mod-tidy",
+      "command": [
+        "go",
+        "mod",
+        "tidy",
+        "-diff"
+      ],
+      "exit": 0,
+      "seconds": 0.068
+    },
+    {
+      "name": "cross-darwin-arm64",
+      "exit": 0,
+      "scope": "headless CLI/core/facade compile, not native GUI runtime"
+    },
+    {
+      "name": "cross-darwin-amd64",
+      "exit": 0,
+      "scope": "headless CLI/core/facade compile, not native GUI runtime"
+    },
+    {
+      "name": "cross-linux-amd64",
+      "exit": 0,
+      "scope": "headless CLI/core/facade compile, not native GUI runtime"
+    },
+    {
+      "name": "cross-windows-amd64",
+      "exit": 0,
+      "scope": "headless CLI/core/facade compile, not native GUI runtime"
+    }
+  ],
+  "coverage": "total:\t\t\t\t\t\t\t\t\t(statements)\t\t80.4%",
+  "completed": "2026-10-02T17:05:26.834375+00:00"
+}

@@ -2,18 +2,18 @@
 
 本地文件夹变更检查工具，macOS 优先。长期目标是用同一 Go core 驱动 Terminal/TUI 与 GUI，比较当前文件和 session 启动基线，而不是只比较上一次保存。
 
-**当前交付：R5 / P12–P14 的工程硬化与私有 Terminal 候选包。** P0–P11 的 Terminal 列表、异步 Diff、键鼠/过滤、Pause/Resume、确认式 Reset 和安全日志保持同一 Go core。R5 新增目录级性能/资源测量、真实 PTY 输出延迟、native fd 泄漏修复、测试/fuzz/CI 与双架构打包。交互终端默认 TUI；管道默认仍单次扫描。**Gate A 尚未签字通过，GUI / Gate B 未开始；候选包不等于公开 v1。** 路线见 [Handoff](Handoff_Rounds.md)，本轮证据见 [R5 acceptance](docs/rounds/R5-acceptance.md)、[性能报告](docs/performance-v1.md)、[Gate A](docs/gates/Gate-A.md)。
+**当前交付：R6 / P15–P16 的 Wails/Svelte 壳层与 IPC/Core Facade，实现及本地自动化验收完成，集成 IN_REVIEW。** P0–P14 和 [Gate A](docs/gates/Gate-A.md) 已验收 PASS；原 Terminal/TUI 功能及 vendor 修复保持。GUI 现可输入目录并 Start/Stop，复用同一 Go core；分页 changes、按需 Diff、Pause/Resume/Reset API 已为 R7 准备。原生 Folder Picker、完整列表/Monaco、设置和签名/公证仍属后续轮次，**Gate B 未通过，当前不是正式 GUI v1**。
 
-R5 分支为 `feat/r5-terminal-release`，已纳入 R4 原生测试同步提交 `a775148`；本轮 PR/CI 以 R5 acceptance 中实际记录为准。以下保留 R4 及更早轮次的历史集成证据，不将旧 CI 当成 R5 检查。
+R6 分支为 `feat/r6-gui-shell-ipc`，从 PR #6 合并 `88b3541` 开始；R4 补充 PR #4 和 R5 PR #5 均已合并。当前范围、PR/CI 和验收限制见 [Handoff §30](Handoff_Rounds.md)、[R6 acceptance](docs/rounds/R6-acceptance.md)、[IPC v1](docs/gui-ipc-v1.md)。原生 WKWebView 人工交互未在本次复验：机器未授予辅助功能/录屏权限，真实 Wails 浏览器 IPC E2E 不等于原生 UI 验收。
 
-R4 开发分支为 `feat/r4-terminal-tui`，[PR #3](https://github.com/StevenWinsir/FolderWatch/pull/3)已于2026-10-02 08:23:07 UTC合入main（`bb3a75e`，head=`86b2191`）。原生测试同步与交接补充位于`fix/r4-native-test-ordering`，另行评审；修订源码`9592658`的[远端 CI](https://github.com/StevenWinsir/FolderWatch/actions/runs/36982861222)已全部通过（macOS/Linux × Go1.23/1.26与cross-build）。详见R4 acceptance；自动化不代替人工评审。R3 已通过 [PR #2](https://github.com/StevenWinsir/FolderWatch/pull/2) 于 2026-10-02 07:08:58 UTC 合入 main（`1b52fcc`），R4 从该合并提交开始。R2 已通过 [PR #1](https://github.com/StevenWinsir/FolderWatch/pull/1) 合并；其曾预告的 `r2-complete.1` 实际未创建，最终 R2 以 `32529a7` / `1dbdb5b` 为准。
+R1–R5 的历史源码、性能与候选证据保留在各轮 acceptance、[性能报告](docs/performance-v1.md)和 Gate A 记录中；不将旧 CI 或旧候选签字套用到新的 GUI 二进制。
 
 ## 构建与使用
 
 需要 Go 1.23+；lint/CLI 冒烟测试另外需要 Python 3。Git 仅供开发和 Ignore 对照测试使用；被扫描的目录不需要是 Git 仓库。
 
 ```sh
-git clone https://github.com/StevenWinsir/FolderWatch.git --branch feat/r5-terminal-release
+git clone https://github.com/StevenWinsir/FolderWatch.git --branch feat/r6-gui-shell-ipc
 cd FolderWatch
 go mod download
 make build
@@ -30,6 +30,24 @@ make build
 仓库当前为私有，clone 需要访问权限。省略 path 时扫描当前目录；选项可放在 path 前后，`--` 终止选项解析。带空格的路径和 glob 请加引号。stdin 与 stdout 均为终端时，默认进入 TUI；任一被重定向时，默认保持单次扫描。`--tui` 强制交互模式，无终端时明确报错，且不能与 `--scan`、`--watch`、`--json` 合用；`--scan` 与 `--watch` 也不能同时使用。`make run ARGS='--scan --json .'` 可不生成二进制直接运行。
 
 文本输出会转义文件名中的控制字符。JSON 包含 `root`、`entries`、`warnings`；每项有 `path`、`kind`、`size`、`mode`、`mod_time`，不包含文件内容。根目录键为 `.`，其他键为根目录相对、`/` 分隔、保留大小写和 Unicode 的路径。目录、普通文件、symlink、其他特殊文件分别标记为 `directory`、`file`、`symlink`、`other`。遍历顺序确定，遵循 `filepath.WalkDir` 的词法遍历顺序。
+
+## GUI 开发壳层（R6）
+
+本机目标为 macOS；还需要 Node 22 或 24、npm、Xcode Command Line Tools。Wails CLI 固定 v2.10.1；应用继续使用根 Go module 和已审查 vendor，不要另建 GUI module 或绕过补丁。
+
+```sh
+make gui-setup
+make gui-build VERSION=0.2.0-dev
+open gui/build/bin/FolderWatch.app
+# 仅 loopback 的开发服务
+make gui-dev
+# 真实 Go binding/core 的浏览器测试，自动启停自有 dev server
+FW_GUI_START_SERVER=1 FW_BROWSER_CHANNEL=chrome make gui-e2e
+```
+
+输入绝对目录或 `~/path` 后 Start monitoring，Stop session 可取消初始扫描。页面重载会结束旧会话；丢失页面通过 2 秒 heartbeat / 15 秒租约回收，不会悄悄恢复监控。暂停、重置和 changes/Diff 查询已在 Facade 提供，但 R6 页面没有冒充完整 R7 工作区。休眠可能使租约过期，后台体验由 R8 改进。
+
+`make gui-check` 执行类型检查、11 项单元/组件/契约测试及 Vite 构建；`make gui-bindings` 重新生成已入库的绑定。浏览器 E2E 是真实 Wails 开发传输，不是 mock，也不是生产 WKWebView 渲染证明。打包输出为本地开发 `.app`，不代表 Developer ID 签名、公证或 Gate B。详见 [GUI README](gui/README.md) 和 [ADR-015](docs/adr/015-gui-shell-and-ipc-facade.md)。
 
 ## Terminal 使用
 
@@ -150,6 +168,10 @@ Duration 使用正的 Go duration，如 `75ms`、`1s`。Size 支持正整数 byt
 ```text
 cmd/folderwatch/       进程入口、版本、取消信号
 cmd/fwbench/           仅开发使用的合成性能/资源探针，不随应用分发
+gui/main.go           Wails native 入口，desktop || bindings build tags
+gui/host/             应用 context、事件泵、并发 shutdown
+gui/backend/          唯一 GUI Core Facade、IPC v1 DTO 与生命周期/安全测试
+gui/frontend/         Svelte/TypeScript、生成绑定、Vitest/真实 IPC E2E
 internal/cli/          参数与终端/JSON 输出
 internal/tui/          Bubble Tea model、键鼠、可取消 Diff、虚拟视口与安全渲染
 internal/logging/      有界诊断 ring、显式 root 外私有文件
@@ -198,6 +220,6 @@ make release VERSION=v0.1.0-rc.1
 make release-smoke VERSION=v0.1.0-rc.1
 ```
 
-`make lint` 执行 gofmt、vendor hash/补丁可逆性、Core 传递依赖边界检查与 go vet。CI 保留 macOS/Linux × Go1.23/1.26 的 build/test/race/smoke，增加测试/coverage 日志、六类 fuzz、Python 发布回归、双架构校验及 native macOS 安装冒烟；macOS/Linux/Windows 有交叉编译。实际运行结果以 [Actions](https://github.com/StevenWinsir/FolderWatch/actions) 与 R5 acceptance 为准。Windows 只声明编译支持。
+`make lint` 执行 gofmt、vendor hash/补丁可逆性、Core 传递依赖边界检查与 go vet。CI 保留 macOS/Linux × Go1.23/1.26、六类 fuzz、发布回归及四平台 headless cross-build，并增加 Node22/24 前端检查、macOS Wails 构建及生成绑定无漂移检查。实际执行状态以 [Actions](https://github.com/StevenWinsir/FolderWatch/actions) 和 [R6 acceptance](docs/rounds/R6-acceptance.md) 为准；Windows 仍只声明编译支持。
 
-下一步是完成 R5 PR 评审/集成及 [Gate A](docs/gates/Gate-A.md) 中未签字的 Terminal.app/iTerm2 人工 QA、真正 clean-Mac 安装与分发许可决策，不是直接开始 R6。PTY 和隔离 HOME/PATH 自动化不代替这些验收。本轮未升级依赖版本；vendor 生命周期补丁与构建决策见 [ADR-014](docs/adr/014-terminal-resource-hardening-and-release.md)。安装、校验和、Homebrew 方案和候选 workflow 见 [Terminal 发布说明](docs/release/terminal-candidate.md)。项目尚未指定公开分发许可证，不声称 Developer ID 签名/公证或已发布公开 tap。贡献规范见 [CONTRIBUTING.md](CONTRIBUTING.md)。
+下一步先完成 R6 PR 评审/集成及原生 WKWebView 交互检查，再进入 R7。Gate A 已签字，保留其原候选对象，不以新二进制替代；Gate B、GUI 正式分发、签名/公证尚未进行。R6 新增 Wails 所需锁定依赖并保留 fsnotify 补丁；依赖/构建边界见 ADR-009、014、015。Terminal 候选和 Homebrew 方案见 [发布说明](docs/release/terminal-candidate.md)，贡献规范见 [CONTRIBUTING.md](CONTRIBUTING.md)。

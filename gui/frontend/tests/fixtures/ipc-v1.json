@@ -1,0 +1,15 @@
+{
+  "protocol": 1,
+  "name": "changes.updated",
+  "clientId": "fixture-client",
+  "status": {
+    "sessionId": "fixture-session",
+    "root": "/fixture/世界",
+    "state": "Monitoring",
+    "sequence": "9007199254740993",
+    "generation": "9007199254740994",
+    "version": "9007199254740995",
+    "warning": ""
+  },
+  "reload": true
+}

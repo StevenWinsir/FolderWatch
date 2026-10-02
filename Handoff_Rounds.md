@@ -1,4 +1,4 @@
-# FolderWatch — Handoff.md
+# FolderWatch — Handoff_Rounds.md
 
 > 项目代号：**FolderWatch**
 > 文档用途：工程实施、多人接力开发、代码评审、测试与发布交接  
@@ -6,6 +6,9 @@
 > 核心技术栈：**Go + fsnotify + Bubble Tea + Lip Gloss**  
 > GUI 技术栈：**Wails + Svelte + TypeScript + Monaco Diff Editor**  
 > 开发阶段：**阶段一 Terminal/TUI → 质量闸门 → 阶段二 GUI**
+>
+> **当前工程状态（2026-10-01）：R1 / P0–P2 已完成并通过本地集成验收。** 工程、CLI/Config、初始扫描与 Ignore 已实现；当前 `folderwatch` 是单次元数据扫描，不是持续监控程序。P3–P25 尚未实现，Gate A / B 尚未通过。
+> 本轮完成记录见 **第 25 节**，详细证据见 [`docs/rounds/R1-acceptance.md`](docs/rounds/R1-acceptance.md)，实际使用与配置见 [`README.md`](README.md)。以下产品目标与后续阶段描述仍是路线规划，不代表功能已经全部交付。
 
 ---
 
@@ -78,7 +81,7 @@ P0–P25 继续作为能力阶段编号；**Round 才是实际开发、Code Revi
 
 | Round | 大阶段 | 包含 P | 单元主题 | 核心结果 | 出口 |
 |---|---|---:|---|---|---|
-| R1 | Terminal | P0–P2 | 工程基础与输入边界 | 工程骨架、CLI/Config、扫描与 Ignore | 可稳定确定应监控集合 |
+| R1 | Terminal | P0–P2 | 工程基础与输入边界 | 工程骨架、CLI/Config、扫描与 Ignore | **PASS（2026-10-01，本地验收）**，可稳定确定应监控集合 |
 | R2 | Terminal | P3–P5 | 文件事件与 Baseline 内核 | Watcher、Debounce/Coalesce、Snapshot | 可稳定监听并建立/重置基线 |
 | R3 | Terminal | P6–P8 | 内容分析与变更语义 | Classifier、Diff、ChangeStore | 可输出可靠 changed-file 语义 |
 | R4 | Terminal | P9–P11 | TUI 产品体验 | 文件列表、Diff Viewer、Session 控制 | Terminal 主流程完整可用 |
@@ -106,6 +109,8 @@ P0–P25 继续作为能力阶段编号；**Round 才是实际开发、Code Revi
 
 ### 2.3 R1 — 工程基础与输入边界（P0–P2）
 
+**当前状态：PASS（2026-10-01）**。已完成实现、自评审和自动化集成验收；未将独立人工评审或未来的 Terminal/iTerm 交互验收记为已完成。`--scan` / `--json` 为本轮可复现入口；下一轮从 R2/P3 开始。
+
 **目标**：固定项目骨架、CLI/Config、路径与 ignore 语义，让后续 watcher 接收稳定输入。
 
 **包含**：
@@ -122,15 +127,17 @@ P0–P25 继续作为能力阶段编号；**Round 才是实际开发、Code Revi
 - P0 ADR 与单元测试
 
 **R1 验收**：
-- [ ] `go build ./...` 成功
-- [ ] `folderwatch --help` 可用
-- [ ] 非法 path/duration/size 返回明确错误
-- [ ] 嵌套目录、空格、Unicode 扫描正确
-- [ ] `.folderwatchignore` 与 CLI ignore 生效
-- [ ] symlink 行为符合 ADR
-- [ ] 权限不足目录不导致整个程序崩溃
-- [ ] initial scan 与 ignore matcher 有自动化测试
-- [ ] `main.go` 不包含 watcher/diff 业务实现
+- [x] `go build ./...` 成功
+- [x] `folderwatch --help` 可用
+- [x] 非法 path/duration/size 返回明确错误
+- [x] 嵌套目录、空格、Unicode 扫描正确
+- [x] `.folderwatchignore` 与 CLI ignore 生效
+- [x] symlink 行为符合 ADR-005，覆盖目录环、外部链接和失效链接
+- [x] 权限不足目录产生 warning，继续扫描其他项
+- [x] initial scan 与同一 runtime ignore matcher 有自动化一致性测试
+- [x] `main.go` 仅组装 CLI/context/版本，不包含 watcher/diff 业务
+
+最终本地验证：127 个 Go 测试/子测试通过，`go test -race -count=1 ./...` 通过，真实二进制 CLI smoke 60 项通过、0 跳过，build/lint/dependency verify 通过。完整命令、环境、覆盖率与远端 CI 证据归入 R1 acceptance。
 
 **出口定义**：系统能够可靠回答“给定 root + config，本次 session 应关注哪些文件与目录？”
 
@@ -760,6 +767,8 @@ TUI / GUI refresh
 
 ## P0 — 项目初始化、工程规范、ADR
 
+**完成状态：已完成（R1，2026-10-01）。** 已初始化 `github.com/StevenWinsir/FolderWatch`（Go 1.23+）、锁定依赖及 go.sum，建立最小分层工程、Make targets、gofmt/go vet、CI、README/CHANGELOG/CONTRIBUTING 与 ADR-001–006。后续 fsnotify/Bubble Tea/Lip Gloss/difflib 仅由 `tools` build-tag 文件锁定，不导入 R1 core 或可执行文件。CI 配置覆盖 macOS/Linux 与 Go 1.23/1.26；实际运行状态以 R1 acceptance/Actions 为准，不把配置文件存在当成远端已通过。
+
 ### 目标
 
 创建可编译的 Go 工程骨架，锁定技术边界和工程规范。
@@ -796,6 +805,8 @@ TUI / GUI refresh
 
 ## P1 — CLI 契约与配置模型
 
+**完成状态：已完成（R1，2026-10-01）。** `internal/cli` 与 `internal/config` 已实现推荐 flags、严格 TOML、存在性感知的显式覆盖、路径/duration/size 校验和退出码。项目配置为 `<root>/.folderwatch.toml`；用户配置使用 OS user config directory。高优先级 ignore 数组替换低优先级数组，`[]` 清空；布尔值可用 `--flag=false` 覆盖。配置路径相对其文件，CLI 路径相对 cwd。当前默认命令及 `--scan` 均单次扫描退出；`--json` 输出元数据。debounce/diff/mouse/editor/log/debug 参数只是通过校验的后续接口，不能解释为已有对应运行能力。详见 ADR-006。
+
 ### 目标
 
 先定义用户和 core 的边界，避免后续反复改参数。
@@ -818,7 +829,10 @@ folderwatch ~/Projects/demo
 --debounce <duration>
 --ignore <pattern>        # 可重复
 --ignore-file <path>
---respect-gitignore
+--respect-gitignore       # R1 默认 false
+--include-git             # R1：关闭内建 .git/ 排除
+--scan                    # R1：显式单次扫描
+--json                    # R1：扫描清单 JSON
 --no-mouse
 --max-diff-bytes <size>
 --editor <command>
@@ -857,6 +871,10 @@ CLI flags > project/local config > user config > built-in defaults
 ---
 
 ## P2 — 初始目录扫描、路径规范化与 Ignore Engine
+
+**完成状态：已完成（R1，2026-10-01）。** `internal/scan` 使用 WalkDir；`pathutil` 固定根相对 `/` 分隔 canonical key，`.` 代表根，保留大小写与 Unicode。明确选择的 root symlink 可解析；后代 symlink 仅记录元数据、不跟随，特殊文件不读取内容。不可读子目录/瞬间消失文件产生 warning，root 失败则退出。
+
+统一 `ignore.Matcher.Match(path, isDir)` 同时供扫描及下一轮 runtime 调用。规则优先级固定为：内建 `.git/` < 可选根/嵌套 `.gitignore` < 根 `.folderwatchignore` < 显式 ignore 文件 < config/CLI ignore；支持 ancestor-aware 否定。默认不启用 `.gitignore`，可显式 `--include-git`。规则按 Matcher 缓存，修改已加载规则需重启/新 Matcher；嵌套规则错误在进入目录前检查并跳过子树。完整策略与安全边界见 ADR-005。
 
 ### 目标
 
@@ -2233,16 +2251,16 @@ ADR 必须写：Context、Decision、Alternatives、Consequences、Migration。
 
 ---
 
-## 23. 第一位开发者从哪里开始
+## 23. 下一位开发者从哪里开始（R1 后）
 
-第一位接手者严格按以下顺序：
+P0–P2 已完成，不应重复初始化工程。下一位接手者按以下顺序：
 
-1. 完成 P0：工程骨架、依赖、CI、ADR。
-2. 完成 P1：CLI/config contract。
-3. 完成 P2：scan + ignore + path policy。
-4. 不要提前做漂亮 TUI。
-5. 优先把 P3–P8 的 core 做稳，并用测试证明状态正确。
-6. 到 P9 才正式接 Bubble Tea。
+1. 阅读第 25 节、R1 acceptance、README 与 ADR-001–006，执行 `make build test race lint smoke` 验证起点。
+2. 从 `internal/app.Prepare` 的 `Config`、`Matcher`、`Inventory` 接入 P3 watcher；仅注册接受的目录，runtime 路径使用同一 Matcher。
+3. 完成 P4 的 normalize/debounce/coalesce、bounded queue 与 reconciliation，不能用 UI 补救事件语义问题。
+4. 完成 P5 bounded snapshots 与启动/reset baseline；R1 inventory 只有元数据，绝不能当作内容 baseline。
+5. R2 后再进入 P6–P8 的 classifier/diff/ChangeStore，并用自动化测试证明状态迁移。
+6. 保留 `--scan` 诊断入口；到 P9 才正式接 Bubble Tea，不提前做 TUI 业务。
 7. P14 Gate A 不通过，不创建 GUI 业务分支。
 
 项目的核心价值不是“终端上有颜色”，而是：**文件事件再混乱，最终仍然能稳定、正确、可恢复地告诉用户“相对于 baseline，到底哪些文件变了，以及变了什么”。**
@@ -2261,3 +2279,50 @@ ADR 必须写：Context、Decision、Alternatives、Consequences、Migration。
 4. 当前代码行为；
 
 若四者冲突，必须在继续开发前通过 issue/PR 统一事实，并更新文档，避免“口头正确、代码另一套”的长期漂移。
+
+---
+
+## 25. 本轮交付记录 — R1 / P0–P2（2026-10-01）
+
+### 25.1 实际完成范围
+
+本轮从仅有交接文档的目录开始。原始文档完整保存在首个提交 `9fca76f3d72ef02fb656c70a4bddc7c2ff076186`。初始化 `main` 分支，工程目标仓库为私有 `https://github.com/StevenWinsir/FolderWatch`；本轮 checkpoint 使用 `r1-complete`，精确最终提交可通过该 tag 查询。
+
+| 阶段 | 本轮交付 | 核心文件 |
+|---|---|---|
+| P0 | Go module/依赖锁定，薄 main、Makefile、CI、提交约定、README/CHANGELOG、六份 ADR | go.mod/go.sum、cmd/folderwatch、tools/deps.go、.github/workflows/ci.yml、docs/adr |
+| P1 | CLI、严格 TOML、四层优先级、显式 false/空数组、duration/size/path 校验、help/version、错误码、转义输出 | internal/cli、internal/config、testdata/config.example.toml |
+| P2 | 元数据递归扫描、canonical key、symlink/特殊文件策略、共享 Ignore Matcher、嵌套规则、权限/消失 warning | internal/pathutil、fileutil、ignore、model、scan、app |
+| 测试与交接 | 单元/集成、Git 对照、race/fuzz、真实 CLI smoke、验收报告、原 Handoff 就地更新 | 各包 *_test.go、scripts/smoke.py、docs/rounds/R1-acceptance.md、本文件 |
+
+### 25.2 本轮可运行行为
+
+```sh
+make build
+./bin/folderwatch --help
+./bin/folderwatch --scan --json "/path/to/项目 with spaces"
+./bin/folderwatch . --ignore '*.tmp' --ignore 'node_modules/'
+./bin/folderwatch --scan --respect-gitignore .
+```
+
+清单包含根 `.`、目录、普通文件、symlink 与特殊文件元数据，不读取正文，不创建状态/log/snapshot。JSON 返回 `root/entries/warnings`。任何扩展名和大小的普通文件均可进入清单，`max_diff_bytes` 不是扫描过滤器。输出中的路径控制字符会转义。错误码为 0 成功（可有 warning）、2 参数/配置、1 runtime/I/O、130 取消。
+
+### 25.3 已确认的实现约定
+
+默认 `.git/` 排除、`.gitignore` 默认关闭、规则来源顺序与父目录否定限制已固定；Git 全局 excludes、`.git/info/exclude` 和 tracked 状态不参与匹配。`.folderwatchignore` 不会被额外 ignore 文件取代。自动规则文件不跟随 symlink，配置/规则读取有 1 MiB 上限。
+
+目录自己的 `.gitignore` 在进入目录前预检，仅影响其后代，不影响该目录自身。Ignore 缓存包括 missing/error；新目录首次出现时读取规则，但已缓存规则修改不热更新。R2 如新增热更新，必须统一重建 Matcher 并 reconciliation。
+
+### 25.4 本轮验证与修复
+
+环境：macOS 26.6.2、darwin/arm64、Go 1.26.6、Git 2.54.0。本地 `go build ./...`、gofmt/go vet、`go mod verify`、完整 Go tests、race 及 CLI smoke 均通过；127 个测试/子测试（38 个顶层测试及 fuzz 目标）无失败，60 项 smoke 无跳过。整体语句覆盖率 88.4%，扫描 96.1%，Ignore 94.0%。macOS arm64/amd64、Linux amd64、Windows amd64 交叉编译成功；不据此宣称 Windows 运行支持。Fuzz/远端 CI 的确切结果与运行链接记录在 R1 acceptance 的交付补记。
+
+真实测试覆盖 Unicode/空格路径、根与后代 symlink、符号链接环、权限不足、文件消失、FIFO、5 GiB 稀疏大文件、配置不落盘、输出错误与取消。通过 16 组规则 × 22 条路径的本机 `git check-ignore` 对照修复 trailing `/**` 对父目录的错误匹配；同步修复嵌套规则预检、错误目录类型提示下的 symlink 越界、空 CLI root、低优先级非法 glob 被覆盖，以及最后一次扫描回调中的取消丢失。首轮失败保留为开发事实，最终通过结果有复现命令。
+
+### 25.5 明确未完成与下一轮责任
+
+**尚未实现：P3 watcher、P4 debounce/coalesce、P5 snapshot/baseline/reset，以及 P6–P25。** 没有持续监控、内容分类/diff、ChangeStore、TUI、GUI、外部编辑器执行或文件日志。保留参数仅定义配置接口；baseline/大文件的 ADR 部分是后续设计，不是假实现。Gate A/B 未通过。
+
+本轮未发现测试范围内未解决的阻塞 bug。接受的边界是：Ignore 修改需重启；warning 清单可能不完整；内存随条目数增长；路径检查不是对抗并发恶意目录替换的原子沙箱。P12 性能预算、持续监控压力测试、独立人工评审、Terminal/iTerm 交互验收与签名分发尚未执行，不记为本轮已完成。
+
+下一轮直接复用 `Prepared.Config`、`Prepared.Matcher`、`Prepared.Inventory`，实施 P3–P5 并保持 core/UI 分离。详细下一步与风险见 R1 acceptance 和第 23 节。

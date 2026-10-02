@@ -1,6 +1,6 @@
 # R2 Acceptance — Watcher / Events / Baseline（P3–P5）
 
-Status: **PASS — 本地集成验收**。远端 CI/PR 信息在观察实际结果后补记。
+Status: **实现 / 本地与 GitHub 自动化验收 PASS；Round 集成状态 IN_REVIEW（待 PR 合并）**。
 
 Date: 2026-10-01 至 2026-10-02（本机 CDT）
 
@@ -105,4 +105,10 @@ R2 未实现文本 diff、Changed List、rename语义识别、Pause/Resume、TUI
 
 ## GitHub 集成记录
 
-本地验收已完成；提交/PR/远端 CI 的精确链接与结果将在观察后补入本节。CI 配置存在不作为远端成功证据。
+实现提交：`9d7b675419ab0f79ea46c43ace8b7594bb57b6db`，已推送 `origin/feat/r2-watch-baseline`。
+
+[GitHub Actions 36968383149](https://github.com/StevenWinsir/FolderWatch/actions/runs/36968383149) 实际结论为 **success**，headSha 与上述实现提交完全一致。5 个 job 均成功：macOS/Linux × Go 1.23/1.26 四个 test job（lint/build/test/race/重复核心集成/两组CLI smoke），以及 macOS/Windows cross-build。
+
+PR 创建调用被工具层安全检查拦截，没有创建 PR；未通过其他途径重试该受阻操作，也未直接修改/合并 main。R2 的实现、测试和远端分支推送已完成，但不能把“待 PR 合并”写成“已合入主分支”。main 仍保持 R1，R2 代码从 `feat/r2-watch-baseline` 或 `r2-complete` 获取。
+
+`r2-complete` 是本轮已验收分支的交付 checkpoint，不代替仓库的 PR 合并流程。记录远端证据的后续提交仅改文档，未改已通过的源代码、测试或工作流；最终分支/tag运行可以在 [Actions](https://github.com/StevenWinsir/FolderWatch/actions) 按对应 commit 查询。

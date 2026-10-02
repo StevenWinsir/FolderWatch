@@ -7,7 +7,7 @@
 > GUI 技术栈：**Wails + Svelte + TypeScript + Monaco Diff Editor**  
 > 开发阶段：**阶段一 Terminal/TUI → 质量闸门 → 阶段二 GUI**
 >
-> **当前工程状态（2026-10-02）：R2 / P0–P5 已实现，R2 本地集成验收通过。** 已有递归 Watcher、路径事件聚合、有界 Snapshot、启动基线及原子 Reset。默认/`--scan` 保留单次扫描；`--watch` 持续监听，输出路径重读/重扫请求。P6–P25 尚未实现，Gate A / B 尚未通过。
+> **当前工程状态（2026-10-02）：R2 / P0–P5 已实现并通过本地及 GitHub CI 验收；R2 位于 `feat/r2-watch-baseline`，尚未合入 main。** 已有递归 Watcher、路径事件聚合、有界 Snapshot、启动基线及原子 Reset。默认/`--scan` 保留单次扫描；`--watch` 持续监听，输出路径重读/重扫请求。P6–P25 尚未实现，Gate A / B 尚未通过。
 > 本轮完成记录见 **第 26 节**，详细证据见 [`docs/rounds/R2-acceptance.md`](docs/rounds/R2-acceptance.md)；第 25 节保留 R1 历史交付。实际使用与配置见 [`README.md`](README.md)。远端 CI 结论只在观察到实际结果后记入验收报告；下文后续产品目标不代表已经全部交付。
 
 ---
@@ -82,7 +82,7 @@ P0–P25 继续作为能力阶段编号；**Round 才是实际开发、Code Revi
 | Round | 大阶段 | 包含 P | 单元主题 | 核心结果 | 出口 |
 |---|---|---:|---|---|---|
 | R1 | Terminal | P0–P2 | 工程基础与输入边界 | 工程骨架、CLI/Config、扫描与 Ignore | **PASS（2026-10-01，本地 + 远端 CI）**，可稳定确定应监控集合 |
-| R2 | Terminal | P3–P5 | 文件事件与 Baseline 内核 | Watcher、Debounce/Coalesce、Snapshot | **PASS（2026-10-02，本地验收）**，可监听并原子建立/重置基线 |
+| R2 | Terminal | P3–P5 | 文件事件与 Baseline 内核 | Watcher、Debounce/Coalesce、Snapshot | **IN_REVIEW（实现/自动化验收 PASS，待 PR 合并）**，可监听并原子建立/重置基线 |
 | R3 | Terminal | P6–P8 | 内容分析与变更语义 | Classifier、Diff、ChangeStore | 可输出可靠 changed-file 语义 |
 | R4 | Terminal | P9–P11 | TUI 产品体验 | 文件列表、Diff Viewer、Session 控制 | Terminal 主流程完整可用 |
 | R5 | Terminal | P12–P14 | 工程硬化与发布 | 性能、测试、CI、Terminal 发布 | **Gate A PASS** |
@@ -145,7 +145,7 @@ P0–P25 继续作为能力阶段编号；**Round 才是实际开发、Code Revi
 
 ### 2.4 R2 — 文件事件与 Baseline 内核（P3–P5）
 
-**当前状态：PASS（本地集成验收，2026-10-02）**。实现与测试范围详见第 26 节和 R2 acceptance；自评审和自动化验证不等于独立人工评审。实际 Vim 无界面保存及直接写入/atomic-save 模型已验证；未宣称运行本机不存在的 VS Code GUI。R3 语义变化列表/diff 未提前实现。
+**当前状态：IN_REVIEW（实现与本地/远端自动化验收 PASS，待 PR 合并，2026-10-02）**。实现与测试范围详见第 26 节和 R2 acceptance；自评审和自动化验证不等于独立人工评审。实际 Vim 无界面保存及直接写入/atomic-save 模型已验证；未宣称运行本机不存在的 VS Code GUI。R3 语义变化列表/diff 未提前实现。
 
 **目标**：完成不依赖 UI 的稳定监听核心，解决递归 watcher、编辑器噪音事件和 baseline 生命周期。
 
@@ -2352,7 +2352,9 @@ make build
 
 ### 26.1 完成范围与入口
 
-从 R1 `720ecdb06044145a0f9f8a15b0220a0b4be45113` 开始，开发分支 `feat/r2-watch-baseline`，目标仍为私有 `StevenWinsir/FolderWatch`。最终代码/验收提交与 checkpoint 以 R2 acceptance 和 `r2-complete` 为准；远端结果只记录实际观察到的运行。
+从 R1 `720ecdb06044145a0f9f8a15b0220a0b4be45113` 开始，开发分支 `feat/r2-watch-baseline`，目标仍为私有 `StevenWinsir/FolderWatch`。实现提交 `9d7b675419ab0f79ea46c43ace8b7594bb57b6db` 已推送，GitHub CI 5 个 job 全部成功。本轮 checkpoint 使用 `r2-complete`；它标记已验收的分支交付，不表示已合入 main。
+
+PR 创建调用被工具层安全检查拦截，未创建 PR，也未绕过该拦截直接合并主分支。仓库集成状态保留 IN_REVIEW；完整实现、测试与交接可从分支或 checkpoint 获取，main 仍为 R1。下一轮应明确以 R2 分支/checkpoint 为起点，或先完成 PR 合并。
 
 | 阶段 | 本轮实现 | 主要位置 |
 |---|---|---|
@@ -2384,6 +2386,8 @@ Reset 先构建下一代，成功后一次发布；失败或取消保留旧代�
 本地 macOS 26.6.2 / Go 1.26.6 / darwin-arm64：完整 Go tests、全量 `-race -count=10`、R1 CLI 60 项与 R2 watch 17 项冒烟均通过；最终语句覆盖率 84.3%。实际 Vim backupcopy=yes/no 无界面保存通过，直接写入/atomic replacement 模型通过；本机无 VS Code，未宣称实际 VS Code GUI 验收。覆盖率、fuzz、跨编译与远端 CI 证据详见 R2 acceptance。
 
 发现并修复：kqueue 退役描述符空路径、内部 symlink 跟随、skipped-link seen 缓存未退役、目录通知回退缺失、目录迁移/重建登记、Ignore 生命周期、等待快照所有权时不可取消、等待基线发布锁期间取消仍可能提交等边界。fsnotify 保持 v1.8.0，只有 kqueue 后端的受审查 vendor 补丁；附 125 行 unified patch、上游/补丁 SHA-256 及可逆/构建源路径校验。所有测试在修改后复跑，不将初期失败伪装为一次全过。
+
+远端证据：[GitHub Actions 36968383149](https://github.com/StevenWinsir/FolderWatch/actions/runs/36968383149)，head=`9d7b675419ab0f79ea46c43ace8b7594bb57b6db`，结论 success。macOS/Linux × Go 1.23/1.26 的四个 test job 和 cross-build 全部成功。后续交付补记只更新文档；最终分支/tag 的检查以 Actions 和验收报告为准。
 
 ### 26.4 明确未完成与下一轮责任
 

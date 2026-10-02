@@ -4,12 +4,14 @@
 
 **当前交付：R2 / P0–P5。** 在 R1 工程、CLI/Config、扫描和 Ignore 基础上，已实现递归 Watcher、路径事件聚合、有界快照、启动基线和原子 Reset。默认命令与 `--scan` 仍扫描一次；**`--watch` 才持续监听并建立 baseline**。现在输出的是待重新解析的路径/重扫请求，尚无 Added/Modified/Deleted 语义列表、文本 diff、TUI 或 GUI。路线见 [Handoff_Rounds.md](Handoff_Rounds.md)，证据见 [R2 acceptance](docs/rounds/R2-acceptance.md)。
 
+本轮代码交付在 `feat/r2-watch-baseline` 分支和 `r2-complete` checkpoint；实现与自动化验收通过，PR 合并尚未完成，`main` 仍是 R1。详细集成状态见 R2 acceptance。
+
 ## 构建与使用
 
 需要 Go 1.23+；lint/CLI 冒烟测试另外需要 Python 3。Git 仅供开发和 Ignore 对照测试使用；被扫描的目录不需要是 Git 仓库。
 
 ```sh
-git clone https://github.com/StevenWinsir/FolderWatch.git
+git clone https://github.com/StevenWinsir/FolderWatch.git --branch feat/r2-watch-baseline
 cd FolderWatch
 go mod download
 make build

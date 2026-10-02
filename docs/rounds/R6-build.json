@@ -1,0 +1,20 @@
+{
+  "observed": "2026-10-02T17:16:05.240516+00:00",
+  "source_commit": "265e19891cfb119e09f02121910be991030eba48",
+  "worktree_clean": true,
+  "artifact": "gui/build/bin/FolderWatch.app",
+  "binary_sha256": "d1cdb6983f32ecb1bda2d82f6bf05fbf6ebb416a40b4c682b658ed446cb1b3a7",
+  "platform": "darwin/arm64",
+  "toolchain": "go1.26.6",
+  "version": "0.2.0-dev",
+  "embedded_commit": "265e198",
+  "source_build_date": "2026-10-02T12:11:33-05:00",
+  "binding_regeneration_changed_tracked_files": false,
+  "signature": "ad-hoc linker signature only; no Developer ID, sealed bundle or notarization",
+  "visual_or_native_control_validation": false,
+  "limitation": "macOS Accessibility and Screen Recording permissions unavailable",
+  "process_launch": "pass",
+  "tcp_listeners_at_observation": 0,
+  "native_terminate_acknowledged": true,
+  "process_exit": 0
+}

@@ -1,6 +1,21 @@
 # Changelog
 
-## Unreleased — R5 / P12–P14 engineering (2026-10-02)
+## Unreleased — R6 / P15–P16 desktop foundation (2026-10-02)
+
+### Added / fixed
+- Wails v2.10.1 / Svelte / TypeScript desktop shell with native menus, version metadata, explicit root input, Start/Stop and truthful connection/session/error states.
+- Headless Core Facade and native host lifecycle, exclusively reusing internal/app; random client/session capabilities, scan cancellation, joined cleanup, heartbeat/lease and stale-request rejection.
+- Versioned IPC v1 DTOs, metadata-only bounded events, decimal-string counters, paginated summaries, on-demand single-flight Diff with version/path fences and conservative wire budget.
+- Go/TypeScript shared contract, lifecycle/resource/path/serialization tests, 11 frontend tests and two real Wails IPC browser E2E workflows; native production build and Node22/24/macOS GUI CI targets.
+- Wails binding build-tag/bootstrap compatibility, browser entry resolution for Svelte tests, Node E2E types, favicon HTTP-error regression and application-context shutdown handling.
+- Retained the exact reviewed fsnotify v1.8.0 patch while pinning Wails dependencies and preserving generated bindings/lockfiles; reran Terminal regression, full race x10, fuzz and cross-builds.
+
+### Scope / acceptance
+- Gate A and P0–P14 are already accepted (PR #6 / 88b3541). R6 implementation/local automation passed; integration remains IN_REVIEW until review/merge. Actual evidence and CI links are in docs/rounds/R6-acceptance.md.
+- Native WKWebView button/menu interaction was not revalidated because macOS Accessibility/Screen Recording permissions are unavailable. Browser IPC E2E is not production WebView or independent human acceptance.
+- Picker/list/Monaco are R7; settings/system integration/sleep UX are R8; signing/notarization/Gate B remain R9. The generated app is a development artifact, not a GUI release.
+
+## R5 checkpoint — P12–P14 engineering (2026-10-02)
 
 ### Added / fixed
 - Generated 1k/10k/burst/large-text/binary/deep-tree/lifecycle measurements, CPU/heap/goroutine profiles and real-binary PTY latency evidence with explicit measurement boundaries.
@@ -9,7 +24,7 @@
 - Added native/session cleanup, burst overflow, ownership and event-normalization fuzz regressions; retained all R1–R4 tests and included R4 native fixture synchronization.
 - Hardened macOS/Linux × Go1.23/1.26 CI, six-target bounded fuzzing, retained test/coverage logs, cross-builds, Core/UI dependency checks and native candidate installation tests.
 - Added deterministic darwin arm64/amd64 archives, exact version/commit/build-date, checksums, provenance/license files, checksum-specific Homebrew formula and private candidate workflow. No public release/tag/tap or signing/notarization is implied.
-- Added R5 performance/acceptance, ADR-014 and explicit Gate A records. Human Terminal.app/iTerm2, clean-Mac and project-license signoff remain separate; GUI is blocked until Gate A PASS.
+- Added R5 performance/acceptance, ADR-014 and explicit Gate A records. Gate A was subsequently signed PASS and recorded through PR #6; the historical candidate and its human acceptance remain the authoritative Terminal baseline.
 
 ## R4 checkpoint — P9–P11 (2026-10-02)
 

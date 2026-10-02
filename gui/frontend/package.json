@@ -1,0 +1,31 @@
+{
+  "name": "folderwatch-frontend",
+  "private": true,
+  "version": "0.2.0-dev",
+  "type": "module",
+  "engines": {
+    "node": ">=22 <25"
+  },
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "check": "svelte-check --tsconfig ./tsconfig.json",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "test:e2e": "playwright test",
+    "preview": "vite preview --host 127.0.0.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "@sveltejs/vite-plugin-svelte": "5.1.1",
+    "@testing-library/jest-dom": "6.9.1",
+    "@testing-library/svelte": "5.4.2",
+    "@types/node": "22.20.5",
+    "jsdom": "26.1.0",
+    "svelte": "5.57.1",
+    "svelte-check": "4.7.6",
+    "typescript": "5.9.3",
+    "vite": "6.4.3",
+    "vitest": "3.2.7"
+  }
+}

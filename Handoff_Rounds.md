@@ -7,8 +7,8 @@
 > GUI 技术栈：**Wails + Svelte + TypeScript + Monaco Diff Editor**  
 > 开发阶段：**阶段一 Terminal/TUI → 质量闸门 → 阶段二 GUI**
 >
-> **当前工程状态（2026-10-02）：R5 / P12–P14 已完成验收，Gate A=PASS；阶段一 Terminal/TUI 已达到进入 R6 的质量闸门。** R5 分支 `feat/r5-terminal-release` 已实现性能/资源治理、native fd 泄漏修复、测试/fuzz/CI 与 macOS 双架构 `v0.1.0-rc.1` 候选；本机与远端源码 CI 自动化通过，并已对 `.r5-worktree/dist/v0.1.0-rc.1` 完成人工 Gate A 验收。P0–P14 均已完成；P15–P25/GUI 尚未开始，Gate B 未通过。R4 主 PR #3 已合并 main `bb3a75e`；R5 分支包含 R4 补充 `a775148`。
-> 本轮完成记录见 **第29节**、[`docs/rounds/R5-acceptance.md`](docs/rounds/R5-acceptance.md)、[`docs/performance-v1.md`](docs/performance-v1.md)、[`docs/gates/Gate-A.md`](docs/gates/Gate-A.md)及 ADR-014；第25–28节保留 R1–R4 历史时点。Gate A 人工签字的详细终端/机器/分发记录应以 `docs/gates/Gate-A.md` 的最终更新为准；PR/CI/候选 commit 仍只按实际 GitHub 状态记录。
+> **当前工程状态（2026-10-02）：R6 / P15–P16 的实现与本地自动化验收完成，集成状态为 IN_REVIEW。** 已新增 Wails/Svelte 壳层、唯一 Core Facade、IPC v1、会话租约/取消、分页摘要与按需 Diff；原 P0–P14 和 Gate A 仍为 PASS。R6 从已合并 PR #6 的 `88b3541` 开始，分支为 `feat/r6-gui-shell-ipc`。P17–P25 尚未实施，Gate B 未通过；本轮 `.app` 是开发构建，不是签名/公证或正式 GUI 发布。
+> 本轮完成范围、验收数字、修复与限制见 **第30节**、[`docs/rounds/R6-acceptance.md`](docs/rounds/R6-acceptance.md)、[`docs/gui-ipc-v1.md`](docs/gui-ipc-v1.md)及 ADR-015。第25–29节保留 R1–R5 历史证据；Gate A 人工签字仍以 [`docs/gates/Gate-A.md`](docs/gates/Gate-A.md) 的既有候选为准。原生 WKWebView 按钮/菜单人工交互尚未复验：本次机器未授予辅助功能和屏幕录制权限，浏览器真实 IPC 测试不替代该项。PR、远端 CI 与合并只记录实际结果。
 
 ---
 
@@ -86,7 +86,7 @@ P0–P25 继续作为能力阶段编号；**Round 才是实际开发、Code Revi
 | R3 | Terminal | P6–P8 | 内容分析与变更语义 | Classifier、Diff、ChangeStore | **PASS，PR #2 已合并（2026-10-02）**，可获取语义列表与 GetDiff |
 | R4 | Terminal | P9–P11 | TUI 产品体验 | 文件列表、Diff Viewer、Session 控制与日志 | **PASS；主PR #3与测试同步补充PR #4均已合并**；历史证据见§28 |
 | R5 | Terminal | P12–P14 | 工程硬化与发布 | 性能、测试、CI、Terminal 发布 | **PASS（2026-10-02）；Gate A PASS**，阶段一验收完成，可进入R6；集成状态见§29 |
-| R6 | GUI | P15–P16 | GUI 壳层与 IPC 契约 | Wails/Svelte、Core Facade、DTO/Event | GUI 稳定调用同一 Go Core |
+| R6 | GUI | P15–P16 | GUI 壳层与 IPC 契约 | Wails/Svelte、Core Facade、DTO/Event | **实现/本地自动化 PASS；集成 IN_REVIEW**；真实 IPC、资源/安全回归通过，原生交互与 PR 评审边界见§30 |
 | R7 | GUI | P17–P18 | GUI 主流程与 Diff | Folder Picker、变化列表、Diff Viewer | GUI 核心用户路径闭环 |
 | R8 | GUI | P19–P21 | GUI 功能补全与系统鲁棒性 | Settings、系统集成、可访问性 | GUI 功能完整可长期运行 |
 | R9 | GUI | P22–P24 | 测试、打包与发布 | E2E、签名/公证、最终 QA | **Gate B PASS** |
@@ -289,6 +289,8 @@ P0–P25 继续作为能力阶段编号；**Round 才是实际开发、Code Revi
 
 ### 2.8 R6 — GUI 壳层与 IPC 契约（P15–P16）
 
+**当前状态：实现完成、本地自动化 PASS，Round 集成 IN_REVIEW（2026-10-02）。** Wails 生产构建、11 项前端测试、2 条真实 Wails IPC E2E、完整 Terminal 回归已通过；未将未完成的独立评审、原生按钮/菜单人工交互或 Gate B 记为 PASS。实际 PR/CI 见§30.6。
+
 **目标**：建立 GUI 技术底座，并验证 Wails/Svelte 稳定调用同一 Go Core。
 
 **包含**：
@@ -304,13 +306,13 @@ P0–P25 继续作为能力阶段编号；**Round 才是实际开发、Code Revi
 - root/path 安全校验
 
 **R6 验收**：
-- [ ] GUI 不包含第二套 watcher/baseline/diff
-- [ ] Start/Stop/Start 可重复
-- [ ] frontend reload/disconnect 不泄漏 watcher/session
-- [ ] change event 不广播大段文件全文
-- [ ] diff 按需获取
-- [ ] DTO 与内部 Go struct 解耦
-- [ ] path 访问被限制在当前 root
+- [x] GUI 不包含第二套 watcher/baseline/diff；Facade 调用同一 `internal/app`，Core 依赖边界检查通过
+- [x] Start/Stop/Start 可重复；真实 Wails IPC E2E 与 Go 生命周期回归通过，Scanning 可取消
+- [x] frontend reload/disconnect 撤销旧 client/session；租约到期取消，12 次 Stop/reload 后 fd 6→6、goroutine 2→2、缓存为空（短时测量，不代表小时级耐久度）
+- [x] change event 只广播有界 metadata invalidation；内容哨兵与 32 槽背压测试通过
+- [x] diff 按需获取；单请求、15 秒取消上下文、版本围栏与 16 MiB JSON 降级预算
+- [x] DTO 与内部 Go struct 解耦；Go/TypeScript 共享 fixture、反射检查与大整数精度测试通过
+- [x] path 限制为当前 root 下 canonical key；穿越/绝对路径/祖先 symlink 拒绝，最终 symlink 仅元数据；不宣称抵御恶意并发换目录的原子沙箱
 
 **出口定义**：GUI 成为另一个 UI adapter，而不是另一套业务实现。
 
@@ -2282,17 +2284,17 @@ ADR 必须写：Context、Decision、Alternatives、Consequences、Migration。
 
 ---
 
-## 23. 下一位开发者从哪里开始（Gate A 通过后）
+## 23. 下一位开发者从哪里开始（R6 集成后）
 
-P0–P14 与 Gate A 已验收通过；**下一开发轮次是 R6 / P15–P16（GUI 壳层与 IPC 契约）**。R4 补充 PR #4 与 R5 PR #5 均已合并到 main，无需重复 Gate A：
+P0–P14 与 Gate A 已验收通过；R6/P15–P16 已实现并通过本地自动化，**下一能力轮次是 R7 / P17–P18（Folder Picker、变化列表与 Monaco）**。先完成 R6 PR 评审/合并及明确列出的原生交互验证，再从集成后的 main 开始 R7；不要把 IN_REVIEW 写成已合并 PASS。
 
-1. 阅读第29节、R5 acceptance、性能报告、Gate-A及ADR-001–014；以 main 上已合并的 PR #4 / #5 为阶段一集成基线。保留所有R1–R5回归和已扩展的vendor patch。
-2. 执行`make lint scripts-test test race smoke`与六类fuzz。CI配置不代表成功，核对最终head实际run；Windows仍只声明compile。
-3. 保持唯一ChangeStore/语义事件/GetDiff、core无UI依赖；Removed是“不再变化”，不是Deleted。保留Diff epoch/path/generation/version与取消/有限重试，不靠删断言换性能。
-4. 保留Pause/Resume/Reset一致性及native Close fence/reader join/fd清理；升级fsnotify前按ADR-009/014重建可逆patch/hash并重跑原生资源回归，不能直接`go mod vendor`抹掉修复。
-5. 性能原始JSON和边界已记录；同条件复测，必要时扩展冷缓存/真实工程/小时级压力。不要将10秒idle、50次启停或model微基准解释为普遍耐久度保证。
-6. Gate A 已针对 `v0.1.0-rc.1` 完成人工验收；保留对应 commit/checksum、Terminal.app/iTerm2、安装环境与分发决策证据，不以之后的不同二进制替换签字对象。
-7. 从最新 main 开始 R6。editor执行、Ignore热更新、强杀缓存清理、可靠rename关联仍不是阶段一能力；GUI 必须继续复用唯一 Go core。
+1. 阅读第30节、R6 acceptance、`gui/README.md`、`docs/gui-ipc-v1.md`、ADR-015，并保留第29节/ADR-009、014 的 Terminal 与 vendor 约束。R6 基线为 PR #6 合并 `88b3541`。
+2. 运行 `make lint scripts-test test race smoke`、六类 fuzz、`make gui-setup gui-check gui-build` 与真实 `gui-e2e`；核对最终 head 的实际 CI，Windows 仍只声明 headless compile。
+3. R7 必须使用生成的绑定：每次异步请求携带 clientId/sessionId，列表续页携带 generation/global version，Diff 使用选中路径的 version。事件是 invalidation，不是完整列表；旧 client/sequence/selection 回复必须丢弃。
+4. 保持唯一 ChangeStore、Classifier、Snapshot、Diff；Removed 是“不再变化”而不是 Deleted。不要把后台全量 Diff 或 JS 文件扫描放进 render、store 或 heartbeat。变更摘要不含正文。
+5. 保留 native Close fence/reader join/fd 清理和根目录 no-follow 策略；依赖刷新不得抹去 fsnotify 补丁。单 root、单 core session，启动/停止/重载均需等待资源回收。
+6. 2 秒心跳/15 秒租约在休眠或 WebView 长时间停顿后可能主动停止监控；R8 负责后台/睡眠 UX，不得悄悄自动恢复。小时级 soak、旧版 macOS、网络盘等仍需另行测量。
+7. Gate A 签字仍对应原 Terminal 候选，不以 R6 的不同二进制替代。R7 实现原生 picker/list/只读 Monaco；R8 承接 settings/editor/reveal；R9 才完成签名、公证、安装与 Gate B。当前并非正式 GUI v1。
 
 项目的核心价值不是“终端上有颜色”，而是：**文件事件再混乱，最终仍然能稳定、正确、可恢复地告诉用户“相对于 baseline，到底哪些文件变了，以及变了什么”。**
 
@@ -2315,7 +2317,7 @@ P0–P14 与 Gate A 已验收通过；**下一开发轮次是 R6 / P15–P16（G
 
 ## 25. 历史交付记录 — R1 / P0–P2（2026-10-01）
 
-本节保留R1时点的交付和未完成功能；当前完成范围以第29节R5为准。
+本节保留R1时点的交付和未完成功能；当前完成范围以第30节R6为准。
 
 ### 25.1 实际完成范围
 
@@ -2542,7 +2544,7 @@ macOS arm64/amd64、Linux amd64、Windows amd64交叉编译通过；Windows只�
 
 ---
 
-## 29. 本轮交付记录 — R5 / P12–P14（2026-10-02）
+## 29. 已验收交付记录 — R5 / P12–P14（2026-10-02）
 
 ### 29.1 当前结论与集成范围
 
@@ -2592,3 +2594,47 @@ clean `f3e662f`以Go1.26.6构建的本机候选在本worktree `dist/v0.1.0-rc.1/
 远端已上传[私有候选artifact 11218432417](https://github.com/StevenWinsir/FolderWatch/actions/runs/36988380384/artifacts/11218432417)，runner为Go1.26.8/darwin-arm64，native安装PASS。工具链与本机不同，必须使用该artifact自身manifest/SHA256SUMS，不能套用上述本机SHA；private Actions候选不等于公开Release或永久下载链接。
 
 clean源码额外资源实验于UTC09:13:10.924784–09:15:35.936662实际运行145.01秒：1k×1KiB、120.001秒idle、100文件burst×100轮、100次完整启停。CPU0.3929%、idle语义事件0、Core P95 166.34ms、峰值RSS20.69MB；fd6→1010→6、goroutine1→5→1、cache0，全断言PASS。命令、时间与100样本保留在`soak-clean.json`/`soak-environment.json`；仍不宣称小时级耐久度，人工 Gate A 则已另行完成并签字 PASS。
+
+---
+
+## 30. 本轮交付记录 — R6 / P15–P16（2026-10-02）
+
+### 30.1 状态与实际完成范围
+
+**P15–P16 已实现并完成本地自动化验收；Round 集成状态 IN_REVIEW。** 基线为 PR #6 合并 `88b3541bf4d4b9bc237202276db63613a9ca2aac`，分支 `feat/r6-gui-shell-ipc`。本轮没有扩展到 P17–P25，也没有撤销或重复签署既有 Gate A。独立代码评审、合并及原生 WKWebView 人工操作不冒充已完成。
+
+P15：新增 `gui/main.go` Wails 入口、原生菜单/版本信息、1040×720 默认/680×480 最小窗口、Svelte/TypeScript 壳层、根目录输入、Start/Stop、Scanning/Monitoring/Paused/Stopping/Error 与重连状态。开发服务仅 loopback；生产模式嵌入静态资源。`gui/host` 统一应用上下文、事件泵与并发关闭，应用 context 取消也回收 Facade。
+
+P16：`gui/backend.API` 是唯一 JS binding，调用已有 `internal/app`；支持 Start/Stop/Pause/Resume/Reset、状态、分页 changes 与按需 Diff。随机 client/session capability 隔离新旧页面；2 秒 heartbeat、15 秒 lease、卸载 detach、启动取消和 owner join 保证单会话。事件仅 metadata，32 槽合并背压；generation/version/sequence/size 用十进制字符串避免 JS 精度丢失。列表最多 500 项，Diff 单请求、15 秒上下文及 16 MiB JSON 预算；root-relative path/no-follow 与 Diff 返回前版本复核均有回归。详见 IPC v1 与 ADR-015。
+
+### 30.2 工程、兼容性与本轮修复
+
+保留单 Go module 和 fsnotify v1.8.0 原补丁字节，新增锁定 Wails v2.10.1 与前端 lockfile。依赖升级所带来的 Terminal 传递依赖变化已执行全量回归；`make lint` 校验 patch SHA/可逆性/实际编译路径与 Core 无 UI 依赖。默认 Go 构建不引入 WebView；生成的 JS/TS/runtime 入库，node_modules/dist/.app 不入库。
+
+修复 Wails 生成绑定时切换 build tag 的兼容问题（`desktop || bindings`）；补空 checkout 的 dist bootstrap；禁用 Wails 自动 tidy/sync 以保护 vendor。修复 Svelte 测试误选 server entry、E2E Node 类型/语法以及缺 favicon 引发的 HTTP 404；补应用 context 取消和并发 native lifecycle 回归。初次失败与后续通过均记录于 R6 acceptance，不把中断前旧日志当成最终版本验收。
+
+### 30.3 最终本地测试证据
+
+2026-10-02 UTC **17:03:11–17:05:26**，macOS 26.6.2 arm64 / Go 1.26.6 / Node 24.19.0：`make lint`、8 项 Python 发布脚本测试、`go build ./...`、`go test -count=1 -json -coverprofile=... ./...`、`go test -race -shuffle=on -count=10 ./...`、GUI backend/host verbose race、四套 smoke、六类 fuzz、`go mod verify`、`go mod tidy -diff`、四平台 headless cross-build 全部通过。Go 为 **158 个顶层测试 / 320 个测试与子测试，0 fail/skip，总语句覆盖率 80.4%**（不包含 native WebView/UI 自动化覆盖率）。CLI/watch/semantic/TUI PTY 为 **60/17/16/21** 项。
+
+GUI backend 18 项、host 3 项；12 次 Stop/reload 资源测试 **fd 6→6、goroutine 2→2，临时快照目录为空**；另外覆盖 30 次启停、50 组 host 并发启动/关闭、启动扫描取消、租约到期、旧 client/session、Reset/stale Diff、路径穿越/symlink、binary/unsupported/too-large、分页和大整数/共享 fixture。机器可读记录见 `docs/rounds/R6-validation.json`，原始日志在 ignored `artifacts/r6-final/`。
+
+### 30.4 GUI 验证与未验证边界
+
+`make gui-check`：Svelte/TS **0 errors / 0 warnings**、Vitest **3 文件 11 测试 PASS**、Vite 生产构建 PASS。`make gui-build VERSION=0.2.0-dev` 实际生成 `gui/build/bin/FolderWatch.app`；生产进程启动/存活检查通过，观测时无 TCP 监听，随后退出码 0。该构建来自当时未提交源码，嵌入的 base commit 不等于最终源码身份，不作为发布候选证据。
+
+`FW_GUI_START_SERVER=1 FW_BROWSER_CHANNEL=chrome make gui-e2e`：**2/2 PASS（10.2s）**，真实 Wails dev WebSocket → Go bindings → core，并非 mock。验证 Start/Stop/Start、Unicode/空格/引号路径、真实变化/结构化 Diff、Pause/Resume/Reset、重载撤销旧能力、错误恢复、正文不广播、越界拒绝；1040×720、680×480 及 380×800 CSS 压力检查无横向溢出，title/非空页面/无 Vite overlay/console/pageerror/HTTP error 均通过。浏览器截图保留在 `/tmp/folderwatch-r6-final-gui-qa/` 和 ignored `artifacts/r6-final/browser/`。
+
+本次无 Browser plugin，使用现有 Playwright + 本机 Chrome。**辅助功能 trusted=false、Screen Recording permission denied**，因此原生 WKWebView 截图、按钮/菜单/键盘实际交互尚未验证；浏览器截图不作为原生截图。无 Developer ID 签名/公证、clean-Mac 安装、旧 macOS/Intel GUI、小时级 GUI soak 或 Gate B 结论。原生 smoke 待有权限的评审者补充；不得据此把整轮标记为已合并 PASS。
+
+### 30.5 下一轮与已知限制
+
+R7 实现 native Folder Picker、变化列表/过滤及只读 Monaco，复用 IPC v1，继续 selection/client/session/generation/path-version 过期防护。Pause/Resume/Reset 和查询已在 API 可用，但 R6 页面未伪装为完整 Diff 工作区。R8 处理 settings、editor/reveal、后台/睡眠、长时间 UX；R9 承接签名、公证、安装及 Gate B。租约在休眠/严重 WebView 停顿后可能结束监控，不自动重启。路径检查不是抵御恶意并发更换祖先目录的原子沙箱；原有 Ignore 热更新、强杀缓存清扫和可靠 rename 关联边界保持。
+
+### 30.6 GitHub 集成证据
+
+实现提交 **`265e19891cfb119e09f02121910be991030eba48`** 已推送至 `feat/r6-gui-shell-ipc`，并创建 **[PR #7](https://github.com/StevenWinsir/FolderWatch/pull/7)**（base=`main`，OPEN，未自动合并）。该源码的 **[push CI 37039054920](https://github.com/StevenWinsir/FolderWatch/actions/runs/37039054920)** 与 **[PR CI 37039099850](https://github.com/StevenWinsir/FolderWatch/actions/runs/37039099850)** 均 completed/success，**各10个job、共20/20通过**：macOS/Linux × Go1.23/1.26、Node22/24 frontend、macOS Wails build/生成绑定无漂移、cross-build、fuzz、Terminal candidate。逐job ID/时间/链接保留在 `docs/rounds/R6-ci-source.json`。本段冻结的是实现提交的源码 CI；后续纯文档提交的最新 head/check 以 PR 实际状态为准，不能混同。
+
+提交后从干净 `265e198` 再次执行 `make gui-build VERSION=0.2.0-dev`，frontend 11测试与 native build 通过，`git diff --exit-code` 确认生成绑定与 module/vendor 无漂移。Go build info 实际包含 commit=`265e198`、version=`0.2.0-dev`、buildDate=`2026-10-02T12:11:33-05:00`；本机 arm64 可执行文件 SHA-256 为 `d1cdb6983f32ecb1bda2d82f6bf05fbf6ebb416a40b4c682b658ed446cb1b3a7`，仅适用于该本机构建，不套用其他工具链的 CI 产物。UTC17:16:05 对此干净构建复测 native 启动/存活、无 TCP listener 观测、已确认 graceful Quit/exit 0，详见 `docs/rounds/R6-build.json`。只有 linker ad-hoc 签名，没有 Developer ID、密封 bundle 或公证；不等于 GUI 发布候选。
+
+最终状态仍为 **实现/自动化 PASS，集成 IN_REVIEW**：独立评审、原生 WKWebView 人工交互和合并尚未完成。R7 从评审集成后的基线进入，不把剩余原生检查或 Gate B 省略。

@@ -7,7 +7,7 @@
 > GUI 技术栈：**Wails + Svelte + TypeScript + Monaco Diff Editor**  
 > 开发阶段：**阶段一 Terminal/TUI → 质量闸门 → 阶段二 GUI**
 >
-> **当前工程状态（2026-10-02）：R3 / P0–P8 已实现，本轮本地自动化验收 PASS，R3 集成状态 IN_REVIEW。** 已有文件分类、有界可取消 Diff、唯一 ChangeStore；`--watch` 输出语义变化，`Session.GetDiff` 按需返回结构化差异。R2 已通过 PR #1 合入 main；R3 位于 `feat/r3-classify-diff-changes`。P9–P25 尚未实现，Gate A / B 尚未通过。
+> **当前工程状态（2026-10-02）：R3 / P0–P8 已实现，本轮本地与 GitHub 分支/PR 自动化验收 PASS，R3 集成状态 IN_REVIEW（PR #2 待合并）。** 已有文件分类、有界可取消 Diff、唯一 ChangeStore；`--watch` 输出语义变化，`Session.GetDiff` 按需返回结构化差异。R2 已通过 PR #1 合入 main；R3 位于 `feat/r3-classify-diff-changes`。P9–P25 尚未实现，Gate A / B 尚未通过。
 > 本轮完成记录见 **第 27 节**，详细证据见 [`docs/rounds/R3-acceptance.md`](docs/rounds/R3-acceptance.md)；第 25–26 节保留 R1/R2 历史。原文已同步当前状态及 R2 后续合并事实。远端 CI/PR/标签只按实测记录；以下路线目标不代表所有产品功能已交付。
 
 ---
@@ -83,7 +83,7 @@ P0–P25 继续作为能力阶段编号；**Round 才是实际开发、Code Revi
 |---|---|---:|---|---|---|
 | R1 | Terminal | P0–P2 | 工程基础与输入边界 | 工程骨架、CLI/Config、扫描与 Ignore | **PASS（2026-10-01，本地 + 远端 CI）**，可稳定确定应监控集合 |
 | R2 | Terminal | P3–P5 | 文件事件与 Baseline 内核 | Watcher、Debounce/Coalesce、Snapshot | **PASS，PR #1 已合并（2026-10-02）** |
-| R3 | Terminal | P6–P8 | 内容分析与变更语义 | Classifier、Diff、ChangeStore | **IN_REVIEW（实现/本地自动化验收 PASS，待 PR 集成）**，可获取语义列表与 GetDiff |
+| R3 | Terminal | P6–P8 | 内容分析与变更语义 | Classifier、Diff、ChangeStore | **IN_REVIEW（实现/本地及远端自动化验收 PASS，PR #2 待集成）**，可获取语义列表与 GetDiff |
 | R4 | Terminal | P9–P11 | TUI 产品体验 | 文件列表、Diff Viewer、Session 控制 | Terminal 主流程完整可用 |
 | R5 | Terminal | P12–P14 | 工程硬化与发布 | 性能、测试、CI、Terminal 发布 | **Gate A PASS** |
 | R6 | GUI | P15–P16 | GUI 壳层与 IPC 契约 | Wails/Svelte、Core Facade、DTO/Event | GUI 稳定调用同一 Go Core |
@@ -180,7 +180,7 @@ P0–P25 继续作为能力阶段编号；**Round 才是实际开发、Code Revi
 
 ### 2.5 R3 — 内容分析与变更语义（P6–P8）
 
-**当前状态：IN_REVIEW（实现与本地自动化验收 PASS，2026-10-02）**。已完成 Classifier、Diff、ChangeStore、Session 与 CLI 语义集成；248 个 Go 测试/子测试、全量 race 10 轮、三组 CLI smoke 及模糊测试通过。精确 CI/PR/提交见 R3 acceptance。R2 已合入 main，本轮基于同一源码树并同步其合并历史，不重写旧标签。
+**当前状态：IN_REVIEW（实现、本地及 GitHub 自动化验收 PASS，PR #2 待合并，2026-10-02）**。已完成 Classifier、Diff、ChangeStore、Session 与 CLI 语义集成；248 个 Go 测试/子测试、全量 race 10 轮、三组 CLI smoke 及模糊测试通过。精确 CI/PR/提交见 R3 acceptance。R2 已合入 main，本轮基于同一源码树并同步其合并历史，不重写旧标签。
 
 **目标**：把“某 path 有事件”升级成明确、唯一的文件变化语义。
 
@@ -2452,6 +2452,8 @@ Current Resolver 不常驻全文：一个 metadata-only scratch store；按需 D
 本轮复核修复/防护包括：共享分类消除双探针、巨大文件避免无谓文本探测、混用root拒绝、瞬时消失/不可读保护、恢复/Reset代际清理、旧Diff失效、消费者Reload后旧批次回退防护。测试与源码已实际复跑，不将尚未观察的远端CI或人工QA写为通过。
 
 首次推送 CI 的 Ubuntu/Go1.23 揭示实时 Diff 集成测试错误假定“kind=Modified 即版本固定”。生产 GetDiff 合法返回 ErrStale；测试改为限时且仅重试 ErrStale，保留所有最终断言及确定性 stale 拒绝测试，未移除生产版本保护。修订后针对用例50轮race、全量10轮race和完整构建/三组smoke再次通过。首次失败链接及修订远端结论见R3 acceptance。
+
+远端已验证：修订提交 `15e9c4dbf11b3bd4076e3ff342b3f1b78c8ccfa3` 的 [分支 CI 36975768688](https://github.com/StevenWinsir/FolderWatch/actions/runs/36975768688) 与 [PR CI 36975771977](https://github.com/StevenWinsir/FolderWatch/actions/runs/36975771977) 均 success，各5个job全绿。覆盖macOS/Linux×Go1.23/1.26的build/test/race/核心重复/三组smoke及cross-build。本轮 [PR #2](https://github.com/StevenWinsir/FolderWatch/pull/2) 保持待评审/合并，未直接写入main；最后证据补记只改文档，完整交付由 `r3-complete` 标识。精确SHA/后续运行以远端引用及R3 acceptance为准。
 
 ### 27.5 明确未完成与后续
 

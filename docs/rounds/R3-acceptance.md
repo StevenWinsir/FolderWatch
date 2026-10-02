@@ -1,6 +1,6 @@
 # R3 Acceptance — Classifier / Diff / ChangeStore（P6–P8）
 
-Status: **实现与本地自动化验收 PASS；Round 集成状态 IN_REVIEW**。远端 CI、PR 与最终提交仅在实际观察后补记。
+Status: **实现、本地与 GitHub 自动化验收 PASS；Round 集成状态 IN_REVIEW（PR #2 待评审/合并）**。分支推送及修订后的分支/PR CI 均已确认；没有擅自合入 main 或声称独立人工评审通过。
 
 Date: 2026-10-02（本机 CDT）
 
@@ -99,7 +99,23 @@ Architecture: [ADR-010](../adr/010-classification-and-safe-content.md)、[ADR-01
 
 实现提交 `d4d0f5a5c06f63e88e7ec0bf12689f0c08f2bdf4` 已推送并创建 [PR #2](https://github.com/StevenWinsir/FolderWatch/pull/2)，目标 main；尚未合并。
 
-首次 [CI 36974988165](https://github.com/StevenWinsir/FolderWatch/actions/runs/36974988165) 四个 job 通过、Ubuntu/Go1.23 失败。失败点是 TestIndependentClassificationAndDiffConfig：等待 kind=Modified 不代表文件版本已固定，启动窗口重查与 truncate/write 时序可使 GetDiff 合法返回 ErrStale。原测试错误假定单次调用必成功。修正 integration helper 仅在限定期限内重试 ErrStale，其他错误和最终内容/状态断言不放宽；保留原有 gated-engine 的必然 stale 拒绝测试。生产 GetDiff 未为迁就测试而取消版本保护。修订后 `go test -race -count=50 -run=^TestIndependentClassificationAndDiffConfig$ ./internal/app`、全量 `go test -race -count=10 -coverprofile=coverage.out ./...` 和 `make build test race lint smoke` 均再次 PASS。生产代码与原实现提交相同；远端修订结果将在观察后补入，不将首次失败覆盖成一次全绿。
+首次 [CI 36974988165](https://github.com/StevenWinsir/FolderWatch/actions/runs/36974988165) 四个 job 通过、Ubuntu/Go1.23 失败。失败点是 TestIndependentClassificationAndDiffConfig：等待 kind=Modified 不代表文件版本已固定，启动窗口重查与 truncate/write 时序可使 GetDiff 合法返回 ErrStale。原测试错误假定单次调用必成功。修正 integration helper 仅在限定期限内重试 ErrStale，其他错误和最终内容/状态断言不放宽；保留原有 gated-engine 的必然 stale 拒绝测试。生产 GetDiff 未为迁就测试而取消版本保护。修订后 `go test -race -count=50 -run=^TestIndependentClassificationAndDiffConfig$ ./internal/app`、全量 `go test -race -count=10 -coverprofile=coverage.out ./...` 和 `make build test race lint smoke` 均再次 PASS。生产代码与原实现提交相同。同期首次 [PR CI 36975049737](https://github.com/StevenWinsir/FolderWatch/actions/runs/36975049737) 在 Ubuntu 1.23/1.26 暴露同一单次调用假设，也由此修订覆盖；保留这些历史失败，不伪装一次全绿。
+
+### Verified remote result / final checkpoint
+
+修订提交 **`15e9c4dbf11b3bd4076e3ff342b3f1b78c8ccfa3`** 已推送。实际核对其 [分支 CI 36975768688](https://github.com/StevenWinsir/FolderWatch/actions/runs/36975768688) 和 [PR CI 36975771977](https://github.com/StevenWinsir/FolderWatch/actions/runs/36975771977)：两者 headSha 均匹配该提交，status=completed、conclusion=success，分别全部 **5 个 job 成功**。
+
+| Job | Branch / PR result |
+|---|---|
+| macOS / Go 1.23.x | PASS / PASS |
+| macOS / Go 1.26.x | PASS / PASS |
+| Ubuntu / Go 1.23.x | PASS / PASS |
+| Ubuntu / Go 1.26.x | PASS / PASS |
+| macOS/Windows cross-build | PASS / PASS |
+
+四个 test job 均含 lint、build、完整 tests、race、核心3轮重复与三组 CLI smoke。最后记录这些结果的提交只改交接文档/README，不更改已验证的源码、测试、依赖或工作流。完整交付以 **`r3-complete`** 所指代码与文档为准；可用 `git rev-parse r3-complete^{commit}` 核对。后续标签/分支运行的实时结果以 [Actions](https://github.com/StevenWinsir/FolderWatch/actions) 为准，本文件不预告尚未发生的 CI 结论。
+
+[PR #2](https://github.com/StevenWinsir/FolderWatch/pull/2) 已创建并保持 OPEN，供仓库评审/合并；本轮交付不强推或直接修改 main。R2 主分支已合入事实与 R3 待集成状态分别记录。
 
 ## Next developer — R4 / P9–P11
 

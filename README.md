@@ -4,7 +4,7 @@
 
 **当前交付：R3 / P0–P8。** 已实现文件分类、UI 无关行级 Diff、唯一 ChangeStore，并复用 R2 的递归监听与启动/Reset 基线。`--watch` 输出 Added/Modified/Deleted 语义变化；恢复基线内容后自动消失。默认命令与 `--scan` 仍只扫描一次。Diff 通过 Go API 按需获取，**尚无 TUI、交互 Diff Viewer 或 GUI**。路线见 [Handoff_Rounds.md](Handoff_Rounds.md)，本轮证据见 [R3 acceptance](docs/rounds/R3-acceptance.md)。
 
-本轮分支为 `feat/r3-classify-diff-changes`；交付 checkpoint 使用 `r3-complete`（以验收记录中的实际推送为准）。R2 已通过 [PR #1](https://github.com/StevenWinsir/FolderWatch/pull/1) 合入 main，R3 的提交/CI/PR 状态单独记录。R2 文档曾预告的 `r2-complete.1` 实际未创建，R2 最终代码以 `32529a7` / 合并提交 `1dbdb5b` 为准。
+本轮交付在 `feat/r3-classify-diff-changes` / `r3-complete`，并已创建 [PR #2](https://github.com/StevenWinsir/FolderWatch/pull/2) 等待评审/合并；修订版本的分支与 PR CI 各5项全部通过，证据见 R3 acceptance。R2 已通过 [PR #1](https://github.com/StevenWinsir/FolderWatch/pull/1) 合入 main，R3 尚未直接合入主分支。R2 文档曾预告的 `r2-complete.1` 实际未创建，R2 最终代码以 `32529a7` / 合并提交 `1dbdb5b` 为准。
 
 ## 构建与使用
 

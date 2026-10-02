@@ -5,6 +5,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"sync"
 	"testing"
@@ -75,15 +76,26 @@ func TestRealRecursiveCreateWriteRenameRemove(t *testing.T) {
 	}
 	w, ch, errs := setup(t, root, 128, 64)
 	a := filepath.Join(root, "existing", "你好 with spaces.txt")
+	created := map[string]Op{"existing/你好 with spaces.txt": Create | Write}
+	renamed := map[string]Op{"existing/你好 with spaces.txt": Rename | Remove, "existing/renamed.txt": Create | Rename}
+	switch runtime.GOOS {
+	case "darwin", "freebsd", "openbsd", "netbsd", "dragonfly":
+		// kqueue sends Create BEFORE internalWatch registers the child. The
+		// retained directory Write is sent AFTER dirChange finishes enrollment.
+		// Observe that real ordering barrier before the next independent write
+		// or remove, rather than assuming Create is an enrollment acknowledgement.
+		created["existing"] = Write
+		renamed["existing"] = Write
+	}
 	put(t, a, "start")
-	await(t, ch, errs, map[string]Op{"existing/你好 with spaces.txt": Create | Write})
+	await(t, ch, errs, created)
 	put(t, a, "changed")
 	await(t, ch, errs, map[string]Op{"existing/你好 with spaces.txt": Write})
 	b := filepath.Join(root, "existing", "renamed.txt")
 	if err := os.Rename(a, b); err != nil {
 		t.Fatal(err)
 	}
-	await(t, ch, errs, map[string]Op{"existing/你好 with spaces.txt": Rename | Remove, "existing/renamed.txt": Create | Rename})
+	await(t, ch, errs, renamed)
 	if err := os.Remove(b); err != nil {
 		t.Fatal(err)
 	}
@@ -115,6 +127,12 @@ func TestRealRecursiveCreateWriteRenameRemove(t *testing.T) {
 	if err := w.Reconcile(context.Background()); err != nil {
 		t.Fatal(err)
 	}
+	// Native child enrollment/removal runs independently of the adapter's
+	// reconciliation command. Drain structural invalidations before asserting
+	// eventual subscription cleanup; retain the strict no-stale-watch check.
+	// ENOENT for this deliberately removed subtree is recoverable, not a
+	// failure to monitor an intact path. All other warnings remain failures.
+	settle(t, w, ch, errs, filepath.Join(w.root, "moved"))
 	for _, p := range w.native.WatchList() {
 		if strings.Contains(p, "/moved") || strings.Contains(p, "/new") {
 			t.Fatalf("stale watch %q", p)

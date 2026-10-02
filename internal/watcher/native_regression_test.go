@@ -5,6 +5,7 @@ import (
 	"errors"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 	"time"
 
@@ -74,7 +75,7 @@ func TestDeletedRecreatedDirectoryGetsNewRegistration(t *testing.T) {
 	await(t, ch, errs, map[string]Op{"same/fresh": Create | Write})
 }
 
-func settle(t *testing.T, w *FSNotify, ch <-chan RawEvent, errs <-chan error) {
+func settle(t *testing.T, w *FSNotify, ch <-chan RawEvent, errs <-chan error, removedScopes ...string) {
 	t.Helper()
 	quiet := time.NewTimer(70 * time.Millisecond)
 	defer quiet.Stop()
@@ -102,7 +103,14 @@ func settle(t *testing.T, w *FSNotify, ch <-chan RawEvent, errs <-chan error) {
 				errs = nil
 				continue
 			}
-			if !errors.Is(err, ErrOverflow) && !errors.Is(err, fsnotify.ErrEventOverflow) {
+			removed := false
+			var pathErr *os.PathError
+			if errors.Is(err, os.ErrNotExist) && errors.As(err, &pathErr) {
+				for _, scope := range removedScopes {
+					removed = removed || pathErr.Path == scope || strings.HasPrefix(pathErr.Path, scope+string(filepath.Separator))
+				}
+			}
+			if !removed && !errors.Is(err, ErrOverflow) && !errors.Is(err, fsnotify.ErrEventOverflow) {
 				t.Fatal(err)
 			}
 			if err := w.Reconcile(context.Background()); err != nil {

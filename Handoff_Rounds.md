@@ -7,7 +7,7 @@
 > GUI 技术栈：**Wails + Svelte + TypeScript + Monaco Diff Editor**  
 > 开发阶段：**阶段一 Terminal/TUI → 质量闸门 → 阶段二 GUI**
 >
-> **当前工程状态（2026-10-02）：R4 / P0–P11 已实现并通过本地及远端 CI 自动化验收；Round 集成状态 IN_REVIEW，PR #3 待评审/合并，成功检查与提交见第 28 节及 R4 acceptance。** Terminal 文件列表、异步 Diff、键鼠/过滤/滚动、Pause/Resume、确认式 Reset、安全日志均复用唯一 Go core。交互终端默认进入 TUI，管道默认仍单次扫描。R3 PR #2 已合并为 main `1b52fcc`，R4 分支为 `feat/r4-terminal-tui`。P12–P25 尚未完成，Gate A / B 尚未通过。
+> **当前工程状态（2026-10-02）：R4 / P0–P11 已实现并通过本地及远端 CI 自动化验收；主 PR #3 已合并为 main `bb3a75e`；测试/交接补充仍为 IN_REVIEW，成功检查与提交见第 28 节及 R4 acceptance。** Terminal 文件列表、异步 Diff、键鼠/过滤/滚动、Pause/Resume、确认式 Reset、安全日志均复用唯一 Go core。交互终端默认进入 TUI，管道默认仍单次扫描。R3 PR #2 已合并为 main `1b52fcc`，R4 分支为 `feat/r4-terminal-tui`。P12–P25 尚未完成，Gate A / B 尚未通过。
 > 本轮完成记录见 **第 28 节**，详细证据见 [`docs/rounds/R4-acceptance.md`](docs/rounds/R4-acceptance.md)，决策见 ADR-013；第 25–27 节保留 R1–R3 历史。原文已同步当前状态及 R3 合并事实。PTY 自动化不等同于 Terminal.app/iTerm2 人工 QA；远端 CI/PR/标签只按实测记录，以下路线目标不代表全部已交付。
 
 ---
@@ -2477,7 +2477,7 @@ P9–P11 TUI、交互Diff/Reset、Pause/Resume、日志/编辑器均未实现；
 
 本轮完整阅读交接后，先核实本地无用户未提交改动及 R3 PR #2 已合并。R3 head=`c0f626b63735fba6ae43feaeb0c860089ffad0ea`，main merge=`1b52fcc23d199f6962206205e585c1d695cc0bae`（2026-10-02 07:08:58 UTC），源码树一致。从该 main 建立 `feat/r4-terminal-tui`，没有重写旧标签、直接提交 main 或提前开发 GUI。
 
-**当前范围：P0–P11 已实现；R4 实现、本地及远端 CI 自动化验收 PASS，Round 集成状态 IN_REVIEW。** 实现提交 `305b097005df6635606c68eaa5ebe671e2be7e4d` 已推送，并创建 [PR #3](https://github.com/StevenWinsir/FolderWatch/pull/3)，目标 main、未自动合并。远端检查的修订结果见本节及 [R4 acceptance](docs/rounds/R4-acceptance.md)。独立人工评审/合并、R5 Gate A 不由本轮测试代替。
+**当前范围：P0–P11 已实现；R4 实现、本地及远端 CI 自动化验收 PASS，Round 集成状态 IN_REVIEW。** 实现提交 `305b097005df6635606c68eaa5ebe671e2be7e4d` 已推送，并创建 [PR #3](https://github.com/StevenWinsir/FolderWatch/pull/3)，目标 main。实查 PR #3 已于 2026-10-02 08:23:07 UTC 合并为 `bb3a75eba5d36d18c461de3fcb2e97d61d95844a`，合入 head=`86b2191`；本轮没有调用自动合并。随后从已合并 main 建立 `fix/r4-native-test-ordering`，单独提交原生测试同步/交接补充，不向已合并分支追加提交冒充集成。详见本节及 [R4 acceptance](docs/rounds/R4-acceptance.md)；实际终端人工 QA 与 R5 Gate A 仍未通过。
 
 | P / 能力 | 本轮完成内容 | 主要位置 |
 |---|---|---|
@@ -2528,10 +2528,14 @@ macOS arm64/amd64、Linux amd64、Windows amd64交叉编译通过；Windows只�
 
 随后 `e3b22c0` 的 [PR CI 36981497710](https://github.com/StevenWinsir/FolderWatch/actions/runs/36981497710) 中，macOS两个Go版本通过，Linux在暂停时删除作为cwd的root后没有退出。Linux持有目录引用时可以完全没有root原生事件，不能只检查Chmod。修复在watcher责任层：每个既有事件循环增加一个1秒ticker，只做root的Lstat/目录身份比较；不扫描子树、不读正文、不推进暂停语义状态，退出停止ticker。新增无原生订阅时健康检查不发语义事件/根消失仍fatal、保留open-directory引用、root通知身份回归，保留原PTY断言。1秒是调度间隔，不是慢文件系统上的硬实时承诺。测试fixture使用实际注册的w.root规范路径，不忽略macOS /var→/private/var差异导致的Remove错误。
 
-同时补齐状态消息乱序回归：旧event/control的Status快照不再覆盖更新后的Pause/Resume/Error；UI处理消息时读取core短锁Status，列表仍有generation/version水位保护。最终源码重新执行`CI=true make build test race lint smoke`、全包10轮race/coverage、JSON计数及四target构建，均通过；上方计数已原文更新。修订源码提交 **`9592658bd9a60961c06fc42d00a21e03d5d69cc0`** 已推送：**[PR CI 36982861222](https://github.com/StevenWinsir/FolderWatch/actions/runs/36982861222)** 与 **[push CI 36982857314](https://github.com/StevenWinsir/FolderWatch/actions/runs/36982857314)** 均实测 completed/success；macOS/Linux × Go1.23/1.26四组测试及cross-build全通过，原Linux暂停root删除/终端恢复PTY断言也通过。之后的证据收尾仅更新Markdown，Go源码/测试/脚本与该验证提交相同。PR #3保持OPEN待评审，不自动合并、不创建完成标签。
+同时补齐状态消息乱序回归：旧event/control的Status快照不再覆盖更新后的Pause/Resume/Error；UI处理消息时读取core短锁Status，列表仍有generation/version水位保护。最终源码重新执行`CI=true make build test race lint smoke`、全包10轮race/coverage、JSON计数及四target构建，均通过；上方计数已原文更新。修订源码提交 **`9592658bd9a60961c06fc42d00a21e03d5d69cc0`** 已推送：**[PR CI 36982861222](https://github.com/StevenWinsir/FolderWatch/actions/runs/36982861222)** 与 **[push CI 36982857314](https://github.com/StevenWinsir/FolderWatch/actions/runs/36982857314)** 均实测 completed/success；macOS/Linux × Go1.23/1.26四组测试及cross-build全通过，原Linux暂停root删除/终端恢复PTY断言也通过。`a58b9ca`/`86b2191`的证据收尾仅更新Markdown；PR #3随后已合并。后续原生测试同步修订见下文，生产Go源码、脚本、依赖仍与`9592658`一致。未创建完成标签。
+
+**合并后的测试同步补充。** `a58b9ca` 的 PR CI通过，但 [push CI 36983209590](https://github.com/StevenWinsir/FolderWatch/actions/runs/36983209590) 在macOS/Go1.23的旧R2原生测试丢失精确Write断言：kqueue先发送Create，再注册子文件；保留的父目录Write才是注册完成后的事件。测试在创建和重命名后增加父目录Write屏障，未删原文件Write/Rename/Remove断言。100轮压力测试又暴露一次Reconcile后立刻查询WatchList早于原生清理完成；改为有3秒期限的事件收敛后仍严格检查无残留watch。仅对主动删除的`moved`子树（精确路径或分隔符限定后代）的PathError/ENOENT允许继续校准；权限、其他路径、root丢失等仍使测试失败，不广泛吞warning。
+
+最终该场景在`GOMAXPROCS=1`下**race连续100轮PASS**；补充版本重新执行`CI=true make build test race lint smoke`、全包race10轮、JSON计数全部通过，仍为**287/129、失败0/跳过0、85.7%覆盖率**。补充仅改两个测试文件及交接Markdown，生产代码/vendor不变。主PR合并与补充评审分开记录，不将早期偶发失败抹掉，也不将旧CI冒充补充head的CI；补充PR中的检查为其远端验收依据。
 
 ### 28.5 明确未完成与下一轮
 
 **P12–P14 / R5尚未完成，Gate A未通过。** 实际Terminal.app/iTerm2/VS Code GUI人工QA、10k文件/小时级监控/CPU/内存/P95、clean-machine安装、打包/签名/分发/许可证决策留给R5。没有GUI/Wails/Svelte功能；editor仍只存储不执行。Ignore热更新、强杀缓存自动清扫、可靠rename关联、side-by-side/多文件常驻Diff不是本轮已交付内容。
 
-下一轮先确认本轮PR评审与合并，再依第23节执行R5；不得用GUI绕过Gate A。尚未创建r4-complete标签，不改写已有checkpoint。当前已执行测试范围内没有未解决实现blocker，集成/人工验收状态单独记录。
+下一轮先关闭`fix/r4-native-test-ordering`补充PR的评审与合并项，再依第23节执行R5；不得用GUI绕过Gate A。尚未创建r4-complete标签，不改写已有checkpoint。当前已执行测试范围内没有未解决实现blocker，集成/人工验收状态单独记录。

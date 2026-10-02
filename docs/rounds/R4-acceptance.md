@@ -1,6 +1,6 @@
 # R4 Acceptance — Terminal/TUI 产品体验（P9–P11）
 
-Status: **实现、本地及远端 CI 自动化验收 PASS；Round 集成状态 IN_REVIEW**。PR #3保持OPEN待评审/合并；独立人工评审与 Gate A不由自动化代替。末节给出已完成的远端成功记录，未将首次失败改写为一次全过。
+Status: **实现、本地及远端 CI 自动化验收 PASS；Round 集成状态 IN_REVIEW**。主PR #3已合并；测试/交接补充分支`fix/r4-native-test-ordering`仍待评审/合并。独立人工评审与 Gate A不由自动化代替。末节给出已完成的远端成功记录，未将首次失败改写为一次全过。
 
 Date: 2026-10-02
 
@@ -8,7 +8,7 @@ Owner / Review: 编码助手按仓库所有者授权实施；完成源码/边界
 
 Repository: https://github.com/StevenWinsir/FolderWatch
 
-Branch: `feat/r4-terminal-tui` → `main`
+Branch: `feat/r4-terminal-tui` → `main`（PR #3已合并）；补充 `fix/r4-native-test-ordering` → `main`。
 
 Integration base: `1b52fcc23d199f6962206205e585c1d695cc0bae`。R4 开始先完整阅读 Handoff、核对工作区干净，实查 [R3 PR #2](https://github.com/StevenWinsir/FolderWatch/pull/2) 已于 **2026-10-02 07:08:58 UTC** 合并；merge 树与 R3 head `c0f626b63735fba6ae43feaeb0c860089ffad0ea` 相同。从已合并 main 建立新分支，不夹带用户改动、不强推共享历史。旧“R3 待合并”在 Handoff/README/R3 acceptance 原文修正。
 
@@ -88,7 +88,7 @@ Environment: **macOS 26.6.2 / darwin-arm64 / Apple M4 / Go 1.26.6**。
 
 ## GitHub 交付 / 集成
 
-实现提交 **`305b097005df6635606c68eaa5ebe671e2be7e4d`** 已推送至 `feat/r4-terminal-tui`，并于 2026-10-02 07:52:29 UTC 创建 **[PR #3](https://github.com/StevenWinsir/FolderWatch/pull/3)**，目标 main。PR 保持待评审/合并；没有直接改写 main、强推或自动合并，也尚未创建 `r4-complete`。
+实现提交 **`305b097005df6635606c68eaa5ebe671e2be7e4d`** 已推送至 `feat/r4-terminal-tui`，并于 2026-10-02 07:52:29 UTC 创建 **[PR #3](https://github.com/StevenWinsir/FolderWatch/pull/3)**，目标 main。PR #3已于2026-10-02 08:23:07 UTC合并为`bb3a75eba5d36d18c461de3fcb2e97d61d95844a`，head为`86b2191`，两者源码树一致。本轮未调用自动合并、未强推、未创建`r4-complete`；最终原生测试补充另从该main开分支，不夹到已合并PR中。
 
 ### 首次远端结果与修正
 
@@ -110,4 +110,12 @@ Environment: **macOS 26.6.2 / darwin-arm64 / Apple M4 / Go 1.26.6**。
 
 修复提交 **`9592658bd9a60961c06fc42d00a21e03d5d69cc0`** 已推送；[PR CI 36982861222](https://github.com/StevenWinsir/FolderWatch/actions/runs/36982861222) 与 [push CI 36982857314](https://github.com/StevenWinsir/FolderWatch/actions/runs/36982857314) 均已实查为 **completed / success**。两个run各5个job全通过：macOS/Linux × Go1.23.x/1.26.x的4个test job及cross-build。测试job包含lint/vendor guard、build、全量unit、race、关键包重复回归和四组smoke；Linux原暂停cwd-root删除、非零退出及终端恢复断言保留并通过。
 
-交付链：`305b097`初始P9–P11 → `e3b22c0`隔离PTY继承环境 → `9592658`修复无事件根丢失与状态乱序。本文此次证据收尾只改Markdown，不改Go源码、测试、脚本或依赖；可复核的源码验收点为`9592658`。PR #3未自动合并，main及历史标签未重写。
+交付链：`305b097`初始P9–P11 → `e3b22c0`隔离PTY继承环境 → `9592658`修复无事件根丢失与状态乱序。`a58b9ca`与`86b2191`只改Markdown，随后PR #3已合并。生产源码验收点仍为`9592658`；以下测试补充不改生产代码、脚本、依赖或vendor。
+
+### 合并后补充：原生测试同步契约
+
+`a58b9ca`的PR CI 36983215054通过，但[push CI 36983209590](https://github.com/StevenWinsir/FolderWatch/actions/runs/36983209590)在macOS/Go1.23的`TestRealRecursiveCreateWriteRenameRemove`精确Write断言失败。固定vendor的`sendCreateIfNew`先发送Create，再internalWatch；dirChange完成后才发送父目录Write。测试现在创建/rename后同时等待这个真实注册屏障，保留原文件Write/Rename/Remove断言，不用sleep冒充注册完成。
+
+首次定向race100在最终立即WatchList检查发现异步清理未完成；加入现有有界settle后，下一次压力验证发现主动RemoveAll期间的可恢复ENOENT。最终测试只允许指定已删除子树的`*os.PathError`且`errors.Is(os.ErrNotExist)`、路径等于scope或以scope+分隔符开头；其他warning、权限错误、root丢失仍失败。settle总期限3秒，仍严格断言无`moved`/`new`残留watch。未修改运行时错误语义或vendor。
+
+补充版最终本地实测：`GOMAXPROCS=1 go test -race -run '^TestRealRecursiveCreateWriteRenameRemove$' -count=100 ./internal/watcher`通过；`CI=true make build test race lint smoke`通过；全包`go test -race -count=10 -coverprofile=coverage.out ./...`通过；fresh JSON计数287测试/子测试、129顶层目标、失败0/跳过0，覆盖率85.7%。前表仍适用。两个测试文件和本交接修订独立提交`fix/r4-native-test-ordering`，其远端结果以补充PR实际检查为准，不套用原PR CI成功。

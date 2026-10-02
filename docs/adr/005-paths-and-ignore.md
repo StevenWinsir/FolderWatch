@@ -12,7 +12,7 @@ Use one `ignore.Matcher.Match(path, isDir)` for scanner and future runtime filte
 
 Support `*`, `?`, `[]`, `**`, root anchors, directory-only trailing slash, comments, negation, escaped leading `#`/`!`, escaped trailing spaces and CRLF. Bare patterns match basenames at any depth in their scope; slash patterns are relative to the rule file's directory. Braces are literals, not shell alternatives. Malformed globs are errors rather than silently broadening the monitored set. Root .folderwatchignore is always additive to an explicit ignore file. Root config/ignore files are bounded regular files (1 MiB); automatically discovered rule files cannot be symlinks. An explicitly selected external ignore file may resolve a symlink.
 
-Git rule files are cached once per directory per matcher/session, including missing files and errors. A newly encountered runtime directory loads its own .gitignore; edits to an already-loaded ignore file require a new matcher/session. R2 must rebuild the matcher and reconcile if it adds live rule reloading; it must not invent a second filtering implementation. The cache is synchronized for concurrent Match calls.
+Git rule files are cached per directory identity and matcher/session, including missing rule files and errors within an existing directory. A newly encountered runtime directory loads its own .gitignore; edits inside the same already-loaded directory still require a new matcher/session. R2 retires caches when a directory is removed/replaced, and nonexistent directories do not accumulate rule scopes. The synchronized same Matcher is used by initial scan, watcher and normalizer. This is lifecycle cleanup, not live rule-file reloading; hot reload would still require an ADR and full reconciliation.
 
 Unreadable/disappearing descendants produce structured scan warnings and do not abort siblings. A root that cannot be read is fatal. Unreadable nested rule files cause the affected subtree to be skipped with warnings rather than scanned with incomplete policy. An invalid/unreadable root config or explicit ignore file fails startup with an actionable error.
 
@@ -20,7 +20,7 @@ Unreadable/disappearing descendants produce structured scan warnings and do not 
 Absolute keys complicate display and portability. Following directory links risks loops and out-of-root traversal. Independently implemented runtime filters drift from initial scan. Full Git repository semantics would unexpectedly consult unrelated global settings.
 
 ## Consequences
-No default writes to root. Warnings mean the inventory can be partial. Special files are metadata only and must not be opened by later content engines. Ignore edits do not hot-reload in R1. Config and ignore parsing are bounded, but total inventory size is proportional to the number of scanned entries; large-tree performance remains R5 work.
+No default writes to root. Warnings mean the inventory can be partial. Special files are metadata only and must not be opened by later content engines. Ignore edits do not hot-reload in R1/R2. R2 also patches fsnotify's kqueue internals to prevent implicit descendant symlink following; the wrapper alone is insufficient (ADR-009). Config and ignore parsing are bounded, but total inventory size is proportional to the number of scanned entries; large-tree performance remains R5 work.
 
 ## Migration
 The path key and rule ordering are stable R2 inputs. Broader Git semantics, link following, hot reload or case-folding require a separate ADR and regression tests.

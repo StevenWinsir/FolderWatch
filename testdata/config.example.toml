@@ -1,12 +1,17 @@
 # Copy to <root>/.folderwatch.toml or the OS user config directory.
 # FolderWatch does not create this file automatically.
-debounce = "150ms"           # Reserved until R2 watcher/debounce
-max_diff_bytes = "5MiB"     # Reserved until R3; never filters the R1 scan
+debounce = "150ms"           # R2 settling window; max wait is 4x
+max_diff_bytes = "5MiB"     # R2 retained-content cap; never filters inventory/hash
+max_pending_events = 4096
+max_watch_dirs = 8192
+max_snapshot_files = 100000
+snapshot_memory_bytes = "32MiB"
+snapshot_cache_bytes = "256MiB"
 ignore = ["node_modules/", "*.tmp"]
 respect_gitignore = false
 include_git = false
 no_mouse = false            # Reserved until R4 TUI
-editor = ""                 # Stored only, never executed in R1
-log_file = ""               # Validated only, never created in R1
+editor = ""                 # Stored only, not executed
+log_file = ""               # Validated only, not created
 debug = false               # Reserved until R4 logging
 # ignore_file = "rules.ignore"  # Relative to this TOML file; must exist if set

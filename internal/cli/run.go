@@ -49,6 +49,9 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer, build Bui
 		}
 		return 1
 	}
+	if request.Watch {
+		return runWatch(ctx, prepared, request.JSON, stdout, stderr)
+	}
 	if request.JSON {
 		encoder := json.NewEncoder(stdout)
 		encoder.SetIndent("", "  ")
@@ -75,7 +78,7 @@ func diagnostic(w io.Writer, err error) {
 
 func renderText(w io.Writer, result scan.Result) error {
 	buffer := bufio.NewWriter(w)
-	fmt.Fprintln(buffer, "FolderWatch — initial scan only (R1; no live watcher/baseline)")
+	fmt.Fprintln(buffer, "FolderWatch — initial scan only (use --watch for live events/baseline)")
 	fmt.Fprintf(buffer, "Root: %q\n", result.Root)
 	for _, entry := range result.Entries {
 		fmt.Fprintf(buffer, "%-9s %q\n", entry.Kind, entry.Path)

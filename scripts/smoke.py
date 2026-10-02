@@ -62,7 +62,7 @@ def main() -> None:
         with (root / "huge.bin").open("wb") as large:
             large.truncate(5 * 1024 ** 3)  # Sparse 5 GiB fixture; metadata only.
 
-        check("R1" in run("--help").stdout, "help must state scan-only scope")
+        check("default/--scan scans once" in run("--help").stdout, "help must preserve the default scan-only contract")
         check("folderwatch" in run("--version").stdout, "missing version")
         result = scan()
         found = paths(result)

@@ -7,8 +7,8 @@
 > GUI 技术栈：**Wails + Svelte + TypeScript + Monaco Diff Editor**  
 > 开发阶段：**阶段一 Terminal/TUI → 质量闸门 → 阶段二 GUI**
 >
-> **当前工程状态（2026-10-01）：R1 / P0–P2 已完成并通过本地与 GitHub Actions 集成验收。** 工程、CLI/Config、初始扫描与 Ignore 已实现；当前 `folderwatch` 是单次元数据扫描，不是持续监控程序。P3–P25 尚未实现，Gate A / B 尚未通过。
-> 本轮完成记录见 **第 25 节**，详细证据见 [`docs/rounds/R1-acceptance.md`](docs/rounds/R1-acceptance.md)，实际使用与配置见 [`README.md`](README.md)。以下产品目标与后续阶段描述仍是路线规划，不代表功能已经全部交付。
+> **当前工程状态（2026-10-02）：R2 / P0–P5 已实现，R2 本地集成验收通过。** 已有递归 Watcher、路径事件聚合、有界 Snapshot、启动基线及原子 Reset。默认/`--scan` 保留单次扫描；`--watch` 持续监听，输出路径重读/重扫请求。P6–P25 尚未实现，Gate A / B 尚未通过。
+> 本轮完成记录见 **第 26 节**，详细证据见 [`docs/rounds/R2-acceptance.md`](docs/rounds/R2-acceptance.md)；第 25 节保留 R1 历史交付。实际使用与配置见 [`README.md`](README.md)。远端 CI 结论只在观察到实际结果后记入验收报告；下文后续产品目标不代表已经全部交付。
 
 ---
 
@@ -82,7 +82,7 @@ P0–P25 继续作为能力阶段编号；**Round 才是实际开发、Code Revi
 | Round | 大阶段 | 包含 P | 单元主题 | 核心结果 | 出口 |
 |---|---|---:|---|---|---|
 | R1 | Terminal | P0–P2 | 工程基础与输入边界 | 工程骨架、CLI/Config、扫描与 Ignore | **PASS（2026-10-01，本地 + 远端 CI）**，可稳定确定应监控集合 |
-| R2 | Terminal | P3–P5 | 文件事件与 Baseline 内核 | Watcher、Debounce/Coalesce、Snapshot | 可稳定监听并建立/重置基线 |
+| R2 | Terminal | P3–P5 | 文件事件与 Baseline 内核 | Watcher、Debounce/Coalesce、Snapshot | **PASS（2026-10-02，本地验收）**，可监听并原子建立/重置基线 |
 | R3 | Terminal | P6–P8 | 内容分析与变更语义 | Classifier、Diff、ChangeStore | 可输出可靠 changed-file 语义 |
 | R4 | Terminal | P9–P11 | TUI 产品体验 | 文件列表、Diff Viewer、Session 控制 | Terminal 主流程完整可用 |
 | R5 | Terminal | P12–P14 | 工程硬化与发布 | 性能、测试、CI、Terminal 发布 | **Gate A PASS** |
@@ -109,7 +109,7 @@ P0–P25 继续作为能力阶段编号；**Round 才是实际开发、Code Revi
 
 ### 2.3 R1 — 工程基础与输入边界（P0–P2）
 
-**当前状态：PASS（2026-10-01）**。已完成实现、自评审和自动化集成验收；未将独立人工评审或未来的 Terminal/iTerm 交互验收记为已完成。`--scan` / `--json` 为本轮可复现入口；下一轮从 R2/P3 开始。
+**当前状态：PASS（2026-10-01）**。已完成实现、自评审和自动化集成验收；未将独立人工评审或未来的 Terminal/iTerm 交互验收记为已完成。`--scan` / `--json` 为 R1 可复现入口；R2/P3–P5 已在下节继续交付。
 
 **目标**：固定项目骨架、CLI/Config、路径与 ignore 语义，让后续 watcher 接收稳定输入。
 
@@ -145,6 +145,8 @@ P0–P25 继续作为能力阶段编号；**Round 才是实际开发、Code Revi
 
 ### 2.4 R2 — 文件事件与 Baseline 内核（P3–P5）
 
+**当前状态：PASS（本地集成验收，2026-10-02）**。实现与测试范围详见第 26 节和 R2 acceptance；自评审和自动化验证不等于独立人工评审。实际 Vim 无界面保存及直接写入/atomic-save 模型已验证；未宣称运行本机不存在的 VS Code GUI。R3 语义变化列表/diff 未提前实现。
+
 **目标**：完成不依赖 UI 的稳定监听核心，解决递归 watcher、编辑器噪音事件和 baseline 生命周期。
 
 **包含**：
@@ -163,14 +165,14 @@ P0–P25 继续作为能力阶段编号；**Round 才是实际开发、Code Revi
 - temp-dir 集成测试
 
 **R2 验收**：
-- [ ] create/write/remove/rename 产生稳定内部事件
-- [ ] 新建子目录后的内部文件继续被监听
-- [ ] atomic save 不永久丢失真实目标文件
-- [ ] 单次保存不会留下重复语义 change request
-- [ ] baseline 不因普通保存自动推进
-- [ ] reset 后当前状态成为新 baseline
-- [ ] stop/reset 无明显 timer/goroutine 泄漏
-- [ ] 至少验证 VS Code 与 Vim/Neovim 两类保存模式
+- [x] create/write/remove/rename 产生路径 invalidation；迁移/溢出可降级 root reconciliation
+- [x] 新建/移入子目录、注册前已有文件与注册后独立写入均有集成测试
+- [x] ignored 临时文件替换真实目标的 atomic save 不永久丢失目标
+- [x] 同一聚合窗口每 path 一次请求；最终语义状态唯一性由 R3 ChangeStore 接续验收
+- [x] 普通保存不推进 baseline，连续编辑/恢复原文的 before 内容/hash 正确
+- [x] Reset 构建新 generation 后一次替换；取消/缺失/不可读失败保留旧基线
+- [x] stop/reset 并发与多轮生命周期测试、race、缓存清理测试通过
+- [x] 实际 Vim backupcopy=yes/no 保存通过；VS Code 类直接写入/替换模型通过（非实际 VS Code GUI 验收）
 
 **出口定义**：不论编辑器如何保存，core 最终都能稳定得到需要重新解析的真实路径，并拥有正确 baseline。
 
@@ -767,7 +769,7 @@ TUI / GUI refresh
 
 ## P0 — 项目初始化、工程规范、ADR
 
-**完成状态：已完成（R1，2026-10-01）。** 已初始化 `github.com/StevenWinsir/FolderWatch`（Go 1.23+）、锁定依赖及 go.sum，建立最小分层工程、Make targets、gofmt/go vet、CI、README/CHANGELOG/CONTRIBUTING 与 ADR-001–006。后续 fsnotify/Bubble Tea/Lip Gloss/difflib 仅由 `tools` build-tag 文件锁定，不导入 R1 core 或可执行文件。CI 配置覆盖 macOS/Linux 与 Go 1.23/1.26；实际运行状态以 R1 acceptance/Actions 为准，不把配置文件存在当成远端已通过。
+**完成状态：已完成（R1，2026-10-01）。** 已初始化 `github.com/StevenWinsir/FolderWatch`（Go 1.23+）、锁定依赖及 go.sum，建立最小分层工程、Make targets、gofmt/go vet、CI、README/CHANGELOG/CONTRIBUTING 与 ADR-001–006。R1 时 fsnotify/Bubble Tea/Lip Gloss/difflib 仅由 `tools` build-tag 文件锁定；R2 已把 fsnotify 接入独立 watcher adapter，其他 UI/diff 依赖仍为未来阶段保留。R2 新增 vendor 与可复现 kqueue 补丁，详见 ADR-009。CI 配置覆盖 macOS/Linux 与 Go 1.23/1.26；实际运行状态以 R1 acceptance/Actions 为准，不把配置文件存在当成远端已通过。
 
 ### 目标
 
@@ -805,7 +807,7 @@ TUI / GUI refresh
 
 ## P1 — CLI 契约与配置模型
 
-**完成状态：已完成（R1，2026-10-01）。** `internal/cli` 与 `internal/config` 已实现推荐 flags、严格 TOML、存在性感知的显式覆盖、路径/duration/size 校验和退出码。项目配置为 `<root>/.folderwatch.toml`；用户配置使用 OS user config directory。高优先级 ignore 数组替换低优先级数组，`[]` 清空；布尔值可用 `--flag=false` 覆盖。配置路径相对其文件，CLI 路径相对 cwd。当前默认命令及 `--scan` 均单次扫描退出；`--json` 输出元数据。debounce/diff/mouse/editor/log/debug 参数只是通过校验的后续接口，不能解释为已有对应运行能力。详见 ADR-006。
+**完成状态：已完成（R1，2026-10-01）。** `internal/cli` 与 `internal/config` 已实现推荐 flags、严格 TOML、存在性感知的显式覆盖、路径/duration/size 校验和退出码。项目配置为 `<root>/.folderwatch.toml`；用户配置使用 OS user config directory。高优先级 ignore 数组替换低优先级数组，`[]` 清空；布尔值可用 `--flag=false` 覆盖。配置路径相对其文件，CLI 路径相对 cwd。当前默认命令及 `--scan` 均单次扫描退出；`--json` 输出元数据。R2 新增 `--watch`、五项资源限额；debounce 已实际聚合事件，max-diff-bytes 同时限制快照正文保留。diff/mouse/editor/log/debug 对应的后续能力尚未实现。配置原则见 ADR-006，R2 行为见 ADR-007–009。
 
 ### 目标
 
@@ -832,7 +834,13 @@ folderwatch ~/Projects/demo
 --respect-gitignore       # R1 默认 false
 --include-git             # R1：关闭内建 .git/ 排除
 --scan                    # R1：显式单次扫描
---json                    # R1：扫描清单 JSON
+--json                    # 单次扫描 JSON；--watch 时为 NDJSON
+--watch                   # R2：持续监听 + 基线 + 聚合请求
+--max-pending-events <n>   # R2：默认 4096
+--max-watch-dirs <n>       # R2：默认 8192
+--max-snapshot-files <n>   # R2：默认 100000
+--snapshot-memory-bytes <size> # R2：默认 32MiB/代
+--snapshot-cache-bytes <size>  # R2：默认 256MiB/代
 --no-mouse
 --max-diff-bytes <size>
 --editor <command>
@@ -874,7 +882,7 @@ CLI flags > project/local config > user config > built-in defaults
 
 **完成状态：已完成（R1，2026-10-01）。** `internal/scan` 使用 WalkDir；`pathutil` 固定根相对 `/` 分隔 canonical key，`.` 代表根，保留大小写与 Unicode。明确选择的 root symlink 可解析；后代 symlink 仅记录元数据、不跟随，特殊文件不读取内容。不可读子目录/瞬间消失文件产生 warning，root 失败则退出。
 
-统一 `ignore.Matcher.Match(path, isDir)` 同时供扫描及下一轮 runtime 调用。规则优先级固定为：内建 `.git/` < 可选根/嵌套 `.gitignore` < 根 `.folderwatchignore` < 显式 ignore 文件 < config/CLI ignore；支持 ancestor-aware 否定。默认不启用 `.gitignore`，可显式 `--include-git`。规则按 Matcher 缓存，修改已加载规则需重启/新 Matcher；嵌套规则错误在进入目录前检查并跳过子树。完整策略与安全边界见 ADR-005。
+统一 `ignore.Matcher.Match(path, isDir)` 已同时供扫描、Watcher 与 Event Normalizer 调用。规则优先级固定为：内建 `.git/` < 可选根/嵌套 `.gitignore` < 根 `.folderwatchignore` < 显式 ignore 文件 < config/CLI ignore；支持 ancestor-aware 否定。默认不启用 `.gitignore`，可显式 `--include-git`。规则按 Matcher 缓存，修改已加载规则需重启/新 Matcher；嵌套规则错误在进入目录前检查并跳过子树。完整策略与安全边界见 ADR-005。
 
 ### 目标
 
@@ -913,6 +921,8 @@ P1。
 
 ## P3 — Watcher 抽象与递归文件系统监控
 
+**完成状态：R2 已实现并通过本地集成验收。** `internal/watcher` 封装 fsnotify；单 owner 管理递归目录、新建/移入/删除/重命名、identity 检查与 `Reconcile(ctx)`。事件队列有界、errors 分离，溢出转 root invalidation，root 丢失/目录容量耗尽明确停止。目录 symlink 不跟随，包含对 fsnotify kqueue 内部行为的补丁和绕过 wrapper 的原生回归测试。注册发生在新 baseline 扫描之前，减少启动窗口漏事件；不是仅依赖 R1 旧清单。详见 ADR-007、009。
+
 ### 目标
 
 将 OS 事件转换为项目内部 raw event stream。
@@ -926,6 +936,7 @@ P2。
 ```go
 type Watcher interface {
     Start(ctx context.Context, root string) (<-chan RawEvent, <-chan error, error)
+    Reconcile(ctx context.Context) error // R2 实际增加：校准目录登记
     Close() error
 }
 ```
@@ -960,6 +971,8 @@ type Watcher interface {
 
 ## P4 — Event Normalizer、Debounce 与 Coalescing
 
+**完成状态：R2 已实现并通过本地集成验收。** `internal/eventnorm` 产出 canonical path + metadata-only hint；`internal/debounce` 用单 goroutine、单 ticker、有限 pending map 聚合，默认 150ms，连续繁忙路径最多等 4 倍窗口。输出背压/容量溢出不无限排队而转 root reconciliation。R2 请求不是 Added/Modified/Deleted，也不计算 diff；同 path 在后续独立窗口仍可再次要求解析，R3 必须幂等 resolve。取消和 Reset generation 边界由 Session 统一管理。
+
 ### 目标
 
 把“嘈杂的 OS 事件”转换成“稳定的路径变更请求”。
@@ -993,6 +1006,8 @@ P3。
 ---
 
 ## P5 — Snapshot / Baseline Engine
+
+**完成状态：R2 已实现并通过本地集成验收。** `internal/snapshot` 提供小文件 memory、中型文本 private temp disk、流式 SHA-256、元数据/hash 降级、不可变 Ref、原子 generation Reset 与清理。`app.Session` 注册 Watcher 后 fresh scan/capture；普通保存不推进 baseline。Reset 失败/取消不发布部分基线，成功先发 reset/reconcile，再处理排队事件。快照/队列限额见 README 与 ADR-008。R2 验收读取 before 内容与 hash；下文“显示 diff/列表消失/清空列表”的整条 UI 场景须在 R3/R4 接入后继续验收，不能记作本轮已有 UI。
 
 ### 目标
 
@@ -2251,17 +2266,17 @@ ADR 必须写：Context、Decision、Alternatives、Consequences、Migration。
 
 ---
 
-## 23. 下一位开发者从哪里开始（R1 后）
+## 23. 下一位开发者从哪里开始（R2 后）
 
-P0–P2 已完成，不应重复初始化工程。下一位接手者按以下顺序：
+P0–P5 已完成，下一轮从 R3 / P6–P8 开始：
 
-1. 阅读第 25 节、R1 acceptance、README 与 ADR-001–006，执行 `make build test race lint smoke` 验证起点。
-2. 从 `internal/app.Prepare` 的 `Config`、`Matcher`、`Inventory` 接入 P3 watcher；仅注册接受的目录，runtime 路径使用同一 Matcher。
-3. 完成 P4 的 normalize/debounce/coalesce、bounded queue 与 reconciliation，不能用 UI 补救事件语义问题。
-4. 完成 P5 bounded snapshots 与启动/reset baseline；R1 inventory 只有元数据，绝不能当作内容 baseline。
-5. R2 后再进入 P6–P8 的 classifier/diff/ChangeStore，并用自动化测试证明状态迁移。
-6. 保留 `--scan` 诊断入口；到 P9 才正式接 Bubble Tea，不提前做 TUI 业务。
-7. P14 Gate A 不通过，不创建 GUI 业务分支。
+1. 阅读第 26 节、R2 acceptance、README 与 ADR-001–009；从带 vendor 的 checkout 执行 `make build test race lint smoke`，不要绕过依赖补丁。
+2. 复用 `app.StartSession` / `Session.Events()`、generation、`Baseline()` 与 `ReadBaseline()`，不重写 watcher、聚合或快照。
+3. 实现 P6 安全 Classifier；R2 保留策略探针不是正式 Text/Binary/Unsupported/TooLarge API。
+4. 实现 P7 UI 无关 DiffEngine，按需读取 before/current；处理旧 generation 引用失效、取消与大小上限。
+5. 实现 P8 唯一 ChangeStore；path invalidation 不等于语义变化，`Reconcile=true` 必须核对磁盘，恢复同 hash 后移除变化由此层实现。
+6. 保留 `--scan` / `--watch` 诊断和所有 R1/R2 回归。到 P9 才正式接 TUI，Reset/Pause 的交互不能替代 core 契约。
+7. Gate A 仍未通过，不开始 GUI；真实性能、实际 VS Code GUI 及长期压力验收不能被模型保存测试替代。
 
 项目的核心价值不是“终端上有颜色”，而是：**文件事件再混乱，最终仍然能稳定、正确、可恢复地告诉用户“相对于 baseline，到底哪些文件变了，以及变了什么”。**
 
@@ -2282,7 +2297,9 @@ P0–P2 已完成，不应重复初始化工程。下一位接手者按以下顺
 
 ---
 
-## 25. 本轮交付记录 — R1 / P0–P2（2026-10-01）
+## 25. 历史交付记录 — R1 / P0–P2（2026-10-01）
+
+本节保留 R1 时点的交付和未完成功能；当前完成范围以第 26 节 R2 为准。
 
 ### 25.1 实际完成范围
 
@@ -2328,3 +2345,48 @@ make build
 本轮未发现测试范围内未解决的阻塞 bug。接受的边界是：Ignore 修改需重启；warning 清单可能不完整；内存随条目数增长；路径检查不是对抗并发恶意目录替换的原子沙箱。P12 性能预算、持续监控压力测试、独立人工评审、Terminal/iTerm 交互验收与签名分发尚未执行，不记为本轮已完成。
 
 下一轮直接复用 `Prepared.Config`、`Prepared.Matcher`、`Prepared.Inventory`，实施 P3–P5 并保持 core/UI 分离。详细下一步与风险见 R1 acceptance 和第 23 节。
+
+---
+
+## 26. 本轮交付记录 — R2 / P3–P5（2026-10-01 至 2026-10-02）
+
+### 26.1 完成范围与入口
+
+从 R1 `720ecdb06044145a0f9f8a15b0220a0b4be45113` 开始，开发分支 `feat/r2-watch-baseline`，目标仍为私有 `StevenWinsir/FolderWatch`。最终代码/验收提交与 checkpoint 以 R2 acceptance 和 `r2-complete` 为准；远端结果只记录实际观察到的运行。
+
+| 阶段 | 本轮实现 | 主要位置 |
+|---|---|---|
+| P3 | Watcher interface、递归 fsnotify、动态目录、identity、忽略、背压/容量错误与关闭 | internal/watcher |
+| P4 | canonical path invalidation、CHMOD hint、单 ticker 有界 debounce/coalesce、root reconciliation | internal/eventnorm、internal/debounce |
+| P5 | SHA-256、有界 memory/disk、内容资格探针、Ref 所有权、原子 baseline generation/reset/cleanup | internal/snapshot |
+| 应用/CLI | Session 启停、排队 Reset、代际事件、--watch 文本/NDJSON、共享资源配置 | internal/app、internal/cli、internal/config |
+| 加固/交接 | 目录 identity Ignore 缓存退役、fsnotify kqueue 补丁、vendor guard、测试、ADR-007–009 | internal/ignore、vendor、patches、scripts、docs |
+
+```sh
+make build
+./bin/folderwatch --scan --json .
+./bin/folderwatch --watch --json --respect-gitignore "/path/to/项目 with spaces"
+# Ctrl+C 关闭监听并清理；ResetBaseline(ctx) 是 Go API，交互按键留给 R4。
+```
+
+### 26.2 固定的行为与资源边界
+
+事件是“需要重新解析”的请求，不是 R3 语义 changed list。新建/移入目录窗口里的文件、原始队列满、慢消费者都会转成明确的 root reconciliation。默认 raw/pending 上限 4096，coalescer 输出 1、应用输出 32、warning 通道 16；不使用 per-path goroutine/timer。目录上限 8192，耗尽或 root 丢失则 fatal。
+
+基线默认最多 100000 个引用，32MiB memory + 256MiB disk/代；64KiB 以下小文本优先内存，单文件保留上限复用 5MiB max-diff-bytes。二进制/非法 UTF-8、超限或预算不足只保留 metadata/hash。regular file 的 hash 采用有界块读取、取消及稳定性检查；symlink 只保留链接本身/目标字符串 hash，FIFO/device 不读内容。cache 位于 root 外 OS temp，目录 0700、文件 0600。
+
+Reset 先构建下一代，成功后一次发布；失败或取消保留旧代。普通保存不推进基线。成功后旧 Ref 失效，排队事件按新 generation 重新解析。Reset 峰值可持有两代有界内容；不是跨整个文件系统的瞬时事务，capture 窗口内变动需排队事件/reconciliation 接续核对。扫描清单和调用方读取副本不属于 retained-content budget，内存仍与清单规模相关。
+
+`--scan` 保留 R1 warning 后继续的行为；watch 启动/Reset 要求完整可读基线，出现扫描 warning/内容读取失败明确报错，不假装成功或抹掉旧路径。已有目录的 Ignore 文件仍不热更新；目录 identity 删除/替换会退役旧 scope，防止无限缓存和同名新目录沿用旧规则。
+
+### 26.3 本轮测试与修复
+
+本地 macOS 26.6.2 / Go 1.26.6 / darwin-arm64：完整 Go tests、全量 `-race -count=10`、R1 CLI 60 项与 R2 watch 17 项冒烟均通过；最终语句覆盖率 84.3%。实际 Vim backupcopy=yes/no 无界面保存通过，直接写入/atomic replacement 模型通过；本机无 VS Code，未宣称实际 VS Code GUI 验收。覆盖率、fuzz、跨编译与远端 CI 证据详见 R2 acceptance。
+
+发现并修复：kqueue 退役描述符空路径、内部 symlink 跟随、skipped-link seen 缓存未退役、目录通知回退缺失、目录迁移/重建登记、Ignore 生命周期、等待快照所有权时不可取消、等待基线发布锁期间取消仍可能提交等边界。fsnotify 保持 v1.8.0，只有 kqueue 后端的受审查 vendor 补丁；附 125 行 unified patch、上游/补丁 SHA-256 及可逆/构建源路径校验。所有测试在修改后复跑，不将初期失败伪装为一次全过。
+
+### 26.4 明确未完成与下一轮责任
+
+P6–P8 Classifier/Diff/ChangeStore 尚未实现；没有 Changed List、diff、重命名语义判定或“恢复后列表消失”的 UI。P9 以后 TUI、Pause/Resume、交互 Reset、日志、编辑器集成、GUI 和发布均未开始。Gate A / B 仍未通过。
+
+接受的已知边界：严格完整基线；无 Ignore 热更新；异常强杀可能残留私有缓存且未自动清扫；Unix 路径防护不是对抗并发恶意替换的原子沙箱；kqueue 描述符随文件数增加；没有完成 P12 性能预算、小时级监控、实际 VS Code GUI 或独立人工评审。下一轮复用稳定 core，所有错误/重扫/generation 语义必须保留，禁止用 UI 绕过。

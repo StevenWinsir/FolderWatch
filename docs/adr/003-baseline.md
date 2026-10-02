@@ -1,6 +1,6 @@
 # ADR-003: Session baseline semantics
 
-Status: Accepted design; implementation deferred to R2/P5 (2026-10-01)
+Status: Accepted; snapshot/baseline core implemented in R2/P5 (2026-10-02)
 
 ## Context
 Users want to compare current contents with the start of a session, not the previous save.
@@ -12,7 +12,7 @@ A session's initial capture is the baseline. Ordinary writes never advance it. R
 Comparing with the immediately previous save loses the session's intended meaning. Letting the UI reset files individually breaks atomic semantics.
 
 ## Consequences
-R1 returns only metadata and does not hash, capture contents, reset or publish changes. R2 must implement bounded snapshot ownership and cancellation, and test start/edit/re-edit/restore/reset.
+R1 scan still returns metadata only. R2 implements bounded snapshot ownership, stable before contents/hash, cancellation, generation replacement and reset rollback; details are in ADR-008. Clearing a semantic ChangeStore after reset is R3 integration work, not an existing R2 list operation.
 
 ## Migration
-Keep R1 inventory types separate from SnapshotRef and semantic FileChange, which will be introduced when their actual lifecycles exist.
+R2 snapshot.Ref remains distinct from R1 FileMeta. R3 introduces semantic FileChange and respects generation/stale-reference boundaries; do not auto-advance baseline on ordinary saves.

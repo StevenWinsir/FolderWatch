@@ -12,7 +12,7 @@ R1 scans metadata only, including regular files of every extension and size, sym
 Extension allowlists miss files. Reading all content during scan violates resource and privacy goals.
 
 ## Consequences
-R1's size flag is parsed/validated but has no diff effect yet. Snapshot/probe/line/worker limits are added with the implementing stages and measured in P12; the current 5 MiB default is not a measured performance guarantee. Control characters in paths must be escaped by CLI rendering.
+R2 uses max_diff_bytes as the per-file retained snapshot content cap. Binary/invalid UTF-8, oversized and over-budget contents retain metadata/hash only; this storage-eligibility probe is not R3's Classifier API (see ADR-008). The flag still has no diff effect until R3. Snapshot/probe/line/worker limits are added with the implementing stages and measured in P12; the current 5 MiB default is not a measured performance guarantee. Control characters in paths must be escaped by CLI rendering.
 
 ## Migration
 Changes to limits or binary policy require tests and ADR updates; do not silently turn max_diff_bytes into a scan exclusion.

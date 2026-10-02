@@ -1,0 +1,125 @@
+--- a/vendor/github.com/fsnotify/fsnotify/backend_kqueue.go
++++ b/vendor/github.com/fsnotify/fsnotify/backend_kqueue.go
+@@ -8,6 +8,7 @@
+ 	"os"
+ 	"path/filepath"
+ 	"runtime"
++	"strings"
+ 	"sync"
+ 	"time"
+ 
+@@ -159,6 +160,15 @@
+ 
+ 	delete(w.wd, fd)
+ 	delete(w.seen, path)
++	// FolderWatch patch: skipped links have no fd/Remove event of their own.
++	// Retire their seen state when the containing directory is removed.
++	if isDir {
++		for name := range w.seen {
++			if strings.HasPrefix(name, path+string(filepath.Separator)) {
++				delete(w.seen, name)
++			}
++		}
++	}
+ 	return isDir
+ }
+ 
+@@ -385,37 +395,16 @@
+ 			return "", nil
+ 		}
+ 
+-		// Follow symlinks.
++		// FolderWatch patch: never open/traverse a symlink target internally.
++		// Parent-directory WRITE invalidations below cover link removal/replacement.
+ 		if fi.Mode()&os.ModeSymlink == os.ModeSymlink {
+-			link, err := os.Readlink(name)
+-			if err != nil {
+-				// Return nil because Linux can add unresolvable symlinks to the
+-				// watch list without problems, so maintain consistency with
+-				// that. There will be no file events for broken symlinks.
+-				// TODO: more specific check; returns os.PathError; ENOENT?
+-				return "", nil
+-			}
+-
+-			_, alreadyWatching = w.watches.byPath(link)
+-			if alreadyWatching {
+-				// Add to watches so we don't get spurious Create events later
+-				// on when we diff the directories.
+-				w.watches.addLink(name, 0)
+-				return link, nil
+-			}
+-
+-			info.linkName = name
+-			name = link
+-			fi, err = os.Lstat(name)
+-			if err != nil {
+-				return "", nil
+-			}
++			return name, nil
+ 		}
+ 
+ 		// Retry on EINTR; open() can return EINTR in practice on macOS.
+ 		// See #354, and Go issues 11180 and 39237.
+ 		for {
+-			info.wd, err = unix.Open(name, openMode, 0)
++			info.wd, err = unix.Open(name, openMode|unix.O_NOFOLLOW, 0)
+ 			if err == nil {
+ 				break
+ 			}
+@@ -514,6 +503,15 @@
+ 				continue
+ 			}
+ 
++			// FolderWatch patch: a retired descriptor has no valid path. Never
++			// clean an empty name to "." or accidentally register the process cwd.
++			if !ok {
++				if !w.sendError(ErrEventOverflow) {
++					return
++				}
++				continue
++			}
++
+ 			event := w.newEvent(path.name, path.linkName, mask)
+ 
+ 			if event.Has(Rename) || event.Has(Remove) {
+@@ -522,7 +520,16 @@
+ 			}
+ 
+ 			if path.isDir && event.Has(Write) && !event.Has(Remove) {
+-				w.dirChange(event.Name)
++				if err := w.dirChange(event.Name); err != nil {
++					if !w.sendError(err) {
++						return
++					}
++				}
++				// FolderWatch patch: preserve a directory invalidation, including
++				// skipped symlinks and files created before child enrollment.
++				if !w.sendEvent(event) {
++					return
++				}
+ 			} else if !w.sendEvent(event) {
+ 				return
+ 			}
+@@ -647,6 +654,22 @@
+ 		return fmt.Errorf("fsnotify.dirChange: %w", err)
+ 	}
+ 
++	// FolderWatch patch: symlinks/unreadable entries may have no native watch.
++	// Bound seen-state by live children, not all historical filenames.
++	present := make(map[string]struct{}, len(files))
++	for _, f := range files {
++		present[filepath.Join(dir, f.Name())] = struct{}{}
++	}
++	w.watches.mu.Lock()
++	for name := range w.watches.seen {
++		if filepath.Dir(name) == dir {
++			if _, exists := present[name]; !exists {
++				delete(w.watches.seen, name)
++			}
++		}
++	}
++	w.watches.mu.Unlock()
++
+ 	for _, f := range files {
+ 		fi, err := f.Info()
+ 		if err != nil {

@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "version": "v0.1.0-rc.1",
+  "commit": "f3e662f2059d47a0b9f108b8b8d0b17dcb760fe4",
+  "build_commit": "f3e662f2059d47a0b9f108b8b8d0b17dcb760fe4",
+  "build_date": "2026-10-02T04:11:36-05:00",
+  "dirty": false,
+  "toolchain": "go version go1.26.6 darwin/arm64",
+  "dependency_mode": "vendor",
+  "cgo_enabled": false,
+  "distribution": "private-evaluation; Gate A and project-license approval required before public distribution",
+  "assets": [
+    {
+      "name": "folderwatch-v0.1.0-rc.1-darwin-arm64.tar.gz",
+      "os": "darwin",
+      "arch": "arm64",
+      "sha256": "69eb126149a38656859df78c83c1964abefc00c9116c123333443bb9fea6c80d",
+      "bytes": 1704691
+    },
+    {
+      "name": "folderwatch-v0.1.0-rc.1-darwin-amd64.tar.gz",
+      "os": "darwin",
+      "arch": "amd64",
+      "sha256": "b676becd596b27dbf672aaf5ce7732b395499c75519ac7744db53691df72fbef",
+      "bytes": 1837085
+    }
+  ]
+}

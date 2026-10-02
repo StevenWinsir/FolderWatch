@@ -1,0 +1,13 @@
+{
+  "commit": "f3e662f2059d47a0b9f108b8b8d0b17dcb760fe4",
+  "version": "v0.1.0-rc.1",
+  "dirty": false,
+  "byte_identical_files": [
+    "SHA256SUMS",
+    "folderwatch-v0.1.0-rc.1-darwin-amd64.tar.gz",
+    "folderwatch-v0.1.0-rc.1-darwin-arm64.tar.gz",
+    "folderwatch.rb",
+    "manifest.json"
+  ],
+  "native_install_passed": true
+}

@@ -33,6 +33,8 @@ macOS26.6.2 / Apple M4 / 32GiB / Go1.26.6 / darwin-arm64。日志位于本worktr
 | `go mod verify` / `go mod tidy -diff` | PASS；依赖版本/graph没有改变，vendor补丁变化有独立hash与ADR |
 | 七组性能/资源、10k真实TUI 20轮 | PASS；10k ready455ms、settled837ms、RSS72.73MB、idle0.517%、Core P95 170.31ms、TUI P95 196.57ms；每组goroutine1、fd6、缓存0收尾 |
 | dirty候选预演：双架构校验/native arm64安装 | PASS；版本精确、Unicode scan、真实watch/hash、SIGINT130、空缓存、隔离HOME/PATH；该预演显式dirty，不冒充正式候选 |
+| clean源码提交追加验证 | PASS；120秒idle CPU0.3929%、100轮burst Core P95 166.34ms、额外100次启停，整体145.01秒；fd6→1010→6、goroutine1→5→1、cache0 |
+| clean `f3e662f`候选与可重复打包 | PASS；本机Go1.26.6构建两架构，原生arm64安装、Ruby语法、两次构建全部5个文件逐字节相同；`dirty=false` |
 
 父子测试计数不是299个独立业务场景；真实子进程PTY不计入Go进程内coverage。Go测试范围包括开发探针包，不能把全仓库coverage和业务core覆盖率混称。CI随机fuzz次数会不同，本表仅为这次本机观察。
 
@@ -46,10 +48,21 @@ macOS26.6.2 / Apple M4 / 32GiB / Go1.26.6 / darwin-arm64。日志位于本worktr
 
 ## 集成证据
 
-开发分支：`feat/r5-terminal-release`；基线：`a775148`（R4补充PR #4，含已合并PR #3）。本机工程检查已通过；提交、clean候选与R5 PR/CI的最终标识在完成实际操作后追加到本节，不使用旧R4 CI冒充R5检查。
+开发分支：`feat/r5-terminal-release`；基线：`a775148`（R4补充PR #4，含已合并PR #3）。**实现提交：`f3e662f2059d47a0b9f108b8b8d0b17dcb760fe4`，已推送并创建[PR #5](https://github.com/StevenWinsir/FolderWatch/pull/5)**，未自动合并。
+
+已实际观察该源码提交的 **[push CI 36988380384](https://github.com/StevenWinsir/FolderWatch/actions/runs/36988380384)** 与 **[PR CI 36988453642](https://github.com/StevenWinsir/FolderWatch/actions/runs/36988453642)** 均completed/success，各7个job全绿：macOS/Linux×Go1.23/1.26四组完整测试/race/重复回归/四smoke/PTY延迟，cross-build，六fuzz，以及Terminal candidate原生安装。精确job及artifact标识保留在`docs/benchmarks/r5/ci-source.json`。以下收尾只补Markdown/JSON/TXT证据，不修改已验证的生产源码、测试、脚本、workflow或vendor；最终文档head的检查以PR Checks为准。
+
+本机clean候选位于本worktree `dist/v0.1.0-rc.1/`，版本`v0.1.0-rc.1`，Go1.26.6、commit=`f3e662f`、build-date=`2026-10-02T04:11:36-05:00`、dirty=false。完整manifest/checksums/两次构建对比记录在`docs/release/r5-candidate-manifest.json`、`r5-candidate-SHA256SUMS`、`r5-reproducibility.json`。
+
+| 本机候选archive | SHA-256 |
+|---|---|
+| darwin-arm64 | `69eb126149a38656859df78c83c1964abefc00c9116c123333443bb9fea6c80d` |
+| darwin-amd64 | `b676becd596b27dbf672aaf5ce7732b395499c75519ac7744db53691df72fbef` |
+
+远端另有已实际上传的[私有CI候选artifact 11218432417](https://github.com/StevenWinsir/FolderWatch/actions/runs/36988380384/artifacts/11218432417)。该runner使用Go1.26.8/darwin-arm64，native安装检查PASS；**工具链与本机不同，不能拿上面的本机SHA直接验证CI包**，应使用下载artifact内自身的manifest/SHA256SUMS。来源run/commit/toolchain组成完整身份；重复候选版本不等于已发布不可变GitHub Release。保留期限见workflow，不声称永久下载或公开访问。
 
 ## 剩余验收与已知限制
 
-人工Terminal.app、iTerm2、真正clean-Mac安装未执行，未填写不存在的测试人/签字；隔离HOME/PATH不等于另一台Mac。Homebrew formula已生成实际checksum，公开tap/私有认证下载和brew安装验收未完成；默认Release URL只有发布对应资产后才可用。没有项目公开分发许可证决策、Developer ID签名或Apple公证，也未创建release/tag或自动合并PR。CPU观察每组10秒、额外50次启停，不宣称小时/天级耐久度。
+人工Terminal.app、iTerm2、真正clean-Mac安装未执行，未填写不存在的测试人/签字；隔离HOME/PATH不等于另一台Mac。Homebrew formula已生成实际checksum，公开tap/私有认证下载和brew安装验收未完成；默认Release URL只有发布对应资产后才可用。没有项目公开分发许可证决策、Developer ID签名或Apple公证，也未创建release/tag或自动合并PR。基础矩阵每组10秒/额外50次启停，追加检查120秒idle/100轮burst/100次启停，不宣称小时/天级耐久度。
 
 当前已执行范围内无已知未解决P0/P1级实现故障；这不替代人工排查或安全审计。强杀缓存自动清扫、Ignore热更新、可靠rename关联、editor执行、GUI均未新增。保持唯一Go Core，Gate A真正签字后才进入R6。

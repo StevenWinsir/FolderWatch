@@ -7,7 +7,7 @@
 > GUI 技术栈：**Wails + Svelte + TypeScript + Monaco Diff Editor**  
 > 开发阶段：**阶段一 Terminal/TUI → 质量闸门 → 阶段二 GUI**
 >
-> **当前工程状态（2026-10-02）：R5 / P12–P14 工程硬化与私有 Terminal 候选发布已实现、本机自动化验收通过，Round 为 IN_REVIEW；Gate A=FAIL（待人工/分发签字）。** P0–P11保持已验收语义，R4主PR #3已合并main `bb3a75e`；R5分支`feat/r5-terminal-release`已纳入R4补充`a775148`（PR #4仍OPEN）。本轮补性能/资源测量、真实TUI延迟、native fd泄漏修复、测试/fuzz/CI及macOS双架构候选包。实际Terminal.app/iTerm2、clean-Mac和项目分发许可尚未签字，不能声称P14 Gate全部完成；P15–P25/GUI未开始，Gate B未通过。
+> **当前工程状态（2026-10-02）：R5 / P12–P14 工程硬化与私有 Terminal 候选发布已实现、本机及源码远端CI自动化验收通过，已提交PR #5，Round 为 IN_REVIEW；Gate A=FAIL（待人工/分发签字）。** P0–P11保持已验收语义，R4主PR #3已合并main `bb3a75e`；R5分支`feat/r5-terminal-release`已纳入R4补充`a775148`（PR #4仍OPEN）。本轮补性能/资源测量、真实TUI延迟、native fd泄漏修复、测试/fuzz/CI及macOS双架构候选包。实际Terminal.app/iTerm2、clean-Mac和项目分发许可尚未签字，不能声称P14 Gate全部完成；P15–P25/GUI未开始，Gate B未通过。
 > 本轮完成记录见 **第29节**、[`docs/rounds/R5-acceptance.md`](docs/rounds/R5-acceptance.md)、[`docs/performance-v1.md`](docs/performance-v1.md)、[`docs/gates/Gate-A.md`](docs/gates/Gate-A.md)及ADR-014；第25–28节保留R1–R4历史，原文当前状态同步更新。PTY/隔离HOME/PATH不等同实际终端人工QA或干净Mac；PR/CI/候选commit只按实查记录，不创建虚构标签或把路线目标写成已交付。
 
 ---
@@ -2579,6 +2579,16 @@ macOS arm64/amd64、Linux amd64、Windows amd64交叉编译通过；Windows只�
 
 ### 29.5 未完成边界与下一步
 
-实际Terminal.app/iTerm2人工QA、真正clean-Mac（含Intel支持范围）安装、Homebrew安装/认证流程、owner项目公开分发许可与签名/公证策略未签字。未创建公开Release/tag/tap、未自动合并、未开发GUI。性能CPU为每组10秒及额外50次启停，未执行小时/天级soak；这类测试可延长但不得伪造时长。未知硬件/网络盘、强杀缓存清扫、Ignore热更新、可靠rename关联、editor执行仍是已注明边界。
+实际Terminal.app/iTerm2人工QA、真正clean-Mac（含Intel支持范围）安装、Homebrew安装/认证流程、owner项目公开分发许可与签名/公证策略未签字。未创建公开Release/tag/tap、未自动合并、未开发GUI。基础性能CPU为每组10秒/50次启停，另对clean提交补120秒idle/100轮burst/100次启停（见下）；未执行小时/天级soak，不得伪造时长。未知硬件/网络盘、强杀缓存清扫、Ignore热更新、可靠rename关联、editor执行仍是已注明边界。
 
 目前实际执行范围无已知未解决P0/P1实现故障；PR评审/远端检查/人工Gate单独记录。接手者按第23节关闭本轮Gate与集成；只有`docs/gates/Gate-A.md`真实签字PASS后才开始R6。
+
+### 29.6 最终源码、候选与远端证据
+
+实现提交 **`f3e662f2059d47a0b9f108b8b8d0b17dcb760fe4`** 已推送，**[PR #5](https://github.com/StevenWinsir/FolderWatch/pull/5)** 已创建，未自动合并。其 **[push CI 36988380384](https://github.com/StevenWinsir/FolderWatch/actions/runs/36988380384)** 与 **[PR CI 36988453642](https://github.com/StevenWinsir/FolderWatch/actions/runs/36988453642)** 均已实查completed/success，各7个job全绿，包括macOS/Linux×Go1.23/1.26、六fuzz、cross-build和native Terminal candidate安装。精确job/artifact标识在`docs/benchmarks/r5/ci-source.json`。本节证据补记仅Markdown/JSON/TXT，生产Go、测试、脚本、workflow和vendor与上述已验证源码一致；最终文档head检查见PR Checks。
+
+clean `f3e662f`以Go1.26.6构建的本机候选在本worktree `dist/v0.1.0-rc.1/`：dirty=false、完整commit/build-date、两架构checksum/安全归档与native arm64安装检查PASS；Ruby formula语法PASS；同机两次构建的两archive、manifest、formula、SHA256SUMS **五个文件逐字节相同**。本机arm64 SHA=`69eb126149a38656859df78c83c1964abefc00c9116c123333443bb9fea6c80d`；amd64 SHA=`b676becd596b27dbf672aaf5ce7732b395499c75519ac7744db53691df72fbef`。完整元数据保留在`docs/release/r5-candidate-*`与`r5-reproducibility.json`。
+
+远端已上传[私有候选artifact 11218432417](https://github.com/StevenWinsir/FolderWatch/actions/runs/36988380384/artifacts/11218432417)，runner为Go1.26.8/darwin-arm64，native安装PASS。工具链与本机不同，必须使用该artifact自身manifest/SHA256SUMS，不能套用上述本机SHA；private Actions候选不等于公开Release或永久下载链接。
+
+clean源码额外资源实验于UTC09:13:10.924784–09:15:35.936662实际运行145.01秒：1k×1KiB、120.001秒idle、100文件burst×100轮、100次完整启停。CPU0.3929%、idle语义事件0、Core P95 166.34ms、峰值RSS20.69MB；fd6→1010→6、goroutine1→5→1、cache0，全断言PASS。命令、时间与100样本保留在`soak-clean.json`/`soak-environment.json`；仍不宣称小时级耐久度或人工Gate通过。

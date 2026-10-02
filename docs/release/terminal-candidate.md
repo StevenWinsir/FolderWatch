@@ -6,6 +6,8 @@ R5 provides **private evaluation candidates**, not a public v1 release. The app 
 
 ## Build from an exact checkout
 
+R5 source delivery is [PR #5](https://github.com/StevenWinsir/FolderWatch/pull/5), implementation commit `f3e662f2059d47a0b9f108b8b8d0b17dcb760fe4`. A verified private [CI candidate artifact](https://github.com/StevenWinsir/FolderWatch/actions/runs/36988380384/artifacts/11218432417) was uploaded by the successful source push run. Its macOS arm64 runner used Go1.26.8; the separately retained local candidate in `dist/v0.1.0-rc.1/` used Go1.26.6. Always use the manifest and SHA256SUMS from the **same artifact**, not checksums from a different toolchain/run. Local provenance and byte-reproducibility evidence are retained in this directory's `r5-candidate-*` and `r5-reproducibility.json`. Neither candidate has received manual Gate A/public-distribution approval.
+
 ```sh
 go mod download
 make lint scripts-test test race smoke

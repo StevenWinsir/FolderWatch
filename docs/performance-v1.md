@@ -34,6 +34,10 @@ CPU 使用进程 user+system 时间除以实际观察时长，100%=占满一个�
 
 **从最后写入返回到新 TUI 输出的 P95=196.57ms，包含debounce。** 减去名义150ms得到46.57ms仅是便于比较的估计，不是内部debounce结束时刻的精确埋点。含debounce的总路径已低于250ms参考预算；PTY字节输出不能证明 Terminal.app/iTerm2 compositor像素延迟或代替人工视觉验收。轮询粒度约2ms，原始20个样本全部保留。
 
+## 清洁提交追加的持续资源检查
+
+生产源码提交`f3e662f2059d47a0b9f108b8b8d0b17dcb760fe4`重新编译探针后，另外执行1k×1KiB、100文件burst×100轮、120秒空闲以及100次完整启停。UTC 09:13:10.924784开始、09:15:35.936662结束，实际整体约145.01秒。空闲120.001秒CPU=0.3929%，语义事件0；burst Core P95=166.34ms；峰值RSS20.69MB；fd 6→1010→6、goroutine1→5→1、缓存0，全部正确性和清理断言PASS。原始100样本、命令与时间在`soak-clean.json` / `soak-environment.json`，与前面的短场景分开记录。这扩展了观察窗口，仍不是小时或天级soak。
+
 ## 测量发现并修复的实际 fd 泄漏
 
 最初 macOS `/dev/fd` 的 Go ReadDir 不可用，旧探针输出fd=-1；未把它视为无泄漏证据。改用 `/usr/sbin/lsof -p <self> -F f`，只统计数值fd，排除cwd/text映射，观察管道在前后采样中一致；Linux使用 `/proc/self/fd`。不支持测量时基准失败，不默认为0。

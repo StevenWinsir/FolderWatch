@@ -33,9 +33,10 @@ Manual reviewer / approval date: **未填写；未验收**。
 - [x] 本机完整 `go test -race -shuffle=on -count=10 ./...` PASS；已有R1–R4回归保留。
 - [x] 六类有界fuzz、四target编译、vendor守卫与Core无TUI传递依赖验证PASS。
 - [x] [性能报告](../performance-v1.md) 与原始样本已记录，10k本机参考预算达到；所有度量注明边界。
-- [x] 双架构打包与checksum校验、arm64真实安装/运行预演通过；没有运行时Go依赖。
+- [x] clean `f3e662f`双架构打包/checksum、arm64真实安装/运行、两次构建逐字节一致通过；没有运行时Go依赖。具体manifest在R5 acceptance中记录。
+- [x] 同一源码的push CI36988380384、PR CI36988453642各7个job全部success，含四组平台/Go版本矩阵、fuzz、跨构建和候选安装；不等于人工签字。
 - [x] 已发现native fd泄漏及发布许可证路径问题均在责任层修复并补回归；已执行检查中没有已知未解决P0/P1实现故障。
-- [ ] R5 PR完成评审/合并；远端检查成功须按最终head观察，不凭workflow配置推断。
+- [ ] [R5 PR #5](https://github.com/StevenWinsir/FolderWatch/pull/5)完成人工评审/合并；最后文档head检查按PR Checks观察，不凭workflow配置推断。
 - [ ] 在实际Terminal.app与iTerm2完成并签署上述所有人工流程。
 - [ ] 在真正干净Mac上安装已批准候选，确认架构、版本/checksum、终端交互及Gatekeeper行为；当前隔离HOME/PATH不等同此项。
 - [ ] 确认Intel分发范围并在相应真实环境验收；amd64交叉编译/校验不等同原生运行。

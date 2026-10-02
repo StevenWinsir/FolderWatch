@@ -1011,7 +1011,7 @@ P3。
 
 ## P5 — Snapshot / Baseline Engine
 
-**完成状态：R2 已实现并通过本地集成验收。** `internal/snapshot` 提供小文件 memory、中型文本 private temp disk、流式 SHA-256、元数据/hash 降级、不可变 Ref、原子 generation Reset 与清理。`app.Session` 注册 Watcher 后 fresh scan/capture；普通保存不推进 baseline。Reset 失败/取消不发布部分基线，成功先发 reset/reconcile，再处理排队事件。快照/队列限额见 README 与 ADR-008。R2 当时验收 before/hash；R3 现已通过 core/CLI 的 Diff、列表恢复消失及 Reset 清空测试，完整交互 TUI 仍由 R4 验收，不能记为已有 UI。
+**完成状态：R2 已实现并通过本地集成验收。** `internal/snapshot` 提供小文件 memory、中型文本 private temp disk、流式 SHA-256、元数据/hash 降级、不可变 Ref、原子 generation Reset 与清理。`app.Session` 注册 Watcher 后 fresh scan/capture；普通保存不推进 baseline。Reset 失败/取消不发布部分基线，成功先发 reset/reconcile，再处理排队事件。快照/队列限额见 README 与 ADR-008。R2 当时验收 before/hash；R3 已通过 core/CLI 的 Diff、列表恢复消失及 Reset 清空测试；R4 现已通过完整交互 TUI 的本地及远端 CI 自动化验收（见第 28 节），实际 Terminal.app/iTerm2 人工 QA 仍由 R5 负责。
 
 ### 目标
 

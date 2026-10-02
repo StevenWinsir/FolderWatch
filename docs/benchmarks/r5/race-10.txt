@@ -1,0 +1,20 @@
+?   	github.com/StevenWinsir/FolderWatch/cmd/folderwatch	[no test files]
+?   	github.com/StevenWinsir/FolderWatch/cmd/fwbench	[no test files]
+ok  	github.com/StevenWinsir/FolderWatch/internal/app	37.379s
+ok  	github.com/StevenWinsir/FolderWatch/internal/changes	1.965s
+ok  	github.com/StevenWinsir/FolderWatch/internal/cli	3.215s
+ok  	github.com/StevenWinsir/FolderWatch/internal/config	3.309s
+ok  	github.com/StevenWinsir/FolderWatch/internal/debounce	6.002s
+ok  	github.com/StevenWinsir/FolderWatch/internal/diff	2.494s
+ok  	github.com/StevenWinsir/FolderWatch/internal/eventnorm	4.748s
+ok  	github.com/StevenWinsir/FolderWatch/internal/filetype	5.151s
+ok  	github.com/StevenWinsir/FolderWatch/internal/fileutil	4.306s
+ok  	github.com/StevenWinsir/FolderWatch/internal/ignore	5.475s
+ok  	github.com/StevenWinsir/FolderWatch/internal/logging	3.741s
+?   	github.com/StevenWinsir/FolderWatch/internal/model	[no test files]
+ok  	github.com/StevenWinsir/FolderWatch/internal/pathutil	3.398s
+ok  	github.com/StevenWinsir/FolderWatch/internal/scan	3.130s
+ok  	github.com/StevenWinsir/FolderWatch/internal/snapshot	3.652s
+ok  	github.com/StevenWinsir/FolderWatch/internal/testutil	2.668s
+ok  	github.com/StevenWinsir/FolderWatch/internal/tui	3.700s
+ok  	github.com/StevenWinsir/FolderWatch/internal/watcher	32.399s

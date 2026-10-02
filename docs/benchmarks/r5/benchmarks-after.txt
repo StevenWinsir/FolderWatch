@@ -1,0 +1,30 @@
+goos: darwin
+goarch: arm64
+pkg: github.com/StevenWinsir/FolderWatch/internal/snapshot
+cpu: Apple M4
+BenchmarkBaseline/1000-files-1KiB-10         	       1	  19724208 ns/op	  51.92 MB/s	 4304056 B/op	   30868 allocs/op
+BenchmarkBaseline/1000-files-1KiB-10         	       1	  17992666 ns/op	  56.91 MB/s	 4306200 B/op	   30870 allocs/op
+BenchmarkBaseline/1000-files-1KiB-10         	       1	  17684917 ns/op	  57.90 MB/s	 4305752 B/op	   30866 allocs/op
+BenchmarkBaseline/10000-files-1KiB-10        	       1	 195547917 ns/op	  52.37 MB/s	43176200 B/op	  309999 allocs/op
+BenchmarkBaseline/10000-files-1KiB-10        	       1	 204997792 ns/op	  49.95 MB/s	43165688 B/op	  309971 allocs/op
+BenchmarkBaseline/10000-files-1KiB-10        	       1	 197694125 ns/op	  51.80 MB/s	42687032 B/op	  309983 allocs/op
+PASS
+ok  	github.com/StevenWinsir/FolderWatch/internal/snapshot	3.696s
+goos: darwin
+goarch: arm64
+pkg: github.com/StevenWinsir/FolderWatch/internal/tui
+cpu: Apple M4
+BenchmarkLargeChangeList/100-10     	       1	    449250 ns/op	   38024 B/op	     140 allocs/op
+BenchmarkLargeChangeList/100-10     	       1	    176375 ns/op	   38024 B/op	     140 allocs/op
+BenchmarkLargeChangeList/100-10     	       1	    142833 ns/op	   37928 B/op	     138 allocs/op
+BenchmarkLargeChangeList/1000-10    	       1	    224541 ns/op	  406584 B/op	     144 allocs/op
+BenchmarkLargeChangeList/1000-10    	       1	    190333 ns/op	  406584 B/op	     144 allocs/op
+BenchmarkLargeChangeList/1000-10    	       1	    180375 ns/op	  406584 B/op	     144 allocs/op
+BenchmarkLargeChangeList/10000-10   	       1	   1785083 ns/op	 6208328 B/op	     159 allocs/op
+BenchmarkLargeChangeList/10000-10   	       1	   1526917 ns/op	 6208328 B/op	     159 allocs/op
+BenchmarkLargeChangeList/10000-10   	       1	   1390709 ns/op	 6208328 B/op	     159 allocs/op
+BenchmarkVisibleDiffRendering-10    	       1	    124500 ns/op	    5264 B/op	     138 allocs/op
+BenchmarkVisibleDiffRendering-10    	       1	    115708 ns/op	    5264 B/op	     138 allocs/op
+BenchmarkVisibleDiffRendering-10    	       1	    134583 ns/op	    5264 B/op	     138 allocs/op
+PASS
+ok  	github.com/StevenWinsir/FolderWatch/internal/tui	0.401s

@@ -7,8 +7,8 @@
 > GUI 技术栈：**Wails + Svelte + TypeScript + Monaco Diff Editor**  
 > 开发阶段：**阶段一 Terminal/TUI → 质量闸门 → 阶段二 GUI**
 >
-> **当前工程状态（2026-10-02）：R4 / P0–P11 已实现并通过本地及远端 CI 自动化验收；主 PR #3 已合并为 main `bb3a75e`；测试/交接补充仍为 IN_REVIEW，成功检查与提交见第 28 节及 R4 acceptance。** Terminal 文件列表、异步 Diff、键鼠/过滤/滚动、Pause/Resume、确认式 Reset、安全日志均复用唯一 Go core。交互终端默认进入 TUI，管道默认仍单次扫描。R3 PR #2 已合并为 main `1b52fcc`，R4 分支为 `feat/r4-terminal-tui`。P12–P25 尚未完成，Gate A / B 尚未通过。
-> 本轮完成记录见 **第 28 节**，详细证据见 [`docs/rounds/R4-acceptance.md`](docs/rounds/R4-acceptance.md)，决策见 ADR-013；第 25–27 节保留 R1–R3 历史。原文已同步当前状态及 R3 合并事实。PTY 自动化不等同于 Terminal.app/iTerm2 人工 QA；远端 CI/PR/标签只按实测记录，以下路线目标不代表全部已交付。
+> **当前工程状态（2026-10-02）：R5 / P12–P14 工程硬化与私有 Terminal 候选发布已实现、本机自动化验收通过，Round 为 IN_REVIEW；Gate A=FAIL（待人工/分发签字）。** P0–P11保持已验收语义，R4主PR #3已合并main `bb3a75e`；R5分支`feat/r5-terminal-release`已纳入R4补充`a775148`（PR #4仍OPEN）。本轮补性能/资源测量、真实TUI延迟、native fd泄漏修复、测试/fuzz/CI及macOS双架构候选包。实际Terminal.app/iTerm2、clean-Mac和项目分发许可尚未签字，不能声称P14 Gate全部完成；P15–P25/GUI未开始，Gate B未通过。
+> 本轮完成记录见 **第29节**、[`docs/rounds/R5-acceptance.md`](docs/rounds/R5-acceptance.md)、[`docs/performance-v1.md`](docs/performance-v1.md)、[`docs/gates/Gate-A.md`](docs/gates/Gate-A.md)及ADR-014；第25–28节保留R1–R4历史，原文当前状态同步更新。PTY/隔离HOME/PATH不等同实际终端人工QA或干净Mac；PR/CI/候选commit只按实查记录，不创建虚构标签或把路线目标写成已交付。
 
 ---
 
@@ -84,8 +84,8 @@ P0–P25 继续作为能力阶段编号；**Round 才是实际开发、Code Revi
 | R1 | Terminal | P0–P2 | 工程基础与输入边界 | 工程骨架、CLI/Config、扫描与 Ignore | **PASS（2026-10-01，本地 + 远端 CI）**，可稳定确定应监控集合 |
 | R2 | Terminal | P3–P5 | 文件事件与 Baseline 内核 | Watcher、Debounce/Coalesce、Snapshot | **PASS，PR #1 已合并（2026-10-02）** |
 | R3 | Terminal | P6–P8 | 内容分析与变更语义 | Classifier、Diff、ChangeStore | **PASS，PR #2 已合并（2026-10-02）**，可获取语义列表与 GetDiff |
-| R4 | Terminal | P9–P11 | TUI 产品体验 | 文件列表、Diff Viewer、Session 控制与日志 | **IN_REVIEW（实现/本地及远端 CI 自动化验收 PASS）**，Terminal 主流程与 21 项 PTY 冒烟通过；集成证据见 §28 |
-| R5 | Terminal | P12–P14 | 工程硬化与发布 | 性能、测试、CI、Terminal 发布 | **Gate A PASS** |
+| R4 | Terminal | P9–P11 | TUI 产品体验 | 文件列表、Diff Viewer、Session 控制与日志 | **主PR #3已合并，自动化PASS**；测试同步补充PR #4仍IN_REVIEW，R5已纳入；历史证据见§28 |
+| R5 | Terminal | P12–P14 | 工程硬化与发布 | 性能、测试、CI、Terminal 发布 | **工程自动化PASS / Round IN_REVIEW；Gate A FAIL，待人工及分发签字**；只有实际Gate A PASS才进入R6，见§29 |
 | R6 | GUI | P15–P16 | GUI 壳层与 IPC 契约 | Wails/Svelte、Core Facade、DTO/Event | GUI 稳定调用同一 Go Core |
 | R7 | GUI | P17–P18 | GUI 主流程与 Diff | Folder Picker、变化列表、Diff Viewer | GUI 核心用户路径闭环 |
 | R8 | GUI | P19–P21 | GUI 功能补全与系统鲁棒性 | Settings、系统集成、可访问性 | GUI 功能完整可长期运行 |
@@ -275,13 +275,13 @@ P0–P25 继续作为能力阶段编号；**Round 才是实际开发、Code Revi
 - Gate A 验收记录
 
 **R5 验收**：
-- [ ] P14 Gate A 全部满足
-- [ ] 性能数据标明真实硬件与数据规模
-- [ ] 无无限增长 channel/timer/goroutine
-- [ ] 核心 bug 均补 regression test
-- [ ] clean machine 可安装并运行 Terminal 版本
-- [ ] Core API 不依赖 Bubble Tea/Lip Gloss
-- [ ] Gate A 文件已提交仓库
+- [ ] P14 Gate A全部满足：仍缺实际Terminal.app/iTerm2、clean-Mac及分发签字
+- [x] 性能数据标明真实硬件与规模；1k/10k、burst、大文件、深目录与原始JSON已记录
+- [x] channel/timer/goroutine有界设计及测量/回归通过；fd泄漏已修复，不将短时观察等同小时级保证
+- [x] 本轮核心bug在native责任层及Session补regression test，全包race10轮通过
+- [ ] clean machine安装：仅已完成隔离HOME/PATH的真实候选安装，不等同干净Mac
+- [x] Core API不依赖Bubble Tea/Lip Gloss，传递依赖自动检查通过
+- [x] Gate A文件纳入本轮仓库交付，明确FAIL/pending而非伪造PASS
 
 **出口：Gate A**：`PASS` 才进入 R6；`FAIL` 必须回到对应责任 Round 修复并重新执行 Gate A。
 
@@ -2282,17 +2282,17 @@ ADR 必须写：Context、Decision、Alternatives、Consequences、Migration。
 
 ---
 
-## 23. 下一位开发者从哪里开始（R4 后）
+## 23. 下一位开发者从哪里开始（R5 工程交付后）
 
-P0–P11 已实现，下一轮为 R5 / P12–P14；先关闭 R4 PR 集成/评审阻塞项：
+P0–P11已验收；R5/P12–P14工程部分完成，但**下一步是关闭R5集成与Gate A验收，而非直接开发GUI**：
 
-1. 阅读第 28 节、R4 acceptance、README 与 ADR-001–013，执行 `make build test race lint smoke`，保留 vendor 补丁及全部 R1–R4 测试。
-2. TUI 已只消费 ChangeState/语义事件/GetDiff；继续保持 core 无 UI import，不从 raw flags 重建状态。Removed 是“不再变化”，不是文件删除。
-3. 保留单一可取消 Diff 请求、epoch/path/generation/version 防护、有限重试和安全/有界渲染；不要为性能测试删除正确性断言。
-4. Pause/Resume/Reset 的一致语义见 ADR-013；包括暂停中 Reset、恢复同一 baseline、失败保留状态、关闭竞态和清理回归。
-5. P12 补 1k/10k 文件、burst、baseline CPU/内存/延迟、长时监控与 profile，报告真实硬件和规模；R4 单 View benchmark 不是性能 Gate。
-6. P13 保持四组 smoke 与 macOS/Linux×Go1.23/1.26；P14 完成 Terminal.app/iTerm2 人工 QA、clean-machine 安装、macOS 分发/许可证决策和 Gate A 文件。
-7. Gate A 未通过，不开发 GUI。editor 执行、Ignore 热更新、强杀缓存清理、可靠 rename 关联仍不是已交付能力。
+1. 阅读第29节、R5 acceptance、性能报告、Gate-A及ADR-001–014；检查R4补充PR #4与R5 PR的实际评审/合并状态。保留所有R1–R5回归和已扩展的vendor patch。
+2. 执行`make lint scripts-test test race smoke`与六类fuzz。CI配置不代表成功，核对最终head实际run；Windows仍只声明compile。
+3. 保持唯一ChangeStore/语义事件/GetDiff、core无UI依赖；Removed是“不再变化”，不是Deleted。保留Diff epoch/path/generation/version与取消/有限重试，不靠删断言换性能。
+4. 保留Pause/Resume/Reset一致性及native Close fence/reader join/fd清理；升级fsnotify前按ADR-009/014重建可逆patch/hash并重跑原生资源回归，不能直接`go mod vendor`抹掉修复。
+5. 性能原始JSON和边界已记录；同条件复测，必要时扩展冷缓存/真实工程/小时级压力。不要将10秒idle、50次启停或model微基准解释为普遍耐久度保证。
+6. 对同一clean候选commit/checksum实际完成Terminal.app与iTerm2人工验收、真正clean-Mac安装、Intel支持范围与Homebrew流程；由owner决定项目公开分发许可/签名策略，补齐Gate-A测试人和签字。
+7. 只有Gate A PASS且PR集成完成才开始R6。editor执行、Ignore热更新、强杀缓存清理、可靠rename关联仍不是本轮能力；不得用GUI绕过Gate。
 
 项目的核心价值不是“终端上有颜色”，而是：**文件事件再混乱，最终仍然能稳定、正确、可恢复地告诉用户“相对于 baseline，到底哪些文件变了，以及变了什么”。**
 
@@ -2315,7 +2315,7 @@ P0–P11 已实现，下一轮为 R5 / P12–P14；先关闭 R4 PR 集成/评审
 
 ## 25. 历史交付记录 — R1 / P0–P2（2026-10-01）
 
-本节保留 R1 时点的交付和未完成功能；当前完成范围以第 28 节 R4 为准。
+本节保留R1时点的交付和未完成功能；当前完成范围以第29节R5为准。
 
 ### 25.1 实际完成范围
 
@@ -2471,7 +2471,7 @@ P9–P11 TUI、交互Diff/Reset、Pause/Resume、日志/编辑器均未实现；
 
 ---
 
-## 28. 本轮交付记录 — R4 / P9–P11（2026-10-02）
+## 28. 历史交付记录 — R4 / P9–P11（2026-10-02）
 
 ### 28.1 起点、范围与集成状态
 
@@ -2534,8 +2534,51 @@ macOS arm64/amd64、Linux amd64、Windows amd64交叉编译通过；Windows只�
 
 最终该场景在`GOMAXPROCS=1`下**race连续100轮PASS**；补充版本重新执行`CI=true make build test race lint smoke`、全包race10轮、JSON计数全部通过，仍为**287/129、失败0/跳过0、85.7%覆盖率**。补充仅改两个测试文件及交接Markdown，生产代码/vendor不变。主PR合并与补充评审分开记录，不将早期偶发失败抹掉，也不将旧CI冒充补充head的CI；补充PR中的检查为其远端验收依据。
 
-### 28.5 明确未完成与下一轮
+### 28.5 R4 时点的未完成与下一轮（历史保留）
 
-**P12–P14 / R5尚未完成，Gate A未通过。** 实际Terminal.app/iTerm2/VS Code GUI人工QA、10k文件/小时级监控/CPU/内存/P95、clean-machine安装、打包/签名/分发/许可证决策留给R5。没有GUI/Wails/Svelte功能；editor仍只存储不执行。Ignore热更新、强杀缓存自动清扫、可靠rename关联、side-by-side/多文件常驻Diff不是本轮已交付内容。
+**以下为R4交付时点的历史边界，不代表R5当前状态；R5已完成部分见第29节。** 当时P12–P14尚未实施、Gate A未通过，实际Terminal.app/iTerm2/VS Code GUI人工QA、10k/小时级监控/CPU/内存/P95、clean-Mac、打包/签名/分发许可留待后续。没有GUI，editor仍只存储；Ignore热更新、强杀缓存清扫、可靠rename关联、side-by-side/多Diff常驻不是R4能力。
 
 下一轮先关闭`fix/r4-native-test-ordering`补充PR的评审与合并项，再依第23节执行R5；不得用GUI绕过Gate A。尚未创建r4-complete标签，不改写已有checkpoint。当前已执行测试范围内没有未解决实现blocker，集成/人工验收状态单独记录。
+
+---
+
+## 29. 本轮交付记录 — R5 / P12–P14（2026-10-02）
+
+### 29.1 当前结论与集成范围
+
+**P12性能/资源治理、P13测试/CI、P14私有Terminal候选发布工程已实现并通过本机自动化验证；Round IN_REVIEW，Gate A=FAIL/pending人工及分发签字。** 不能将本节解读为完整P14签字通过，也不能进入R6。完整证据见`docs/rounds/R5-acceptance.md`、`docs/performance-v1.md`、`docs/gates/Gate-A.md`及ADR-014。
+
+本轮完整阅读原交接2537行并核实R4主PR #3已合并main `bb3a75e`。原checkout有另一窗口的R4原生测试修复，因此在`/Users/stevenlee/Desktop/diffList/.r5-worktree`创建隔离分支`feat/r5-terminal-release`，未覆盖用户改动。随后快进纳入`a775148decf0655575c0dc2933d2aaddd9d8865f`；对应[PR #4](https://github.com/StevenWinsir/FolderWatch/pull/4)实查仍OPEN，本轮PR包含该前置测试同步补充，不冒充已合并。
+
+### 29.2 本轮实际完成
+
+| 阶段 | 新增/修订交付 | 验证 |
+|---|---|---|
+| P12 | `cmd/fwbench`生成隔离1k/10k、100-file burst、5/10MiB文本、64MiB binary、depth32、50次启停；CPU/heap/goroutine profiles与fd/缓存计数；真实binary PTY计时 | 七组精确hash/资源检查PASS；原始JSON、失败样本与profile top纳入`docs/benchmarks/r5` |
+| P12 内核修复 | kqueue Close完整owned-fd回收、reader join、并发Close/注册屏障、close-on-exec；小文本capture独占buffer转交，少一次正文复制 | native/app/ownership责任层regression及全包race10轮，vendor patch/hash可逆校验 |
+| P13 | 保留全部旧unit/integration/golden/model/真实CLI/PTY；新增overflow/资源/ownership/eventnorm fuzz；六目标fuzz日志；Core传递依赖检查 | 299/137计数、0失败/跳过；fuzz/四smoke全绿 |
+| P13 CI | macOS/Linux×Go1.23/1.26、随机race、coverage/log artifacts、fuzz、四target构建、native候选安装/资源smoke | 本机等价命令通过；远端最终head需按实际run记录 |
+| P14 工程 | darwin arm64/amd64 SemVer候选、version/full commit/build-date、CGO0/vendor、确定性tar/gzip、manifest/SHA256SUMS/依赖与Go许可证、Homebrew真实checksum formula、私有候选workflow | 双架构校验、arm64隔离HOME/PATH安装/watch/hash/Ctrl+C/cache PASS；未声称干净Mac或公开tap |
+| 交接 | README/CHANGELOG原文更新、ADR-014、性能/验收/Gate文档、Handoff当前状态及§29 | Gate明确FAIL/pending；历史§25–28保留 |
+
+### 29.3 实际发现的资源缺陷与修复
+
+初版Darwin `/dev/fd` ReadDir不可用，fd=-1未被当作无泄漏。改为lsof只数当前进程数值fd后，1000文件场景从**6→1010 active→1007 after Close**，虽然缓存已清空仍真实泄漏。根因为fsnotify kqueue先关闭done，再Remove时closed guard直接返回，所有文件watch fd残留。
+
+修复在原有vendor责任层：单fd注册/移除受doneMu保护，递归在锁外；Close建立关闭屏障、关闭wake pipe、等待reader退出、回收全部owned fd并清空map，其他Close等待同一closeDone。新注册不能越过关闭屏障；kqueue/file fd加close-on-exec；重注册失败不误关旧owned fd。保留原有nofollow/未知fd overflow/目录校准/seen退休补丁。同步更新可复现patch、SHA manifest与ADR，不升级依赖、不在TUI隐藏错误。
+
+新增128文件20轮native启停、并发Close/注册、30轮Session Pause/Reset/Close、100文件overflow/no-consumer精确hash、snapshot防御副本回归。修复后七组测试fd全部回到6、goroutine回到1、cache0。小文本buffer保留仍限额，ReadContent仍防御拷贝；10k微基准累计分配约53.4→43.2MB（少约19%），耗时相近，不宣称无依据的加速。
+
+### 29.4 实测结果
+
+本机macOS26.6.2、Apple M4/10 logical CPU、32GiB、Go1.26.6、系统APFS/SSD。10k×1KiB ready约455ms、owner屏障后settled837ms、GC heap27.29MB、进程峰值RSS72.73MB、10秒idle CPU0.517%。20轮100文件burst：Core权威状态P95=170.31ms；真实120×36 PTY新列表输出P95=196.57ms，均包含150ms debounce；减去名义debounce只是估计，不是内部埋点。达到本机P12参考预算，不能推广至任何硬件/冷缓存/小时级运行。
+
+`go test -count=1 ./...`及JSON/coverage重跑：**299个测试/子测试、137个顶层测试/模糊目标，失败0、测试级跳过0**；完整`go test -race -shuffle=on -count=10 ./...` PASS。`make lint`/build、最终8个Python发布工具回归、R1 60/R2 17/R3 16/R4 21项smoke全部PASS，保留实际headless Vim两种保存和严格终端恢复。六fuzz每目标10秒/2workers全绿，四target darwin arm64/amd64、linux amd64、windows amd64编译通过，`go mod verify`/`go mod tidy -diff`通过；Windows仅compile。
+
+发布预演显式`--allow-dirty`，版本commit带dirty；双架构checksum/Mach-O/安全归档/许可证与native arm64安装通过，PATH只有`/usr/bin:/bin`、HOME/TMP隔离；版本、Unicode扫描、真实修改hash、SIGINT130和空缓存均检查。Homebrew Go许可证位置差异先失败后在release.py补两种布局及regression，缺许可证仍拒绝打包。正式clean候选commit及PR/远端CI在下方实查后记录，不拿dirty预演或旧R4 CI冒充正式交付。
+
+### 29.5 未完成边界与下一步
+
+实际Terminal.app/iTerm2人工QA、真正clean-Mac（含Intel支持范围）安装、Homebrew安装/认证流程、owner项目公开分发许可与签名/公证策略未签字。未创建公开Release/tag/tap、未自动合并、未开发GUI。性能CPU为每组10秒及额外50次启停，未执行小时/天级soak；这类测试可延长但不得伪造时长。未知硬件/网络盘、强杀缓存清扫、Ignore热更新、可靠rename关联、editor执行仍是已注明边界。
+
+目前实际执行范围无已知未解决P0/P1实现故障；PR评审/远端检查/人工Gate单独记录。接手者按第23节关闭本轮Gate与集成；只有`docs/gates/Gate-A.md`真实签字PASS后才开始R6。

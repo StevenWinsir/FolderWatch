@@ -2,7 +2,9 @@
 
 本地文件夹变更检查工具，macOS 优先。长期目标是用同一 Go core 驱动 Terminal/TUI 与 GUI，比较当前文件和 session 启动基线，而不是只比较上一次保存。
 
-**当前交付：R4 / P0–P11。** 已实现 Terminal 文件列表、异步 unified Diff、键鼠导航、过滤、暂停/恢复、确认式 Reset 和安全诊断日志，复用唯一 Go ChangeStore 与原有监听/快照/分类/Diff。交互终端中的默认命令启动 TUI；管道中的默认命令与显式 `--scan` 仍只扫描一次。恢复基线内容后变化自动消失。**GUI 尚未实现，Gate A / B 未通过。** 路线见 [Handoff_Rounds.md](Handoff_Rounds.md)，本轮证据见 [R4 acceptance](docs/rounds/R4-acceptance.md)。
+**当前交付：R5 / P12–P14 的工程硬化与私有 Terminal 候选包。** P0–P11 的 Terminal 列表、异步 Diff、键鼠/过滤、Pause/Resume、确认式 Reset 和安全日志保持同一 Go core。R5 新增目录级性能/资源测量、真实 PTY 输出延迟、native fd 泄漏修复、测试/fuzz/CI 与双架构打包。交互终端默认 TUI；管道默认仍单次扫描。**Gate A 尚未签字通过，GUI / Gate B 未开始；候选包不等于公开 v1。** 路线见 [Handoff](Handoff_Rounds.md)，本轮证据见 [R5 acceptance](docs/rounds/R5-acceptance.md)、[性能报告](docs/performance-v1.md)、[Gate A](docs/gates/Gate-A.md)。
+
+R5 分支为 `feat/r5-terminal-release`，已纳入 R4 原生测试同步提交 `a775148`；本轮 PR/CI 以 R5 acceptance 中实际记录为准。以下保留 R4 及更早轮次的历史集成证据，不将旧 CI 当成 R5 检查。
 
 R4 开发分支为 `feat/r4-terminal-tui`，[PR #3](https://github.com/StevenWinsir/FolderWatch/pull/3)已于2026-10-02 08:23:07 UTC合入main（`bb3a75e`，head=`86b2191`）。原生测试同步与交接补充位于`fix/r4-native-test-ordering`，另行评审；修订源码`9592658`的[远端 CI](https://github.com/StevenWinsir/FolderWatch/actions/runs/36982861222)已全部通过（macOS/Linux × Go1.23/1.26与cross-build）。详见R4 acceptance；自动化不代替人工评审。R3 已通过 [PR #2](https://github.com/StevenWinsir/FolderWatch/pull/2) 于 2026-10-02 07:08:58 UTC 合入 main（`1b52fcc`），R4 从该合并提交开始。R2 已通过 [PR #1](https://github.com/StevenWinsir/FolderWatch/pull/1) 合并；其曾预告的 `r2-complete.1` 实际未创建，最终 R2 以 `32529a7` / `1dbdb5b` 为准。
 
@@ -11,7 +13,7 @@ R4 开发分支为 `feat/r4-terminal-tui`，[PR #3](https://github.com/StevenWin
 需要 Go 1.23+；lint/CLI 冒烟测试另外需要 Python 3。Git 仅供开发和 Ignore 对照测试使用；被扫描的目录不需要是 Git 仓库。
 
 ```sh
-git clone https://github.com/StevenWinsir/FolderWatch.git --branch feat/r4-terminal-tui
+git clone https://github.com/StevenWinsir/FolderWatch.git --branch feat/r5-terminal-release
 cd FolderWatch
 go mod download
 make build
@@ -29,7 +31,7 @@ make build
 
 文本输出会转义文件名中的控制字符。JSON 包含 `root`、`entries`、`warnings`；每项有 `path`、`kind`、`size`、`mode`、`mod_time`，不包含文件内容。根目录键为 `.`，其他键为根目录相对、`/` 分隔、保留大小写和 Unicode 的路径。目录、普通文件、symlink、其他特殊文件分别标记为 `directory`、`file`、`symlink`、`other`。遍历顺序确定，遵循 `filepath.WalkDir` 的词法遍历顺序。
 
-## Terminal 使用（R4）
+## Terminal 使用
 
 ```sh
 ./bin/folderwatch "/path/to/项目 with spaces"
@@ -139,7 +141,7 @@ Duration 使用正的 Go duration，如 `75ms`、`1s`。Size 支持正整数 byt
 
 快照按 32KiB 块读取/计算 SHA-256，检查取消和 identity/size/mtime/mode；分类结果与这些确切字节一起保存在 Ref 中，R2 私有探针已替换为共享 Classifier。64KiB 内的小文本优先内存，较大文本保存在 root 外 0700 私有目录的 0600 文件。二进制/未支持编码、超限或预算不足仅保留 metadata/hash。已知超限的 Classifier 不读内容，snapshot 为哈希仍会流式读取但跳过文本探测。Current resolver 只保留元数据，不积累全文。
 
-正常 session 有基线、metadata-only resolver、按需 Diff 三个私有缓存目录。Reset 峰值可持有两代有界基线及一个有界 Diff 当前快照，另有扫描清单、矩阵、I/O 和调用方副本；32MiB/256MiB 是每代保留预算，不是整个进程 RAM 上限。扫描清单分配仍随条目数增长；kqueue 描述符也随文件数增加。Close 清理全部缓存；强杀后残留自动清扫未实现。持续压力/性能预算留到 R5，当前不宣称 P12 指标通过。
+正常 session 有基线、metadata-only resolver、按需 Diff 三个私有缓存目录。Reset 峰值可持有两代有界基线及一个有界 Diff 当前快照，另有扫描清单、矩阵、I/O 和调用方副本；32MiB/256MiB 是每代保留预算，不是整个进程 RAM 上限。扫描清单分配仍随条目数增长；kqueue 描述符也随文件数增加。R5 修复了 native Close 标记关闭后 Remove 不执行、导致 fd 未释放的问题：现在关闭屏障后等待 reader 并回收全部 owned fd；并发注册/关闭有回归。Close 清理缓存，强杀后自动清扫仍未实现。目录规模、CPU、RSS、P95、描述符和观察时长的实测边界见性能报告，不宣称任意硬件/小时级稳定性已获证明。
 
 不会在监控目录写状态/快照/日志，不执行 editor，不联网或上传文件内容。默认日志只保留内存中最近 200 条，单条消息约 2KiB；显式 `--log-file` 才在 root 外创建新的私有文件，拒绝已有文件、symlink 与 root 的大小写/链接别名。文件达到 4MiB 或写入失败后停止增长、保留 ring 并提示，不中断监控；不会自动轮转或清空用户文件。不记录文件/Diff 正文，debug 不写 TUI 的 stdout/stderr。开发时依赖下载与 GitHub 提交不属于应用运行行为。
 
@@ -147,6 +149,7 @@ Duration 使用正的 Go duration，如 `75ms`、`1s`。Size 支持正整数 byt
 
 ```text
 cmd/folderwatch/       进程入口、版本、取消信号
+cmd/fwbench/           仅开发使用的合成性能/资源探针，不随应用分发
 internal/cli/          参数与终端/JSON 输出
 internal/tui/          Bubble Tea model、键鼠、可取消 Diff、虚拟视口与安全渲染
 internal/logging/      有界诊断 ring、显式 root 外私有文件
@@ -169,6 +172,9 @@ scripts/watch_smoke.py R2 持续监听、真实 Vim、Ctrl+C/清理
 scripts/semantic_smoke.py R3 真实 CLI 状态迁移与分类
 scripts/tui_smoke.py   R4 真实二进制 PTY 键鼠、滚动、恢复与错误/清理
 scripts/vendor_guard.py 依赖补丁校验
+scripts/performance.py / tui_performance.py 目录资源与真实 PTY 延迟
+scripts/release.py / release_smoke.py 可复现双架构候选包与安装验证
+scripts/fuzz.py       六类有界 fuzz 与日志
 patches/ + vendor/    可复现依赖源码与本地 kqueue 补丁
 docs/adr/             决策与边界
 docs/rounds/          每轮验收记录
@@ -181,8 +187,17 @@ make test
 make race
 make lint
 make smoke
+make scripts-test
+make fuzz
+make bench
+# 输出目录必须尚不存在；真实数据和 profiles 留在 artifacts/。
+make performance
+python3 scripts/tui_performance.py bin/folderwatch
+# 清洁 checkout 才能构建正式候选；不会创建标签或上传 Release。
+make release VERSION=v0.1.0-rc.1
+make release-smoke VERSION=v0.1.0-rc.1
 ```
 
-`make lint` 执行 gofmt 检查及 `go vet`。CI 配置 macOS/Linux、Go 1.23/1.26 的 build/test/race/smoke，并交叉编译 macOS/Windows。实际执行结果以 [Actions](https://github.com/StevenWinsir/FolderWatch/actions) 和 R4 验收记录为准，配置存在不等于远端运行已通过。Windows 目前只要求编译，不宣称运行时正式支持。
+`make lint` 执行 gofmt、vendor hash/补丁可逆性、Core 传递依赖边界检查与 go vet。CI 保留 macOS/Linux × Go1.23/1.26 的 build/test/race/smoke，增加测试/coverage 日志、六类 fuzz、Python 发布回归、双架构校验及 native macOS 安装冒烟；macOS/Linux/Windows 有交叉编译。实际运行结果以 [Actions](https://github.com/StevenWinsir/FolderWatch/actions) 与 R5 acceptance 为准。Windows 只声明编译支持。
 
-下一轮为 R5 / P12–P14：先确认 R4 PR 集成状态，再做性能/长时资源治理、真实 Terminal.app 与 iTerm2 人工验收、clean-machine 安装与发布，提交 Gate A。PTY 自动化不代替实际终端应用人工 QA；Windows 仍只声明编译。保留全部 R1–R4 回归和 vendor patch，不在 UI 复制 core。R4 决策见 [ADR-013](docs/adr/013-terminal-session-controls-and-diagnostics.md)，贡献规范见 [CONTRIBUTING.md](CONTRIBUTING.md)。本轮未引入新版本依赖，只使用并提升既有 x/term、uniseg 为直接依赖。项目尚未指定对外分发许可证，Gate A 未通过前不开发 GUI。
+下一步是完成 R5 PR 评审/集成及 [Gate A](docs/gates/Gate-A.md) 中未签字的 Terminal.app/iTerm2 人工 QA、真正 clean-Mac 安装与分发许可决策，不是直接开始 R6。PTY 和隔离 HOME/PATH 自动化不代替这些验收。本轮未升级依赖版本；vendor 生命周期补丁与构建决策见 [ADR-014](docs/adr/014-terminal-resource-hardening-and-release.md)。安装、校验和、Homebrew 方案和候选 workflow 见 [Terminal 发布说明](docs/release/terminal-candidate.md)。项目尚未指定公开分发许可证，不声称 Developer ID 签名/公证或已发布公开 tap。贡献规范见 [CONTRIBUTING.md](CONTRIBUTING.md)。

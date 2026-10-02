@@ -1,0 +1,53 @@
+fuzz: elapsed: 0s, gathering baseline coverage: 0/197 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 197/197 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 263540 (87835/sec), new interesting: 25 (total: 222)
+fuzz: elapsed: 6s, execs: 532785 (89730/sec), new interesting: 50 (total: 247)
+fuzz: elapsed: 9s, execs: 802228 (89814/sec), new interesting: 56 (total: 253)
+fuzz: elapsed: 10s, execs: 895563 (86373/sec), new interesting: 59 (total: 256)
+PASS
+ok  	github.com/StevenWinsir/FolderWatch/internal/config	10.948s
+
+fuzz: elapsed: 0s, gathering baseline coverage: 0/100 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 100/100 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 336293 (112091/sec), new interesting: 28 (total: 128)
+fuzz: elapsed: 6s, execs: 715480 (126401/sec), new interesting: 39 (total: 139)
+fuzz: elapsed: 9s, execs: 1057902 (114104/sec), new interesting: 50 (total: 150)
+fuzz: elapsed: 10s, execs: 1205940 (136939/sec), new interesting: 52 (total: 152)
+PASS
+ok  	github.com/StevenWinsir/FolderWatch/internal/pathutil	10.501s
+
+fuzz: elapsed: 0s, gathering baseline coverage: 0/4 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 4/4 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 212722 (70883/sec), new interesting: 64 (total: 68)
+fuzz: elapsed: 6s, execs: 679930 (155785/sec), new interesting: 91 (total: 95)
+fuzz: elapsed: 9s, execs: 1059057 (126337/sec), new interesting: 108 (total: 112)
+fuzz: elapsed: 10s, execs: 1158498 (94853/sec), new interesting: 124 (total: 128)
+PASS
+ok  	github.com/StevenWinsir/FolderWatch/internal/eventnorm	10.448s
+
+fuzz: elapsed: 0s, gathering baseline coverage: 0/37 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 37/37 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 208726 (69552/sec), new interesting: 15 (total: 52)
+fuzz: elapsed: 6s, execs: 208726 (0/sec), new interesting: 15 (total: 52)
+fuzz: elapsed: 9s, execs: 208726 (0/sec), new interesting: 15 (total: 52)
+fuzz: elapsed: 11s, execs: 1098659 (444441/sec), new interesting: 19 (total: 56)
+PASS
+ok  	github.com/StevenWinsir/FolderWatch/internal/filetype	11.497s
+
+fuzz: elapsed: 0s, gathering baseline coverage: 0/43 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 43/43 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 520801 (173541/sec), new interesting: 11 (total: 54)
+fuzz: elapsed: 6s, execs: 1096349 (191851/sec), new interesting: 16 (total: 59)
+fuzz: elapsed: 9s, execs: 1680290 (194710/sec), new interesting: 20 (total: 63)
+fuzz: elapsed: 10s, execs: 1867222 (172932/sec), new interesting: 20 (total: 63)
+PASS
+ok  	github.com/StevenWinsir/FolderWatch/internal/snapshot	10.490s
+
+fuzz: elapsed: 0s, gathering baseline coverage: 0/55 completed
+fuzz: elapsed: 0s, gathering baseline coverage: 55/55 completed, now fuzzing with 2 workers
+fuzz: elapsed: 3s, execs: 521880 (173954/sec), new interesting: 32 (total: 87)
+fuzz: elapsed: 6s, execs: 1054248 (177448/sec), new interesting: 37 (total: 92)
+fuzz: elapsed: 9s, execs: 1572808 (172809/sec), new interesting: 51 (total: 106)
+fuzz: elapsed: 10s, execs: 1751964 (175055/sec), new interesting: 52 (total: 107)
+PASS
+ok  	github.com/StevenWinsir/FolderWatch/internal/diff	10.440s

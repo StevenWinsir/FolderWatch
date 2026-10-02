@@ -1,0 +1,97 @@
+{
+  "github.com/StevenWinsir/FolderWatch/cmd/folderwatch": {
+    "covered": 0,
+    "statements": 4,
+    "percent": 0.0
+  },
+  "github.com/StevenWinsir/FolderWatch/cmd/fwbench": {
+    "covered": 0,
+    "statements": 224,
+    "percent": 0.0
+  },
+  "github.com/StevenWinsir/FolderWatch/internal/changes": {
+    "covered": 309,
+    "statements": 365,
+    "percent": 84.7
+  },
+  "github.com/StevenWinsir/FolderWatch/internal/cli": {
+    "covered": 189,
+    "statements": 228,
+    "percent": 82.9
+  },
+  "github.com/StevenWinsir/FolderWatch/internal/config": {
+    "covered": 131,
+    "statements": 152,
+    "percent": 86.2
+  },
+  "github.com/StevenWinsir/FolderWatch/internal/diff": {
+    "covered": 162,
+    "statements": 172,
+    "percent": 94.2
+  },
+  "github.com/StevenWinsir/FolderWatch/internal/debounce": {
+    "covered": 58,
+    "statements": 64,
+    "percent": 90.6
+  },
+  "github.com/StevenWinsir/FolderWatch/internal/eventnorm": {
+    "covered": 13,
+    "statements": 13,
+    "percent": 100.0
+  },
+  "github.com/StevenWinsir/FolderWatch/internal/filetype": {
+    "covered": 58,
+    "statements": 62,
+    "percent": 93.5
+  },
+  "github.com/StevenWinsir/FolderWatch/internal/app": {
+    "covered": 227,
+    "statements": 282,
+    "percent": 80.5
+  },
+  "github.com/StevenWinsir/FolderWatch/internal/fileutil": {
+    "covered": 20,
+    "statements": 27,
+    "percent": 74.1
+  },
+  "github.com/StevenWinsir/FolderWatch/internal/ignore": {
+    "covered": 140,
+    "statements": 151,
+    "percent": 92.7
+  },
+  "github.com/StevenWinsir/FolderWatch/internal/logging": {
+    "covered": 70,
+    "statements": 81,
+    "percent": 86.4
+  },
+  "github.com/StevenWinsir/FolderWatch/internal/pathutil": {
+    "covered": 48,
+    "statements": 54,
+    "percent": 88.9
+  },
+  "github.com/StevenWinsir/FolderWatch/internal/scan": {
+    "covered": 49,
+    "statements": 51,
+    "percent": 96.1
+  },
+  "github.com/StevenWinsir/FolderWatch/internal/snapshot": {
+    "covered": 279,
+    "statements": 330,
+    "percent": 84.5
+  },
+  "github.com/StevenWinsir/FolderWatch/internal/testutil": {
+    "covered": 15,
+    "statements": 21,
+    "percent": 71.4
+  },
+  "github.com/StevenWinsir/FolderWatch/internal/tui": {
+    "covered": 372,
+    "statements": 442,
+    "percent": 84.2
+  },
+  "github.com/StevenWinsir/FolderWatch/internal/watcher": {
+    "covered": 172,
+    "statements": 213,
+    "percent": 80.8
+  }
+}

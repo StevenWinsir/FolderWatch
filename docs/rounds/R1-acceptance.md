@@ -1,6 +1,6 @@
 # R1 Acceptance — Foundation & Input (P0–P2)
 
-Status: **PASS — local R1 integration acceptance**
+Status: **PASS — local and GitHub Actions R1 integration acceptance**
 
 Date: 2026-10-01
 
@@ -25,7 +25,7 @@ P0, P1 and P2 are implemented. `app.Prepare` reliably produces validated normali
 | Requirement | Evidence | Result |
 |---|---|---|
 | Go skeleton, locked dependencies, build tooling | go.mod/go.sum, Makefile, thin main, tools-tag dependency pins | PASS |
-| CI definition and engineering conventions | .github/workflows/ci.yml, CONTRIBUTING.md, ADR-001–006 | PASS (definition; remote executions tracked separately below) |
+| CI definition and engineering conventions | .github/workflows/ci.yml, CONTRIBUTING.md, ADR-001–006 | PASS (definition and all 5 remote CI jobs; evidence below) |
 | Help/version, defaults, invalid inputs | cli/config tests plus built-binary smoke | PASS |
 | CLI > project > user > defaults; explicit false/empty arrays | config tests, smoke with isolated HOME/config | PASS |
 | Nested directories, spaces, Unicode, all extensions | scan tests and smoke | PASS |
@@ -66,7 +66,17 @@ These are bounded bug-finding runs, not exhaustive proofs or performance benchma
 
 ### Delivery addendum: remote CI
 
-Remote execution results will be recorded after observing the pushed commit. The [Actions page](https://github.com/StevenWinsir/FolderWatch/actions) is authoritative for subsequent runs; CI configuration alone is not proof of a passing remote run.
+Implementation commit **`8b59f7c92af293ec13fe1421983ff618abb7ec78`** passed [GitHub Actions run 36956805061](https://github.com/StevenWinsir/FolderWatch/actions/runs/36956805061). Observed workflow status: `completed`, conclusion: `success`; all **5 jobs succeeded**:
+
+| Job | Result |
+|---|---|
+| ubuntu-latest / Go 1.23.x | PASS: lint, build, tests, race and CLI smoke |
+| ubuntu-latest / Go 1.26.x | PASS: lint, build, tests, race and CLI smoke |
+| macos-latest / Go 1.23.x | PASS: lint, build, tests, race and CLI smoke |
+| macos-latest / Go 1.26.x | PASS: lint, build, tests, race and CLI smoke |
+| cross-build | PASS: darwin arm64, darwin amd64 and windows amd64 |
+
+The final documentation commit records this already-observed result without changing source, tests or workflow. `r1-complete` identifies the complete code-plus-handoff checkpoint. The [Actions page](https://github.com/StevenWinsir/FolderWatch/actions) is authoritative for subsequent runs. CI configuration alone is not counted as a passing run.
 
 ## Bugs found and fixed during this round
 

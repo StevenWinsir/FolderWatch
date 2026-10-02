@@ -7,7 +7,7 @@
 > GUI 技术栈：**Wails + Svelte + TypeScript + Monaco Diff Editor**  
 > 开发阶段：**阶段一 Terminal/TUI → 质量闸门 → 阶段二 GUI**
 >
-> **当前工程状态（2026-10-01）：R1 / P0–P2 已完成并通过本地集成验收。** 工程、CLI/Config、初始扫描与 Ignore 已实现；当前 `folderwatch` 是单次元数据扫描，不是持续监控程序。P3–P25 尚未实现，Gate A / B 尚未通过。
+> **当前工程状态（2026-10-01）：R1 / P0–P2 已完成并通过本地与 GitHub Actions 集成验收。** 工程、CLI/Config、初始扫描与 Ignore 已实现；当前 `folderwatch` 是单次元数据扫描，不是持续监控程序。P3–P25 尚未实现，Gate A / B 尚未通过。
 > 本轮完成记录见 **第 25 节**，详细证据见 [`docs/rounds/R1-acceptance.md`](docs/rounds/R1-acceptance.md)，实际使用与配置见 [`README.md`](README.md)。以下产品目标与后续阶段描述仍是路线规划，不代表功能已经全部交付。
 
 ---
@@ -81,7 +81,7 @@ P0–P25 继续作为能力阶段编号；**Round 才是实际开发、Code Revi
 
 | Round | 大阶段 | 包含 P | 单元主题 | 核心结果 | 出口 |
 |---|---|---:|---|---|---|
-| R1 | Terminal | P0–P2 | 工程基础与输入边界 | 工程骨架、CLI/Config、扫描与 Ignore | **PASS（2026-10-01，本地验收）**，可稳定确定应监控集合 |
+| R1 | Terminal | P0–P2 | 工程基础与输入边界 | 工程骨架、CLI/Config、扫描与 Ignore | **PASS（2026-10-01，本地 + 远端 CI）**，可稳定确定应监控集合 |
 | R2 | Terminal | P3–P5 | 文件事件与 Baseline 内核 | Watcher、Debounce/Coalesce、Snapshot | 可稳定监听并建立/重置基线 |
 | R3 | Terminal | P6–P8 | 内容分析与变更语义 | Classifier、Diff、ChangeStore | 可输出可靠 changed-file 语义 |
 | R4 | Terminal | P9–P11 | TUI 产品体验 | 文件列表、Diff Viewer、Session 控制 | Terminal 主流程完整可用 |
@@ -2316,6 +2316,8 @@ make build
 ### 25.4 本轮验证与修复
 
 环境：macOS 26.6.2、darwin/arm64、Go 1.26.6、Git 2.54.0。本地 `go build ./...`、gofmt/go vet、`go mod verify`、完整 Go tests、race 及 CLI smoke 均通过；127 个测试/子测试（38 个顶层测试及 fuzz 目标）无失败，60 项 smoke 无跳过。整体语句覆盖率 88.4%，扫描 96.1%，Ignore 94.0%。macOS arm64/amd64、Linux amd64、Windows amd64 交叉编译成功；不据此宣称 Windows 运行支持。Fuzz/远端 CI 的确切结果与运行链接记录在 R1 acceptance 的交付补记。
+
+远端验证已实际通过：主实现提交 `8b59f7c92af293ec13fe1421983ff618abb7ec78` 的 [GitHub Actions 36956805061](https://github.com/StevenWinsir/FolderWatch/actions/runs/36956805061) 为 `success`，5 个 job 全部成功。覆盖 macOS/Linux × Go 1.23/1.26 的 lint/build/test/race/CLI smoke，以及 macOS/Windows 交叉编译。之后的收尾提交只补充验收文档，不更改实现；完整交付由 `r1-complete` 标记。
 
 真实测试覆盖 Unicode/空格路径、根与后代 symlink、符号链接环、权限不足、文件消失、FIFO、5 GiB 稀疏大文件、配置不落盘、输出错误与取消。通过 16 组规则 × 22 条路径的本机 `git check-ignore` 对照修复 trailing `/**` 对父目录的错误匹配；同步修复嵌套规则预检、错误目录类型提示下的 symlink 越界、空 CLI root、低优先级非法 glob 被覆盖，以及最后一次扫描回调中的取消丢失。首轮失败保留为开发事实，最终通过结果有复现命令。
 

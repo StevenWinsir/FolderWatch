@@ -8,7 +8,7 @@ Owner / Review: 编码助手依据仓库所有者本轮授权实施；完成实�
 
 Start commit: `720ecdb06044145a0f9f8a15b0220a0b4be45113`（R1 checkpoint）
 
-Branch: `feat/r2-watch-baseline`。交付 checkpoint：`r2-complete`，完成推送后用 `git rev-parse r2-complete^{commit}` 解析精确提交。
+Branch: `feat/r2-watch-baseline`。最终交付 checkpoint：`r2-complete.1`，完成推送后用 `git rev-parse r2-complete.1^{commit}` 解析精确提交；首次 `r2-complete` 保留为修复前历史，不覆盖。
 
 Repository: https://github.com/StevenWinsir/FolderWatch （private）
 
@@ -62,7 +62,7 @@ P5：`snapshot.Store` 提供 SHA-256、不可变 owned refs、小文本内存、
 | `GOOS=windows GOARCH=amd64 go build ./...` | 编译通过，非 Windows 运行验收 |
 | `go test ./internal/snapshot -run='^$' -fuzz=FuzzTextProbeChunkBoundaries -fuzztime=5s -parallel=2` | PASS，910724 次执行、38 个新增 interesting inputs |
 
-最终10轮语句覆盖率：总计 **84.3%**；watcher 80.3%、eventnorm 100.0%、debounce 90.6%、snapshot 84.9%、app 72.6%、CLI 85.5%、config 85.1%、ignore 93.3%、scan 96.1%。main 由真实二进制 smoke 验证，不属于进程内单元覆盖；model 无可执行语句。coverage.out 和 Go fuzz cache 属本地验证产物，不作为用户数据或发布资产提交。
+最终10轮语句覆盖率：总计 **84.3%**；watcher 80.5%、eventnorm 100.0%、debounce 90.6%、snapshot 84.9%、app 72.0%、CLI 85.5%、config 85.1%、ignore 93.3%、scan 96.1%。main 由真实二进制 smoke 验证，不属于进程内单元覆盖；model 无可执行语句。coverage.out 和 Go fuzz cache 属本地验证产物，不作为用户数据或发布资产提交。
 
 ### 编辑器验证边界
 
@@ -109,6 +109,8 @@ R2 未实现文本 diff、Changed List、rename语义识别、Pause/Resume、TUI
 
 [GitHub Actions 36968383149](https://github.com/StevenWinsir/FolderWatch/actions/runs/36968383149) 实际结论为 **success**，headSha 与上述实现提交完全一致。5 个 job 均成功：macOS/Linux × Go 1.23/1.26 四个 test job（lint/build/test/race/重复核心集成/两组CLI smoke），以及 macOS/Windows cross-build。
 
-PR 创建调用被工具层安全检查拦截，没有创建 PR；未通过其他途径重试该受阻操作，也未直接修改/合并 main。R2 的实现、测试和远端分支推送已完成，但不能把“待 PR 合并”写成“已合入主分支”。main 仍保持 R1，R2 代码从 `feat/r2-watch-baseline` 或 `r2-complete` 获取。
+PR 创建调用被工具层安全检查拦截，没有创建 PR；未通过其他途径重试该受阻操作，也未直接修改/合并 main。R2 的实现、测试和远端分支推送已完成，但不能把“待 PR 合并”写成“已合入主分支”。main 仍保持 R1，R2 代码从 `feat/r2-watch-baseline` 或修订 `r2-complete.1` 获取。
 
-`r2-complete` 是本轮已验收分支的交付 checkpoint，不代替仓库的 PR 合并流程。记录远端证据的后续提交仅改文档，未改已通过的源代码、测试或工作流；最终分支/tag运行可以在 [Actions](https://github.com/StevenWinsir/FolderWatch/actions) 按对应 commit 查询。
+首次分支交付 `016fe06` 的 [分支 CI 36968813633](https://github.com/StevenWinsir/FolderWatch/actions/runs/36968813633) 通过，但同源码的 [标签 CI 36968813218](https://github.com/StevenWinsir/FolderWatch/actions/runs/36968813218) 在 macOS/Go 1.23 重复目录迁移测试中遇到 transient `fsnotify.dirChange: no such file or directory`。这不是把失败重跑到绿色：已修改 watcher.nativeFailure，将原生子项消失转为 root reconciliation（仍保证重查），并保留其他错误的 warning；新增 TestNativeDisappearanceRequiresReconcileWithoutSpuriousWarning。
+
+修复后本地 `go test -race -count=20 ./internal/watcher`、全量 `go test -race -count=10 -coverprofile=coverage.out ./...` 及 `make build test race lint smoke` 再次通过，最终总覆盖率仍为 84.3%。首次 `r2-complete` 标签不覆盖，最终使用 `r2-complete.1` 修订 checkpoint。修订后的远端结果按 [Actions](https://github.com/StevenWinsir/FolderWatch/actions) 的对应 headSha 查询；分支交付不代替 PR 合并流程。

@@ -2352,7 +2352,7 @@ make build
 
 ### 26.1 完成范围与入口
 
-从 R1 `720ecdb06044145a0f9f8a15b0220a0b4be45113` 开始，开发分支 `feat/r2-watch-baseline`，目标仍为私有 `StevenWinsir/FolderWatch`。实现提交 `9d7b675419ab0f79ea46c43ace8b7594bb57b6db` 已推送，GitHub CI 5 个 job 全部成功。本轮 checkpoint 使用 `r2-complete`；它标记已验收的分支交付，不表示已合入 main。
+从 R1 `720ecdb06044145a0f9f8a15b0220a0b4be45113` 开始，开发分支 `feat/r2-watch-baseline`，目标仍为私有 `StevenWinsir/FolderWatch`。实现提交 `9d7b675419ab0f79ea46c43ace8b7594bb57b6db` 已推送，GitHub CI 5 个 job 全部成功。本轮最终 checkpoint 使用 `r2-complete.1`；它标记已验收的分支交付，不表示已合入 main。首次 `r2-complete` 标签在追加 CI 中发现 transient ENOENT 分类问题，保留历史不覆盖，后续应使用修订 checkpoint。
 
 PR 创建调用被工具层安全检查拦截，未创建 PR，也未绕过该拦截直接合并主分支。仓库集成状态保留 IN_REVIEW；完整实现、测试与交接可从分支或 checkpoint 获取，main 仍为 R1。下一轮应明确以 R2 分支/checkpoint 为起点，或先完成 PR 合并。
 
@@ -2388,6 +2388,8 @@ Reset 先构建下一代，成功后一次发布；失败或取消保留旧代�
 发现并修复：kqueue 退役描述符空路径、内部 symlink 跟随、skipped-link seen 缓存未退役、目录通知回退缺失、目录迁移/重建登记、Ignore 生命周期、等待快照所有权时不可取消、等待基线发布锁期间取消仍可能提交等边界。fsnotify 保持 v1.8.0，只有 kqueue 后端的受审查 vendor 补丁；附 125 行 unified patch、上游/补丁 SHA-256 及可逆/构建源路径校验。所有测试在修改后复跑，不将初期失败伪装为一次全过。
 
 远端证据：[GitHub Actions 36968383149](https://github.com/StevenWinsir/FolderWatch/actions/runs/36968383149)，head=`9d7b675419ab0f79ea46c43ace8b7594bb57b6db`，结论 success。macOS/Linux × Go 1.23/1.26 的四个 test job 和 cross-build 全部成功。后续交付补记只更新文档；最终分支/tag 的检查以 Actions 和验收报告为准。
+
+补充回归：首次标签 [CI 36968813218](https://github.com/StevenWinsir/FolderWatch/actions/runs/36968813218) 的 macOS/Go 1.23 重复目录迁移测试遇到 `fsnotify.dirChange: no such file or directory`。修复将 native 子项消失归类为 root reconciliation（不能静默丢弃），其他错误仍发 warning；新增确定性测试，修复后 Watcher `-race -count=20` 与完整 build/test/race/lint/smoke 再次通过。修订标签为 `r2-complete.1`，旧标签没有重写。
 
 ### 26.4 明确未完成与下一轮责任
 

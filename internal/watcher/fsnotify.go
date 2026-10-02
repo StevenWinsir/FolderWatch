@@ -326,9 +326,18 @@ func (w *FSNotify) loop(ctx context.Context) {
 				w.warn(ErrClosed)
 				return
 			}
-			w.warn(err)
-			w.dirty = true
+			w.nativeFailure(err)
 		}
+	}
+}
+
+// A native child may disappear between ReadDir and Info during a legitimate
+// rename/delete. Treat that race as an explicit root invalidation, not a user
+// warning. Other native errors remain visible; root loss has its own sentinel.
+func (w *FSNotify) nativeFailure(err error) {
+	w.dirty = true
+	if !errors.Is(err, fs.ErrNotExist) {
+		w.warn(err)
 	}
 }
 

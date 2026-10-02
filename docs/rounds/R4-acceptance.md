@@ -88,4 +88,10 @@ Environment: **macOS 26.6.2 / darwin-arm64 / Apple M4 / Go 1.26.6**。
 
 ## GitHub 交付 / 集成
 
-此节在实际推送、创建 PR 并查询 Actions 后补充精确 SHA、URL、结果。R4 不直接改写 main，不强推，不自动合并；尚未创建 `r4-complete`，集成前不把标签名称当已交付事实。
+实现提交 **`305b097005df6635606c68eaa5ebe671e2be7e4d`** 已推送至 `feat/r4-terminal-tui`，并于 2026-10-02 07:52:29 UTC 创建 **[PR #3](https://github.com/StevenWinsir/FolderWatch/pull/3)**，目标 main。PR 保持待评审/合并；没有直接改写 main、强推或自动合并，也尚未创建 `r4-complete`。
+
+### 首次远端结果与修正
+
+首次 [分支 CI 36980505335](https://github.com/StevenWinsir/FolderWatch/actions/runs/36980505335) 在 macOS/Linux × Go1.23/1.26 的 TUI PTY smoke 颜色断言失败：测试子进程继承 `CI=true`，锁定的 termenv 会因此把自动颜色 profile 降为 Ascii。真实增删文本与原三组 smoke 已通过，但测试仍要求红绿 ANSI 输出。先在本机用 `CI=true python3 scripts/tui_smoke.py bin/folderwatch` 重现了同一行失败，确认不是 OS 特定渲染 bug。
+
+修正仅隔离 PTY 子进程继承的 `CI`、`CLICOLOR`、`CLICOLOR_FORCE`，继续固定 TERM=xterm-256color，并由测试明确设置/移除 NO_COLOR。**保留原红绿 ANSI、无色、文本及终端恢复全部断言；未修改生产代码/依赖，也未强迫普通 CI 输出颜色。** 修正后带 `CI=true CLICOLOR=0 CLICOLOR_FORCE=0 NO_COLOR=1` 的外部环境运行，21 项 PTY 验证全部通过。随后 `CI=true make build test race lint smoke` 再次全通过（含全部四组 smoke）。Go 生产与单元测试源码未变，原全包10轮race证据继续适用；修订远端结果按实际执行补记。

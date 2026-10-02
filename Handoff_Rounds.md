@@ -2477,7 +2477,7 @@ P9–P11 TUI、交互Diff/Reset、Pause/Resume、日志/编辑器均未实现；
 
 本轮完整阅读交接后，先核实本地无用户未提交改动及 R3 PR #2 已合并。R3 head=`c0f626b63735fba6ae43feaeb0c860089ffad0ea`，main merge=`1b52fcc23d199f6962206205e585c1d695cc0bae`（2026-10-02 07:08:58 UTC），源码树一致。从该 main 建立 `feat/r4-terminal-tui`，没有重写旧标签、直接提交 main 或提前开发 GUI。
 
-**当前范围：P0–P11 已实现；R4 实现及本地自动化验收 PASS，Round 集成状态 IN_REVIEW。** GitHub 推送、PR URL、准确 SHA 与远端检查只在实际完成后补记到本节及 [R4 acceptance](docs/rounds/R4-acceptance.md)。独立人工评审/合并、R5 Gate A 不由本轮测试代替。
+**当前范围：P0–P11 已实现；R4 实现及本地自动化验收 PASS，Round 集成状态 IN_REVIEW。** 实现提交 `305b097005df6635606c68eaa5ebe671e2be7e4d` 已推送，并创建 [PR #3](https://github.com/StevenWinsir/FolderWatch/pull/3)，目标 main、未自动合并。远端检查的修订结果见本节及 [R4 acceptance](docs/rounds/R4-acceptance.md)。独立人工评审/合并、R5 Gate A 不由本轮测试代替。
 
 | P / 能力 | 本轮完成内容 | 主要位置 |
 |---|---|---|
@@ -2523,6 +2523,8 @@ R1扫描60项、R2监听17项、R3语义16项、R4真实二进制PTY21项全部�
 macOS arm64/amd64、Linux amd64、Windows amd64交叉编译通过；Windows只声明compile。1500行、120×40视口孤立View微基准为55,925ns/op、5,162B/op、136allocs/op，不是P12目录级/端到端性能Gate。详细命令与结果见R4 acceptance。
 
 开发过程发现并修复：控制/Close并发泄漏watcher closed；Diff错误预览阻止真正重试；no-mouse残留报告；日志root大小写别名。旧scan-only帮助断言按明确TTY/管道分流契约更新，实际扫描断言全保留。PTY过滤输入改为先进入过滤再提交粘贴查询，并正确区分内核PENDIN位；未删除生产版本保护或正确性测试来掩盖问题。所有最终源码/测试/脚本均已复跑。
+
+首次 [分支 CI 36980505335](https://github.com/StevenWinsir/FolderWatch/actions/runs/36980505335) 暴露 PTY 测试继承 `CI=true` 导致 termenv 按设计关闭自动颜色，而断言期望红绿输出。本机先带CI变量重现，再仅隔离PTY子进程的CI/颜色偏好环境；保留全部颜色/无色/内容/恢复断言，未改生产行为或依赖。带CI及禁用颜色变量的外部环境复测21项通过；详细修订验证见R4 acceptance。
 
 ### 28.5 明确未完成与下一轮
 

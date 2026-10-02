@@ -4,7 +4,7 @@
 
 **当前交付：R4 / P0–P11。** 已实现 Terminal 文件列表、异步 unified Diff、键鼠导航、过滤、暂停/恢复、确认式 Reset 和安全诊断日志，复用唯一 Go ChangeStore 与原有监听/快照/分类/Diff。交互终端中的默认命令启动 TUI；管道中的默认命令与显式 `--scan` 仍只扫描一次。恢复基线内容后变化自动消失。**GUI 尚未实现，Gate A / B 未通过。** 路线见 [Handoff_Rounds.md](Handoff_Rounds.md)，本轮证据见 [R4 acceptance](docs/rounds/R4-acceptance.md)。
 
-R4 开发分支为 `feat/r4-terminal-tui`；PR 与远端检查的实际状态记录在 R4 acceptance，不把本地测试冒充人工评审。R3 已通过 [PR #2](https://github.com/StevenWinsir/FolderWatch/pull/2) 于 2026-10-02 07:08:58 UTC 合入 main（`1b52fcc`），R4 从该合并提交开始。R2 已通过 [PR #1](https://github.com/StevenWinsir/FolderWatch/pull/1) 合并；其曾预告的 `r2-complete.1` 实际未创建，最终 R2 以 `32529a7` / `1dbdb5b` 为准。
+R4 开发分支为 `feat/r4-terminal-tui`，已创建 [PR #3](https://github.com/StevenWinsir/FolderWatch/pull/3)，待评审/合并；远端检查的实际状态记录在 R4 acceptance，不把本地测试冒充人工评审。R3 已通过 [PR #2](https://github.com/StevenWinsir/FolderWatch/pull/2) 于 2026-10-02 07:08:58 UTC 合入 main（`1b52fcc`），R4 从该合并提交开始。R2 已通过 [PR #1](https://github.com/StevenWinsir/FolderWatch/pull/1) 合并；其曾预告的 `r2-complete.1` 实际未创建，最终 R2 以 `32529a7` / `1dbdb5b` 为准。
 
 ## 构建与使用
 

@@ -127,6 +127,12 @@ def main() -> None:
             path.mkdir()
         env = dict(os.environ, HOME=str(home), XDG_CONFIG_HOME=str(home), TERM="xterm-256color",
                    NO_COLOR="1", TMPDIR=str(cache), TMP=str(cache), TEMP=str(cache))
+        # This child represents an interactive terminal, not the CI log stream.
+        # termenv intentionally disables automatic color detection when CI is
+        # nonempty. Isolate inherited color preferences as well; NO_COLOR above
+        # and its removal below explicitly select the two tested profiles.
+        for key in ("CI", "CLICOLOR", "CLICOLOR_FORCE"):
+            env.pop(key, None)
         a = root/"a.txt"
         a.write_text("BASELINE-PRIVATE-CONTENT\n", encoding="utf-8")
         log = base/"diagnostics.jsonl"

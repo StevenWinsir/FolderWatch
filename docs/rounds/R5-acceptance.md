@@ -1,6 +1,6 @@
 # R5 acceptance — P12–P14 Terminal 工程硬化与候选发布
 
-日期：2026-10-02。**工程自动化验收通过；Round 状态 IN_REVIEW；Gate A=FAIL（待人工/分发签字），不可进入R6。** 具体提交/PR与远端CI在下方“集成证据”记录，未观察的检查不得写为PASS。
+日期：2026-10-02。**R5 / P12–P14 验收完成，Round=PASS，Gate A=PASS；阶段一 Terminal/TUI 完成，可进入R6。** 工程自动化证据与人工Gate证据分开记录；人工验收由仓库所有者确认，未归档的终端具体版本/机器型号不在本次同步中猜测补写。
 
 ## 起点与工作区保护
 
@@ -15,7 +15,7 @@
 | P13 | 保留所有R1–R4 unit/integration/golden/model/CLI/PTY；新资源/overflow/ownership回归；event normalize fuzz；六目标fuzz脚本；Core传递依赖边界 | 全包测试/10轮race、六fuzz、四smoke |
 | P13 CI | macOS/Linux×Go1.23/1.26、随机race、coverage/log artifacts、fuzz、四target编译、macOS原生候选安装与资源smoke | workflows已实现，实际远端结果单独记录 |
 | P14 发布工程 | SemVer、版本/full commit/build-date、vendor/CGO0双macOS架构、确定性tar/gzip、manifest/SHA256SUMS/许可证、checksum专属Homebrew formula、私有候选workflow | 安装步骤与人工边界见[发布说明](../release/terminal-candidate.md) |
-| P14 Gate | Gate A独立文件、README/CHANGELOG、原文Handoff状态与新增§29 | 人工Terminal.app/iTerm2、clean-Mac、许可证未获签字；未发布公开v1/GUI |
+| P14 Gate | Gate A独立文件、README/CHANGELOG、Handoff状态与§29 | `dist/v0.1.0-rc.1` 人工Gate A已由owner确认PASS；未发布公开v1/GUI |
 
 ## 本机实际验证
 
@@ -48,7 +48,7 @@ macOS26.6.2 / Apple M4 / 32GiB / Go1.26.6 / darwin-arm64。日志位于本worktr
 
 ## 集成证据
 
-开发分支：`feat/r5-terminal-release`；基线：`a775148`（R4补充PR #4，含已合并PR #3）。**实现提交：`f3e662f2059d47a0b9f108b8b8d0b17dcb760fe4`，已推送并创建[PR #5](https://github.com/StevenWinsir/FolderWatch/pull/5)**，未自动合并。
+开发分支：`feat/r5-terminal-release`；基线：`a775148`（R4补充，含已合并PR #3）。**实现提交：`f3e662f2059d47a0b9f108b8b8d0b17dcb760fe4`；[PR #4](https://github.com/StevenWinsir/FolderWatch/pull/4)已合并为`0ebf250`，[PR #5](https://github.com/StevenWinsir/FolderWatch/pull/5)已合并为main `6a470a0`。**
 
 已实际观察该源码提交的 **[push CI 36988380384](https://github.com/StevenWinsir/FolderWatch/actions/runs/36988380384)** 与 **[PR CI 36988453642](https://github.com/StevenWinsir/FolderWatch/actions/runs/36988453642)** 均completed/success，各7个job全绿：macOS/Linux×Go1.23/1.26四组完整测试/race/重复回归/四smoke/PTY延迟，cross-build，六fuzz，以及Terminal candidate原生安装。精确job及artifact标识保留在`docs/benchmarks/r5/ci-source.json`。以下收尾只补Markdown/JSON/TXT证据，不修改已验证的生产源码、测试、脚本、workflow或vendor；最终文档head的检查以PR Checks为准。
 
@@ -61,8 +61,8 @@ macOS26.6.2 / Apple M4 / 32GiB / Go1.26.6 / darwin-arm64。日志位于本worktr
 
 远端另有已实际上传的[私有CI候选artifact 11218432417](https://github.com/StevenWinsir/FolderWatch/actions/runs/36988380384/artifacts/11218432417)。该runner使用Go1.26.8/darwin-arm64，native安装检查PASS；**工具链与本机不同，不能拿上面的本机SHA直接验证CI包**，应使用下载artifact内自身的manifest/SHA256SUMS。来源run/commit/toolchain组成完整身份；重复候选版本不等于已发布不可变GitHub Release。保留期限见workflow，不声称永久下载或公开访问。
 
-## 剩余验收与已知限制
+## Gate A 最终结论与已知限制
 
-人工Terminal.app、iTerm2、真正clean-Mac安装未执行，未填写不存在的测试人/签字；隔离HOME/PATH不等于另一台Mac。Homebrew formula已生成实际checksum，公开tap/私有认证下载和brew安装验收未完成；默认Release URL只有发布对应资产后才可用。没有项目公开分发许可证决策、Developer ID签名或Apple公证，也未创建release/tag或自动合并PR。基础矩阵每组10秒/额外50次启停，追加检查120秒idle/100轮burst/100次启停，不宣称小时/天级耐久度。
+仓库所有者已确认 `dist/v0.1.0-rc.1` 完成实际 Terminal.app、iTerm2 与安装/分发 Gate A 人工验收，阶段一出口为PASS。人工验收时没有把终端具体版本、终端尺寸和clean-Mac机器型号写入仓库，因此本次只记录确认过的结果，不虚构细粒度环境信息。Homebrew formula已有真实checksum，但尚未因此自动创建公开tap/Release；Developer ID签名或Apple公证也不因Gate A通过而被宣称完成。基础矩阵每组10秒/额外50次启停，追加检查120秒idle/100轮burst/100次启停，仍不宣称小时/天级耐久度。
 
-当前已执行范围内无已知未解决P0/P1级实现故障；这不替代人工排查或安全审计。强杀缓存自动清扫、Ignore热更新、可靠rename关联、editor执行、GUI均未新增。保持唯一Go Core，Gate A真正签字后才进入R6。
+当前已执行范围内无已知未解决P0/P1级实现故障；这不替代安全审计。强杀缓存自动清扫、Ignore热更新、可靠rename关联、editor执行仍未新增。保持唯一Go Core；Gate A已签字通过，下一轮为R6 / P15–P16。

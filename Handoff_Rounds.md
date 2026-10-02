@@ -2633,4 +2633,8 @@ R7 实现 native Folder Picker、变化列表/过滤及只读 Monaco，复用 IP
 
 ### 30.6 GitHub 集成证据
 
-本节将在实际 commit/push/PR 创建与 CI 完成后更新；当前不宣称远端检查通过、PR 已合并或独立人工评审完成。R6 acceptance 同步记录精确源码与 PR/Actions 链接。
+实现提交 **`265e19891cfb119e09f02121910be991030eba48`** 已推送至 `feat/r6-gui-shell-ipc`，并创建 **[PR #7](https://github.com/StevenWinsir/FolderWatch/pull/7)**（base=`main`，OPEN，未自动合并）。该源码的 **[push CI 37039054920](https://github.com/StevenWinsir/FolderWatch/actions/runs/37039054920)** 与 **[PR CI 37039099850](https://github.com/StevenWinsir/FolderWatch/actions/runs/37039099850)** 均 completed/success，**各10个job、共20/20通过**：macOS/Linux × Go1.23/1.26、Node22/24 frontend、macOS Wails build/生成绑定无漂移、cross-build、fuzz、Terminal candidate。逐job ID/时间/链接保留在 `docs/rounds/R6-ci-source.json`。本段冻结的是实现提交的源码 CI；后续纯文档提交的最新 head/check 以 PR 实际状态为准，不能混同。
+
+提交后从干净 `265e198` 再次执行 `make gui-build VERSION=0.2.0-dev`，frontend 11测试与 native build 通过，`git diff --exit-code` 确认生成绑定与 module/vendor 无漂移。Go build info 实际包含 commit=`265e198`、version=`0.2.0-dev`、buildDate=`2026-10-02T12:11:33-05:00`；本机 arm64 可执行文件 SHA-256 为 `d1cdb6983f32ecb1bda2d82f6bf05fbf6ebb416a40b4c682b658ed446cb1b3a7`，仅适用于该本机构建，不套用其他工具链的 CI 产物。UTC17:16:05 对此干净构建复测 native 启动/存活、无 TCP listener 观测、已确认 graceful Quit/exit 0，详见 `docs/rounds/R6-build.json`。只有 linker ad-hoc 签名，没有 Developer ID、密封 bundle 或公证；不等于 GUI 发布候选。
+
+最终状态仍为 **实现/自动化 PASS，集成 IN_REVIEW**：独立评审、原生 WKWebView 人工交互和合并尚未完成。R7 从评审集成后的基线进入，不把剩余原生检查或 Gate B 省略。

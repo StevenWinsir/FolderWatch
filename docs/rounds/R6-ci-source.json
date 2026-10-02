@@ -1,0 +1,207 @@
+{
+  "observed": "2026-10-02T17:15:28.795237+00:00",
+  "scope": "Frozen implementation commit CI; later documentation-only head checks are linked from PR #7.",
+  "pull_request": "https://github.com/StevenWinsir/FolderWatch/pull/7",
+  "runs": [
+    {
+      "databaseId": 37039054920,
+      "event": "push",
+      "headSha": "265e19891cfb119e09f02121910be991030eba48",
+      "url": "https://github.com/StevenWinsir/FolderWatch/actions/runs/37039054920",
+      "status": "completed",
+      "conclusion": "success",
+      "jobs": [
+        {
+          "databaseId": 110944367984,
+          "name": "fuzz",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-10-02T17:11:50Z",
+          "completedAt": "2026-10-02T17:13:37Z",
+          "url": "https://github.com/StevenWinsir/FolderWatch/actions/runs/37039054920/job/110944367984"
+        },
+        {
+          "databaseId": 110944368267,
+          "name": "gui-macos-build",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-10-02T17:11:54Z",
+          "completedAt": "2026-10-02T17:13:52Z",
+          "url": "https://github.com/StevenWinsir/FolderWatch/actions/runs/37039054920/job/110944368267"
+        },
+        {
+          "databaseId": 110944368309,
+          "name": "cross-build",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-10-02T17:11:49Z",
+          "completedAt": "2026-10-02T17:13:11Z",
+          "url": "https://github.com/StevenWinsir/FolderWatch/actions/runs/37039054920/job/110944368309"
+        },
+        {
+          "databaseId": 110944368323,
+          "name": "gui-frontend (24)",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-10-02T17:11:50Z",
+          "completedAt": "2026-10-02T17:12:13Z",
+          "url": "https://github.com/StevenWinsir/FolderWatch/actions/runs/37039054920/job/110944368323"
+        },
+        {
+          "databaseId": 110944368360,
+          "name": "test (ubuntu-latest, 1.23.x)",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-10-02T17:11:49Z",
+          "completedAt": "2026-10-02T17:14:07Z",
+          "url": "https://github.com/StevenWinsir/FolderWatch/actions/runs/37039054920/job/110944368360"
+        },
+        {
+          "databaseId": 110944368389,
+          "name": "test (macos-latest, 1.26.x)",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-10-02T17:11:57Z",
+          "completedAt": "2026-10-02T17:14:18Z",
+          "url": "https://github.com/StevenWinsir/FolderWatch/actions/runs/37039054920/job/110944368389"
+        },
+        {
+          "databaseId": 110944368493,
+          "name": "terminal-candidate",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-10-02T17:11:56Z",
+          "completedAt": "2026-10-02T17:13:13Z",
+          "url": "https://github.com/StevenWinsir/FolderWatch/actions/runs/37039054920/job/110944368493"
+        },
+        {
+          "databaseId": 110944368537,
+          "name": "test (ubuntu-latest, 1.26.x)",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-10-02T17:11:49Z",
+          "completedAt": "2026-10-02T17:14:21Z",
+          "url": "https://github.com/StevenWinsir/FolderWatch/actions/runs/37039054920/job/110944368537"
+        },
+        {
+          "databaseId": 110944368612,
+          "name": "gui-frontend (22)",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-10-02T17:11:50Z",
+          "completedAt": "2026-10-02T17:12:13Z",
+          "url": "https://github.com/StevenWinsir/FolderWatch/actions/runs/37039054920/job/110944368612"
+        },
+        {
+          "databaseId": 110944369365,
+          "name": "test (macos-latest, 1.23.x)",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-10-02T17:11:57Z",
+          "completedAt": "2026-10-02T17:14:23Z",
+          "url": "https://github.com/StevenWinsir/FolderWatch/actions/runs/37039054920/job/110944369365"
+        }
+      ]
+    },
+    {
+      "databaseId": 37039099850,
+      "event": "pull_request",
+      "headSha": "265e19891cfb119e09f02121910be991030eba48",
+      "url": "https://github.com/StevenWinsir/FolderWatch/actions/runs/37039099850",
+      "status": "completed",
+      "conclusion": "success",
+      "jobs": [
+        {
+          "databaseId": 110944517311,
+          "name": "gui-macos-build",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-10-02T17:13:20Z",
+          "completedAt": "2026-10-02T17:14:56Z",
+          "url": "https://github.com/StevenWinsir/FolderWatch/actions/runs/37039099850/job/110944517311"
+        },
+        {
+          "databaseId": 110944517404,
+          "name": "test (ubuntu-latest, 1.23.x)",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-10-02T17:12:13Z",
+          "completedAt": "2026-10-02T17:14:01Z",
+          "url": "https://github.com/StevenWinsir/FolderWatch/actions/runs/37039099850/job/110944517404"
+        },
+        {
+          "databaseId": 110944517453,
+          "name": "terminal-candidate",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-10-02T17:12:19Z",
+          "completedAt": "2026-10-02T17:13:18Z",
+          "url": "https://github.com/StevenWinsir/FolderWatch/actions/runs/37039099850/job/110944517453"
+        },
+        {
+          "databaseId": 110944517531,
+          "name": "gui-frontend (24)",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-10-02T17:12:14Z",
+          "completedAt": "2026-10-02T17:12:35Z",
+          "url": "https://github.com/StevenWinsir/FolderWatch/actions/runs/37039099850/job/110944517531"
+        },
+        {
+          "databaseId": 110944517615,
+          "name": "cross-build",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-10-02T17:12:13Z",
+          "completedAt": "2026-10-02T17:13:37Z",
+          "url": "https://github.com/StevenWinsir/FolderWatch/actions/runs/37039099850/job/110944517615"
+        },
+        {
+          "databaseId": 110944517618,
+          "name": "test (macos-latest, 1.26.x)",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-10-02T17:13:59Z",
+          "completedAt": "2026-10-02T17:15:23Z",
+          "url": "https://github.com/StevenWinsir/FolderWatch/actions/runs/37039099850/job/110944517618"
+        },
+        {
+          "databaseId": 110944517628,
+          "name": "test (macos-latest, 1.23.x)",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-10-02T17:13:25Z",
+          "completedAt": "2026-10-02T17:15:18Z",
+          "url": "https://github.com/StevenWinsir/FolderWatch/actions/runs/37039099850/job/110944517628"
+        },
+        {
+          "databaseId": 110944517725,
+          "name": "gui-frontend (22)",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-10-02T17:12:13Z",
+          "completedAt": "2026-10-02T17:12:34Z",
+          "url": "https://github.com/StevenWinsir/FolderWatch/actions/runs/37039099850/job/110944517725"
+        },
+        {
+          "databaseId": 110944517740,
+          "name": "fuzz",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-10-02T17:12:13Z",
+          "completedAt": "2026-10-02T17:13:55Z",
+          "url": "https://github.com/StevenWinsir/FolderWatch/actions/runs/37039099850/job/110944517740"
+        },
+        {
+          "databaseId": 110944517778,
+          "name": "test (ubuntu-latest, 1.26.x)",
+          "status": "completed",
+          "conclusion": "success",
+          "startedAt": "2026-10-02T17:12:14Z",
+          "completedAt": "2026-10-02T17:14:55Z",
+          "url": "https://github.com/StevenWinsir/FolderWatch/actions/runs/37039099850/job/110944517778"
+        }
+      ]
+    }
+  ]
+}

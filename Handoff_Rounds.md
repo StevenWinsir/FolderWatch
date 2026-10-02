@@ -2445,11 +2445,13 @@ Current Resolver 不常驻全文：一个 metadata-only scratch store；按需 D
 
 ### 27.4 测试结果
 
-本机 macOS 26.6.2 / darwin-arm64 / Go 1.26.6。`make build test race lint smoke` 通过；248 个 Go 测试/子测试（101 个顶层测试/模糊目标），无失败和测试级跳过；全量 race 连续10轮通过。整体语句覆盖率86.0%，Classifier93.5%、Diff94.2%、ChangeStore84.7%。9个黄金文件、R1扫描60项、R2监听17项、R3语义16项冒烟通过；实际Vim两种保存继续通过。
+本机 macOS 26.6.2 / darwin-arm64 / Go 1.26.6。`make build test race lint smoke` 通过；248 个 Go 测试/子测试（101 个顶层测试/模糊目标），无失败和测试级跳过；全量 race 连续10轮通过。修订测试后再次全量10轮的整体语句覆盖率86.1%，Classifier93.5%、Diff94.2%、ChangeStore84.4%。9个黄金文件、R1扫描60项、R2监听17项、R3语义16项冒烟通过；实际Vim两种保存继续通过。
 
 5秒分类 fuzz 执行1,061,660次、Diff重构 fuzz执行911,178次，均PASS；这是有界找错实验，不是形式证明或性能指标。macOS arm64/amd64、Linux amd64、Windows amd64交叉编译和go mod verify通过。R3未新增外部依赖，R2 vendor补丁保持原样并通过来源/校验守卫。
 
 本轮复核修复/防护包括：共享分类消除双探针、巨大文件避免无谓文本探测、混用root拒绝、瞬时消失/不可读保护、恢复/Reset代际清理、旧Diff失效、消费者Reload后旧批次回退防护。测试与源码已实际复跑，不将尚未观察的远端CI或人工QA写为通过。
+
+首次推送 CI 的 Ubuntu/Go1.23 揭示实时 Diff 集成测试错误假定“kind=Modified 即版本固定”。生产 GetDiff 合法返回 ErrStale；测试改为限时且仅重试 ErrStale，保留所有最终断言及确定性 stale 拒绝测试，未移除生产版本保护。修订后针对用例50轮race、全量10轮race和完整构建/三组smoke再次通过。首次失败链接及修订远端结论见R3 acceptance。
 
 ### 27.5 明确未完成与后续
 

@@ -63,7 +63,7 @@ Environment: macOS 26.6.2 / darwin-arm64 / Go 1.26.6。本机 Git 为 2.54.0。�
 | `GOOS=windows GOARCH=amd64 go build ./...` | PASS（compile only） |
 | `go mod verify` | all modules verified |
 
-Coverage（上述全量10轮带覆盖率）：总 **86.0%**；filetype 93.5%、diff 94.2%、changes 84.7%、app 80.6%、CLI 86.6%、config 86.2%、snapshot 84.2%、watcher 80.5%。cmd/main 由真实二进制 smoke 覆盖，不计入进程内 main 函数覆盖；model 没有可执行逻辑。测试父项与子项计数均包含在248内，不是248个互不重叠的场景。
+Coverage（修订测试后再次全量10轮带覆盖率）：总 **86.1%**；filetype 93.5%、diff 94.2%、changes 84.4%、app 81.5%、CLI 86.6%、config 86.2%、snapshot 84.2%、watcher 80.5%。cmd/main 由真实二进制 smoke 覆盖，不计入进程内 main 函数覆盖；model 没有可执行逻辑。测试父项与子项计数均包含在248内，不是248个互不重叠的场景。
 
 ### Bounded fuzz evidence
 
@@ -97,7 +97,9 @@ Architecture: [ADR-010](../adr/010-classification-and-safe-content.md)、[ADR-01
 
 ## GitHub delivery / integration
 
-本地实现与验收已完成；R3 提交、分支推送、实际远端 CI、PR 与 checkpoint 的证据将在观察后原文补记。未观察到的运行不提前写 PASS。
+实现提交 `d4d0f5a5c06f63e88e7ec0bf12689f0c08f2bdf4` 已推送并创建 [PR #2](https://github.com/StevenWinsir/FolderWatch/pull/2)，目标 main；尚未合并。
+
+首次 [CI 36974988165](https://github.com/StevenWinsir/FolderWatch/actions/runs/36974988165) 四个 job 通过、Ubuntu/Go1.23 失败。失败点是 TestIndependentClassificationAndDiffConfig：等待 kind=Modified 不代表文件版本已固定，启动窗口重查与 truncate/write 时序可使 GetDiff 合法返回 ErrStale。原测试错误假定单次调用必成功。修正 integration helper 仅在限定期限内重试 ErrStale，其他错误和最终内容/状态断言不放宽；保留原有 gated-engine 的必然 stale 拒绝测试。生产 GetDiff 未为迁就测试而取消版本保护。修订后 `go test -race -count=50 -run=^TestIndependentClassificationAndDiffConfig$ ./internal/app`、全量 `go test -race -count=10 -coverprofile=coverage.out ./...` 和 `make build test race lint smoke` 均再次 PASS。生产代码与原实现提交相同；远端修订结果将在观察后补入，不将首次失败覆盖成一次全绿。
 
 ## Next developer — R4 / P9–P11
 

@@ -71,6 +71,9 @@ func New(root string, opts Options) (*Store, error) {
 	return s, nil
 }
 
+// Root identifies this store's immutable canonical namespace.
+func (s *Store) Root() string { return s.root }
+
 func (s *Store) Capture(ctx context.Context, path string) (Ref, error) {
 	ctx, cancel := context.WithCancel(ctx)
 	defer cancel()

@@ -6,6 +6,7 @@ import (
 	"crypto/sha256"
 	"encoding/hex"
 	"errors"
+	"github.com/StevenWinsir/FolderWatch/internal/filetype"
 	"os"
 	"path/filepath"
 	"strings"
@@ -219,20 +220,20 @@ func TestSnapshotPathAndEntryLimits(t *testing.T) {
 }
 
 func TestFullStreamUTF8StorageProbe(t *testing.T) {
-	p := textProbe{}
+	p := filetype.Probe{}
 	data := []byte("a你好z")
 	for _, b := range data {
-		p.write([]byte{b})
+		p.Write([]byte{b})
 	}
-	if p.binary || len(p.tail) != 0 {
+	if p.Result(int64(len(data)), 1024).Kind != filetype.Text {
 		t.Fatal("split UTF8 rejected")
 	}
-	p.write([]byte{0xe4})
-	if len(p.tail) != 1 {
-		t.Fatal("missing incomplete tail")
+	p.Write([]byte{0xe4})
+	if p.Result(20, 1024).Kind != filetype.Binary {
+		t.Fatal("incomplete tail accepted")
 	}
-	p.write([]byte{0xff})
-	if !p.binary {
+	p.Write([]byte{0xff})
+	if p.Result(21, 1024).Kind != filetype.Binary {
 		t.Fatal("invalid continuation accepted")
 	}
 	root := t.TempDir()

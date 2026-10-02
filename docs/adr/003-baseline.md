@@ -12,7 +12,7 @@ A session's initial capture is the baseline. Ordinary writes never advance it. R
 Comparing with the immediately previous save loses the session's intended meaning. Letting the UI reset files individually breaks atomic semantics.
 
 ## Consequences
-R1 scan still returns metadata only. R2 implements bounded snapshot ownership, stable before contents/hash, cancellation, generation replacement and reset rollback; details are in ADR-008. Clearing a semantic ChangeStore after reset is R3 integration work, not an existing R2 list operation.
+R1 scan still returns metadata only. R2 implements bounded snapshot ownership, stable before contents/hash, cancellation, generation replacement and reset rollback; details are in ADR-008. R3 now integrates atomic semantic-list clearing after successful Reset, while failed/cancelled resets preserve the old list. See ADR-012; this does not imply a TUI reset control exists.
 
 ## Migration
-R2 snapshot.Ref remains distinct from R1 FileMeta. R3 introduces semantic FileChange and respects generation/stale-reference boundaries; do not auto-advance baseline on ordinary saves.
+R2 snapshot.Ref remains distinct from R1 FileMeta. R3 exposes changes.Summary/Batch and respects generation/stale-reference boundaries; do not auto-advance baseline on ordinary saves.

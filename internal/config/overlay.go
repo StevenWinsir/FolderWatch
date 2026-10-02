@@ -11,6 +11,16 @@ import (
 )
 
 func apply(cfg *Config, o Overlay, base string) error {
+	if o.MaxSnapshotBytes != nil {
+		n, err := ParseSize(*o.MaxSnapshotBytes)
+		if err != nil {
+			return fmt.Errorf("max-snapshot-bytes: %w", err)
+		}
+		cfg.MaxSnapshotBytes = n
+	}
+	if o.MaxDiffLines != nil {
+		cfg.MaxDiffLines = *o.MaxDiffLines
+	}
 	if o.MaxPendingEvents != nil {
 		cfg.MaxPendingEvents = *o.MaxPendingEvents
 	}

@@ -7,8 +7,8 @@
 > GUI 技术栈：**Wails + Svelte + TypeScript + Monaco Diff Editor**  
 > 开发阶段：**阶段一 Terminal/TUI → 质量闸门 → 阶段二 GUI**
 >
-> **当前工程状态（2026-10-02）：R2 / P0–P5 已实现并通过本地及 GitHub CI 验收；R2 位于 `feat/r2-watch-baseline`，尚未合入 main。** 已有递归 Watcher、路径事件聚合、有界 Snapshot、启动基线及原子 Reset。默认/`--scan` 保留单次扫描；`--watch` 持续监听，输出路径重读/重扫请求。P6–P25 尚未实现，Gate A / B 尚未通过。
-> 本轮完成记录见 **第 26 节**，详细证据见 [`docs/rounds/R2-acceptance.md`](docs/rounds/R2-acceptance.md)；第 25 节保留 R1 历史交付。实际使用与配置见 [`README.md`](README.md)。远端 CI 结论只在观察到实际结果后记入验收报告；下文后续产品目标不代表已经全部交付。
+> **当前工程状态（2026-10-02）：R3 / P0–P8 已实现，本轮本地与 GitHub 分支/PR 自动化验收 PASS，R3 集成状态 IN_REVIEW（PR #2 待合并）。** 已有文件分类、有界可取消 Diff、唯一 ChangeStore；`--watch` 输出语义变化，`Session.GetDiff` 按需返回结构化差异。R2 已通过 PR #1 合入 main；R3 位于 `feat/r3-classify-diff-changes`。P9–P25 尚未实现，Gate A / B 尚未通过。
+> 本轮完成记录见 **第 27 节**，详细证据见 [`docs/rounds/R3-acceptance.md`](docs/rounds/R3-acceptance.md)；第 25–26 节保留 R1/R2 历史。原文已同步当前状态及 R2 后续合并事实。远端 CI/PR/标签只按实测记录；以下路线目标不代表所有产品功能已交付。
 
 ---
 
@@ -82,8 +82,8 @@ P0–P25 继续作为能力阶段编号；**Round 才是实际开发、Code Revi
 | Round | 大阶段 | 包含 P | 单元主题 | 核心结果 | 出口 |
 |---|---|---:|---|---|---|
 | R1 | Terminal | P0–P2 | 工程基础与输入边界 | 工程骨架、CLI/Config、扫描与 Ignore | **PASS（2026-10-01，本地 + 远端 CI）**，可稳定确定应监控集合 |
-| R2 | Terminal | P3–P5 | 文件事件与 Baseline 内核 | Watcher、Debounce/Coalesce、Snapshot | **IN_REVIEW（实现/自动化验收 PASS，待 PR 合并）**，可监听并原子建立/重置基线 |
-| R3 | Terminal | P6–P8 | 内容分析与变更语义 | Classifier、Diff、ChangeStore | 可输出可靠 changed-file 语义 |
+| R2 | Terminal | P3–P5 | 文件事件与 Baseline 内核 | Watcher、Debounce/Coalesce、Snapshot | **PASS，PR #1 已合并（2026-10-02）** |
+| R3 | Terminal | P6–P8 | 内容分析与变更语义 | Classifier、Diff、ChangeStore | **IN_REVIEW（实现/本地及远端自动化验收 PASS，PR #2 待集成）**，可获取语义列表与 GetDiff |
 | R4 | Terminal | P9–P11 | TUI 产品体验 | 文件列表、Diff Viewer、Session 控制 | Terminal 主流程完整可用 |
 | R5 | Terminal | P12–P14 | 工程硬化与发布 | 性能、测试、CI、Terminal 发布 | **Gate A PASS** |
 | R6 | GUI | P15–P16 | GUI 壳层与 IPC 契约 | Wails/Svelte、Core Facade、DTO/Event | GUI 稳定调用同一 Go Core |
@@ -145,7 +145,7 @@ P0–P25 继续作为能力阶段编号；**Round 才是实际开发、Code Revi
 
 ### 2.4 R2 — 文件事件与 Baseline 内核（P3–P5）
 
-**当前状态：IN_REVIEW（实现与本地/远端自动化验收 PASS，待 PR 合并，2026-10-02）**。实现与测试范围详见第 26 节和 R2 acceptance；自评审和自动化验证不等于独立人工评审。实际 Vim 无界面保存及直接写入/atomic-save 模型已验证；未宣称运行本机不存在的 VS Code GUI。R3 语义变化列表/diff 未提前实现。
+**当前状态：PASS（实现及自动化验收通过，PR #1 已合并，2026-10-02）**。R3 期间核对远端：R2 最终 `32529a7` 已于 2026-10-02 06:00:44 UTC 合并为 `1dbdb5b`。R2 自评审/自动化验证不冒充独立人工评审，实际 VS Code GUI 仍未验收。R2 当时未提前开发语义变化；本轮 R3 实现见下节。
 
 **目标**：完成不依赖 UI 的稳定监听核心，解决递归 watcher、编辑器噪音事件和 baseline 生命周期。
 
@@ -180,6 +180,8 @@ P0–P25 继续作为能力阶段编号；**Round 才是实际开发、Code Revi
 
 ### 2.5 R3 — 内容分析与变更语义（P6–P8）
 
+**当前状态：IN_REVIEW（实现、本地及 GitHub 自动化验收 PASS，PR #2 待合并，2026-10-02）**。已完成 Classifier、Diff、ChangeStore、Session 与 CLI 语义集成；248 个 Go 测试/子测试、全量 race 10 轮、三组 CLI smoke 及模糊测试通过。精确 CI/PR/提交见 R3 acceptance。R2 已合入 main，本轮基于同一源码树并同步其合并历史，不重写旧标签。
+
 **目标**：把“某 path 有事件”升级成明确、唯一的文件变化语义。
 
 **包含**：
@@ -199,16 +201,16 @@ P0–P25 继续作为能力阶段编号；**Round 才是实际开发、Code Revi
 - golden/state-transition/race tests
 
 **R3 验收**：
-- [ ] 新文件 = Added
-- [ ] 删除 baseline 文件 = Deleted
-- [ ] 内容改变 = Modified
-- [ ] 恢复 baseline 后自动从列表消失
-- [ ] Added→Deleted、Deleted→Recreated 等迁移正确
-- [ ] 二进制不会进入文本 diff
-- [ ] TooLarge 不 OOM
-- [ ] Unicode、空文件、无末尾换行有 golden tests
-- [ ] 每个 path 只保留一个最终语义状态
-- [ ] 核心 store/resolve 路径通过 `go test -race`
+- [x] 新文件 = Added（包括任意扩展名）
+- [x] 删除 baseline 文件 = Deleted，缺失 before 不用当前内容冒充
+- [x] 内容 hash 改变 = Modified；纯 mtime/chmod 不生成内容变化
+- [x] 恢复 baseline 后自动从 Changes/CLI 状态消失
+- [x] Added→Deleted、Deleted→相同/不同内容重建等迁移正确
+- [x] Binary / UTF-16/32 unsupported-text 不进入文本 diff
+- [x] 字节/行数/计算量超限返回 TooLarge，有零读取和有界矩阵测试
+- [x] 9 个黄金样例覆盖 Unicode、空文件、末尾换行、多 hunk 与增删改
+- [x] 每个 path 唯一状态；排序副本、版本批次、慢消费者 Reload 和旧 Diff 失效有回归
+- [x] 全量 `go test -race -count=10 ./...` 通过；旧 R1/R2 回归保留
 
 **出口定义**：无 TUI 情况下即可可靠获得 `[]ChangeSummary` 和 `GetDiff(path)`；R4 只能展示结果，不能重新推导文件状态。
 
@@ -1007,7 +1009,7 @@ P3。
 
 ## P5 — Snapshot / Baseline Engine
 
-**完成状态：R2 已实现并通过本地集成验收。** `internal/snapshot` 提供小文件 memory、中型文本 private temp disk、流式 SHA-256、元数据/hash 降级、不可变 Ref、原子 generation Reset 与清理。`app.Session` 注册 Watcher 后 fresh scan/capture；普通保存不推进 baseline。Reset 失败/取消不发布部分基线，成功先发 reset/reconcile，再处理排队事件。快照/队列限额见 README 与 ADR-008。R2 验收读取 before 内容与 hash；下文“显示 diff/列表消失/清空列表”的整条 UI 场景须在 R3/R4 接入后继续验收，不能记作本轮已有 UI。
+**完成状态：R2 已实现并通过本地集成验收。** `internal/snapshot` 提供小文件 memory、中型文本 private temp disk、流式 SHA-256、元数据/hash 降级、不可变 Ref、原子 generation Reset 与清理。`app.Session` 注册 Watcher 后 fresh scan/capture；普通保存不推进 baseline。Reset 失败/取消不发布部分基线，成功先发 reset/reconcile，再处理排队事件。快照/队列限额见 README 与 ADR-008。R2 当时验收 before/hash；R3 现已通过 core/CLI 的 Diff、列表恢复消失及 Reset 清空测试，完整交互 TUI 仍由 R4 验收，不能记为已有 UI。
 
 ### 目标
 
@@ -1051,6 +1053,8 @@ type SnapshotStore interface {
 
 ## P6 — Text/Binary Classifier 与安全读取
 
+**完成状态：R3 已实现并通过本地验收。** `internal/filetype` 提供 Classifier 与共享流式 Probe。快照携带确切字节的不可变分类，移除 R2 私有独立探针。已知超限分类零读取；UTF-8/控制字节完整校验，UTF-16/32 BOM 标为 unsupported-text，所有扩展名照常检测。`max_snapshot_bytes` 默认 8MiB，与默认 5MiB `max_diff_bytes` 分离；两者配置上限 64MiB。巨大 regular file 仍单独做有界块哈希，瞬时读取失败保留最后已知状态并重试。详见 ADR-010。
+
 ### 目标
 
 保证“任何扩展名都能监控”，同时避免把任意字节当文本渲染。
@@ -1089,6 +1093,8 @@ Size: 126 KB → 141 KB
 ---
 
 ## P7 — Diff Engine
+
+**完成状态：R3 已实现并通过本地验收。** `internal/diff.Engine` / BoundedLCS 先检查字节/行数/分类，裁剪公共首尾、行 ID 化、构建有界矩阵；计算中可取消，不产生遗留后台任务。默认每侧 5MiB / 20000 行 / 2000000 矩阵单元 / 3 行上下文；复杂输入可因计算预算降级 TooLarge。Result/Hunk/Line 保留增删上下文、行号、CRLF 与无末尾换行，Unified 为无 ANSI 文本。9 个 golden 与重构 fuzz 验证；无常驻 Diff 缓存。GetDiff 有路径版本/基线代际防旧结果覆盖。详见 ADR-011。
 
 ### 目标
 
@@ -1133,6 +1139,8 @@ type DiffEngine interface {
 ---
 
 ## P8 — Change Resolver / Change Store
+
+**完成状态：R3 已实现并通过本地验收。** `internal/changes` 是唯一语义所有者，ResolveBatch 以可取消 token 串行解析、短锁提交，View 返回排序防御副本。相对启动基线判定 Added/Modified/Deleted；恢复/先增后删自动移除。rename 本轮安全降级 Deleted+Added，不做相似内容猜测。不可读子树保留上次状态并 warning；原始队列溢出由 core 重查，消费端溢出由 Batch.Reload/ChangeState 恢复。Session 暴露 Changes/ChangeState/GetDiff/ResetBaseline；CLI 不再输出原始路径来冒充语义变化。详见 ADR-012。
 
 ### 目标
 
@@ -2266,17 +2274,17 @@ ADR 必须写：Context、Decision、Alternatives、Consequences、Migration。
 
 ---
 
-## 23. 下一位开发者从哪里开始（R2 后）
+## 23. 下一位开发者从哪里开始（R3 后）
 
-P0–P5 已完成，下一轮从 R3 / P6–P8 开始：
+P0–P8 已实现，下一轮从 R4 / P9–P11 开始；先确认本轮 PR/集成状态：
 
-1. 阅读第 26 节、R2 acceptance、README 与 ADR-001–009；从带 vendor 的 checkout 执行 `make build test race lint smoke`，不要绕过依赖补丁。
-2. 复用 `app.StartSession` / `Session.Events()`、generation、`Baseline()` 与 `ReadBaseline()`，不重写 watcher、聚合或快照。
-3. 实现 P6 安全 Classifier；R2 保留策略探针不是正式 Text/Binary/Unsupported/TooLarge API。
-4. 实现 P7 UI 无关 DiffEngine，按需读取 before/current；处理旧 generation 引用失效、取消与大小上限。
-5. 实现 P8 唯一 ChangeStore；path invalidation 不等于语义变化，`Reconcile=true` 必须核对磁盘，恢复同 hash 后移除变化由此层实现。
-6. 保留 `--scan` / `--watch` 诊断和所有 R1/R2 回归。到 P9 才正式接 TUI，Reset/Pause 的交互不能替代 core 契约。
-7. Gate A 仍未通过，不开始 GUI；真实性能、实际 VS Code GUI 及长期压力验收不能被模型保存测试替代。
+1. 阅读第 27 节、R3 acceptance、README 与 ADR-001–012，执行 `make build test race lint smoke`，保留 vendor 补丁。
+2. TUI 直接消费 `Session.Changes()` / `ChangeState()` 与 `Event.Batch`，绝不能从 raw flags、路径或 UI 特判再造状态。
+3. Reload 时取权威 View，以 generation/version 丢弃旧批次；`Removed` 是“不再变化”，不是文件删除。
+4. 选中文件后异步请求 `GetDiff(ctx,path)`，处理 ErrStale/ErrNotChanged/Binary/Unsupported/TooLarge/Unavailable；不在 render 内读文件或计算差异。
+5. Reset 调用现有原子 `ResetBaseline`；Pause/Resume、TUI 键鼠/滚动、错误体验和日志在 P9–P11 实施。
+6. 保留分类/黄金/状态迁移/race 与三组 CLI 回归；分类8MiB、Diff5MiB/20000行/工作预算均为明确不同边界。
+7. Gate A 未通过，不开发 GUI；R5 再做性能预算、长时压力与实际 Terminal/iTerm 验收。
 
 项目的核心价值不是“终端上有颜色”，而是：**文件事件再混乱，最终仍然能稳定、正确、可恢复地告诉用户“相对于 baseline，到底哪些文件变了，以及变了什么”。**
 
@@ -2299,7 +2307,7 @@ P0–P5 已完成，下一轮从 R3 / P6–P8 开始：
 
 ## 25. 历史交付记录 — R1 / P0–P2（2026-10-01）
 
-本节保留 R1 时点的交付和未完成功能；当前完成范围以第 26 节 R2 为准。
+本节保留 R1 时点的交付和未完成功能；当前完成范围以第 27 节 R3 为准。
 
 ### 25.1 实际完成范围
 
@@ -2348,13 +2356,15 @@ make build
 
 ---
 
-## 26. 本轮交付记录 — R2 / P3–P5（2026-10-01 至 2026-10-02）
+## 26. 历史交付记录 — R2 / P3–P5（2026-10-01 至 2026-10-02）
+
+本节保留 R2 当时功能与验收，以下“未实现 R3”是历史时点。R3 期间已核实 PR #1 合并及未创建修订标签的事实，并原文修正；当前功能看第 27 节。
 
 ### 26.1 完成范围与入口
 
-从 R1 `720ecdb06044145a0f9f8a15b0220a0b4be45113` 开始，开发分支 `feat/r2-watch-baseline`，目标仍为私有 `StevenWinsir/FolderWatch`。实现提交 `9d7b675419ab0f79ea46c43ace8b7594bb57b6db` 已推送，GitHub CI 5 个 job 全部成功。本轮最终 checkpoint 使用 `r2-complete.1`；它标记已验收的分支交付，不表示已合入 main。首次 `r2-complete` 标签在追加 CI 中发现 transient ENOENT 分类问题，保留历史不覆盖，后续应使用修订 checkpoint。
+从 R1 `720ecdb06044145a0f9f8a15b0220a0b4be45113` 开始，开发分支 `feat/r2-watch-baseline`，目标仍为私有 `StevenWinsir/FolderWatch`。实现提交 `9d7b675419ab0f79ea46c43ace8b7594bb57b6db` 已推送，GitHub CI 5 个 job 全部成功。R2 当时预告的 `r2-complete.1` 实际未创建/推送；最终修复以 `32529a7dad7014c5cb54f2aff8791a8969e66bc7` 为准，现已合入 main 的 `1dbdb5b`。首次 `r2-complete` 是修复前历史，不能作为最终 R2 起点，不改写该旧标签。
 
-PR 创建调用被工具层安全检查拦截，未创建 PR，也未绕过该拦截直接合并主分支。仓库集成状态保留 IN_REVIEW；完整实现、测试与交接可从分支或 checkpoint 获取，main 仍为 R1。下一轮应明确以 R2 分支/checkpoint 为起点，或先完成 PR 合并。
+R2 当轮 PR 创建曾受阻；后续仓库所有者流程已完成 [PR #1](https://github.com/StevenWinsir/FolderWatch/pull/1) 合并（2026-10-02 06:00:44 UTC）。R3 实际核对 main 的 merge parents 和源码树，与最终 R2 修复相同；不再沿用“main 仍为 R1”的过期状态，也不据合并推断额外人工验收。
 
 | 阶段 | 本轮实现 | 主要位置 |
 |---|---|---|
@@ -2389,10 +2399,62 @@ Reset 先构建下一代，成功后一次发布；失败或取消保留旧代�
 
 远端证据：[GitHub Actions 36968383149](https://github.com/StevenWinsir/FolderWatch/actions/runs/36968383149)，head=`9d7b675419ab0f79ea46c43ace8b7594bb57b6db`，结论 success。macOS/Linux × Go 1.23/1.26 的四个 test job 和 cross-build 全部成功。后续交付补记只更新文档；最终分支/tag 的检查以 Actions 和验收报告为准。
 
-补充回归：首次标签 [CI 36968813218](https://github.com/StevenWinsir/FolderWatch/actions/runs/36968813218) 的 macOS/Go 1.23 重复目录迁移测试遇到 `fsnotify.dirChange: no such file or directory`。修复将 native 子项消失归类为 root reconciliation（不能静默丢弃），其他错误仍发 warning；新增确定性测试，修复后 Watcher `-race -count=20` 与完整 build/test/race/lint/smoke 再次通过。修订标签为 `r2-complete.1`，旧标签没有重写。
+补充回归：首次标签 [CI 36968813218](https://github.com/StevenWinsir/FolderWatch/actions/runs/36968813218) 的 macOS/Go 1.23 重复目录迁移测试遇到 `fsnotify.dirChange: no such file or directory`。修复将 native 子项消失归类为 root reconciliation（不能静默丢弃），其他错误仍发 warning；新增确定性测试，修复后 Watcher `-race -count=20` 与完整 build/test/race/lint/smoke 再次通过。修订标签 `r2-complete.1` 当时只预告、未实际创建；R2 最终修复提交为 `32529a7`，其 [CI 36969190085](https://github.com/StevenWinsir/FolderWatch/actions/runs/36969190085) 通过，旧标签没有重写。
 
 ### 26.4 明确未完成与下一轮责任
 
 P6–P8 Classifier/Diff/ChangeStore 尚未实现；没有 Changed List、diff、重命名语义判定或“恢复后列表消失”的 UI。P9 以后 TUI、Pause/Resume、交互 Reset、日志、编辑器集成、GUI 和发布均未开始。Gate A / B 仍未通过。
 
 接受的已知边界：严格完整基线；无 Ignore 热更新；异常强杀可能残留私有缓存且未自动清扫；Unix 路径防护不是对抗并发恶意替换的原子沙箱；kqueue 描述符随文件数增加；没有完成 P12 性能预算、小时级监控、实际 VS Code GUI 或独立人工评审。下一轮复用稳定 core，所有错误/重扫/generation 语义必须保留，禁止用 UI 绕过。
+
+---
+
+## 27. 本轮交付记录 — R3 / P6–P8（2026-10-02）
+
+### 27.1 实际完成范围
+
+本轮从 R2 最终 `32529a7` 开始，在 `feat/r3-classify-diff-changes` 开发。核对到 R2 已合并后，将本分支 fast-forward 到源码树完全相同的 `origin/main` 合并提交 `1dbdb5bfdb99f1f1e2f04a6f366e3e78fc640627`，保留全部本轮修改，没有改写共享历史。最终 R3 提交、标签与远端 CI/PR 以 R3 acceptance 的交付补记为准。
+
+| 阶段 | 本轮已实现 | 主要位置 |
+|---|---|---|
+| P6 | 扩展名无关有界分类、编码状态、共享全流 Probe、快照不可变分类、独立分类/保留与 Diff 上限 | internal/filetype、snapshot、config |
+| P7 | 可取消有界 LCS、公共首尾裁剪/行 ID、增删上下文/hunk/行号/末尾换行、大小/工作降级、按需版本化 Diff | internal/diff、changes/diff.go |
+| P8 | 唯一状态表、批量 Resolve/重查、恢复消失与完整迁移、rename fallback、错误保护、代际/版本批次 | internal/changes、app/semantic.go |
+| 集成 | Session Changes/ChangeState/GetDiff、原子 Reset 清表、重试退避、CLI A/M/D 与语义 NDJSON、Reload 水位保护 | internal/app、internal/cli |
+| 验证/交接 | 单元/真实FS/并发/黄金/模糊/CLI、新旧回归、ADR-010–012、原 Handoff 就地更新、R3 acceptance | 各测试包、scripts、docs |
+
+### 27.2 运行方式与稳定接口
+
+```sh
+make build
+./bin/folderwatch --scan --json .
+./bin/folderwatch --watch --json --respect-gitignore "/path/to/项目 with spaces"
+```
+
+默认/scan 行为未改，watch 才持续监听。文本模式显示 A/M/D、路径及分类；NDJSON 首条 ready/state，之后 changes.batch 的 upserts/removed，必要时附 state 重新加载。事件不含正文、Diff 全文或缓存路径。Removed 表示恢复基线/先增后删后“不再变化”；真正删除是 Kind=deleted。
+
+Go API：`Session.Changes()` 返回排序副本；`ChangeState()` 返回列表、generation/version；`GetDiff(ctx,path)` 按需返回结构化差异；`ResetBaseline(ctx)` 原子换代并清空语义状态。GetDiff 用旧基线和当前 hash 校验，不拿最新内容伪造 before；文件/基线版本变化返回 ErrStale。未变化返回 ErrNotChanged，未保留内容返回 Unavailable。
+
+### 27.3 行为和资源决策
+
+分类/保留默认 8MiB（max_snapshot_bytes），Diff 每侧默认 5MiB / 20000 行，独立配置。Diff 默认 2000000 个 uint32 LCS 单元，密集大跨度变化可能触发计算预算 TooLarge；并非任何小于5MiB的文件都保证计算完整差异。二进制/未支持编码/特殊文件不文本渲染。CRLF、Unicode 与无末尾换行字节保留。
+
+Current Resolver 不常驻全文：一个 metadata-only scratch store；按需 Diff 有独立单引用 scratch/token，不阻塞解析所有权。正常三个私有目录，Reset 峰值两代有界基线加一个有界 Diff 快照；扫描/矩阵/调用方副本另计。没有无限事件/goroutine/定时器，失败重查仅一个100ms–2s退避计时器，成功后停止。快照、Matcher、Config 不得跨 root 混用。
+
+读取失败保留最后已知状态并 warning，不把不可读子树误删；下一次成功重查纠正。排除但仍存在的文件不误报 Deleted。rename 本轮一律可靠降级删除+新增，不声称已实现 Renamed 识别。慢消费者 Reload 后按版本丢弃旧批次；P9 UI 只能展示，不能重算状态。
+
+### 27.4 测试结果
+
+本机 macOS 26.6.2 / darwin-arm64 / Go 1.26.6。`make build test race lint smoke` 通过；248 个 Go 测试/子测试（101 个顶层测试/模糊目标），无失败和测试级跳过；全量 race 连续10轮通过。修订测试后再次全量10轮的整体语句覆盖率86.1%，Classifier93.5%、Diff94.2%、ChangeStore84.4%。9个黄金文件、R1扫描60项、R2监听17项、R3语义16项冒烟通过；实际Vim两种保存继续通过。
+
+5秒分类 fuzz 执行1,061,660次、Diff重构 fuzz执行911,178次，均PASS；这是有界找错实验，不是形式证明或性能指标。macOS arm64/amd64、Linux amd64、Windows amd64交叉编译和go mod verify通过。R3未新增外部依赖，R2 vendor补丁保持原样并通过来源/校验守卫。
+
+本轮复核修复/防护包括：共享分类消除双探针、巨大文件避免无谓文本探测、混用root拒绝、瞬时消失/不可读保护、恢复/Reset代际清理、旧Diff失效、消费者Reload后旧批次回退防护。测试与源码已实际复跑，不将尚未观察的远端CI或人工QA写为通过。
+
+首次推送 CI 的 Ubuntu/Go1.23 揭示实时 Diff 集成测试错误假定“kind=Modified 即版本固定”。生产 GetDiff 合法返回 ErrStale；测试改为限时且仅重试 ErrStale，保留所有最终断言及确定性 stale 拒绝测试，未移除生产版本保护。修订后针对用例50轮race、全量10轮race和完整构建/三组smoke再次通过。首次失败链接及修订远端结论见R3 acceptance。
+
+远端已验证：修订提交 `15e9c4dbf11b3bd4076e3ff342b3f1b78c8ccfa3` 的 [分支 CI 36975768688](https://github.com/StevenWinsir/FolderWatch/actions/runs/36975768688) 与 [PR CI 36975771977](https://github.com/StevenWinsir/FolderWatch/actions/runs/36975771977) 均 success，各5个job全绿。覆盖macOS/Linux×Go1.23/1.26的build/test/race/核心重复/三组smoke及cross-build。本轮 [PR #2](https://github.com/StevenWinsir/FolderWatch/pull/2) 保持待评审/合并，未直接写入main；最后证据补记只改文档，完整交付由 `r3-complete` 标识。精确SHA/后续运行以远端引用及R3 acceptance为准。
+
+### 27.5 明确未完成与后续
+
+P9–P11 TUI、交互Diff/Reset、Pause/Resume、日志/编辑器均未实现；GUI与发布Gate尚未开始。GetDiff和Reset是Go API，不是已有鼠标/键盘UI。R5性能预算、长期监控、真实VS Code GUI和Terminal/iTerm人工验收未执行。强杀残留缓存自动清扫、Ignore热更新、更高效大跨度Diff/缓存、可靠rename关联仍为后续候选，详见ADR与R3 acceptance。R3的实现/自动化验收与PR主分支集成状态分开记录。

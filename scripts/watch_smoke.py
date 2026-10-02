@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""R2 black-box monitoring smoke, using only isolated temporary fixtures."""
+"""R2 monitoring regressions through the R3 semantic stream, using only isolated temporary fixtures."""
 from __future__ import annotations
 
 import json
@@ -58,8 +58,9 @@ def main() -> None:
             raise AssertionError("event timeout")
 
         def invalidated(path: str):
-            return event(lambda e: e.get("type") == "paths" and
-                         (e.get("reconcile") or any(p["path"] == path for p in e.get("paths", []))))
+            return event(lambda e: e.get("type") == "changes" and
+                         (e.get("reconcile") or path in e.get("batch", {}).get("removed", []) or
+                          any(p["path"] == path for p in e.get("batch", {}).get("upserts", []))))
 
         try:
             ready = event(lambda e: e.get("type") == "ready")
@@ -68,7 +69,7 @@ def main() -> None:
             assert sorted(p.name for p in root.iterdir()) == [".folderwatchignore", "a.txt"]
             checks += 1
             owned = list(cache.glob("folderwatch-*"))
-            assert len(owned) == 1 and (owned[0].stat().st_mode & 0o777) == 0o700
+            assert len(owned) == 3 and all((p.stat().st_mode & 0o777) == 0o700 for p in owned)
             checks += 1
 
             # Direct-write and replacement models, not a claim of running VS Code.

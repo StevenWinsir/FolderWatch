@@ -72,7 +72,7 @@ func TestPrepareErrorClasses(t *testing.T) {
 }
 
 func TestCoreDoesNotImportUIOrWatcherAdapters(t *testing.T) {
-	for _, dir := range []string{"app", "config", "ignore", "model", "pathutil", "scan", "fileutil", "snapshot", "debounce", "eventnorm"} {
+	for _, dir := range []string{"app", "config", "ignore", "model", "pathutil", "scan", "fileutil", "snapshot", "debounce", "eventnorm", "filetype", "diff", "changes"} {
 		err := filepath.WalkDir(filepath.Join("..", dir), func(path string, d fs.DirEntry, err error) error {
 			if err != nil {
 				return err

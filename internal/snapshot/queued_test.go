@@ -3,6 +3,7 @@ package snapshot
 import (
 	"context"
 	"errors"
+	"github.com/StevenWinsir/FolderWatch/internal/filetype"
 	"testing"
 	"time"
 )
@@ -43,13 +44,13 @@ func FuzzTextProbeChunkBoundaries(f *testing.F) {
 		f.Add([]byte(s))
 	}
 	f.Fuzz(func(t *testing.T, data []byte) {
-		whole := textProbe{}
-		whole.write(data)
-		split := textProbe{}
+		whole := filetype.Probe{}
+		whole.Write(data)
+		split := filetype.Probe{}
 		for _, b := range data {
-			split.write([]byte{b})
+			split.Write([]byte{b})
 		}
-		if whole.binary != split.binary || (!whole.binary && string(whole.tail) != string(split.tail)) {
+		if whole.Result(int64(len(data)), 1<<30) != split.Result(int64(len(data)), 1<<30) {
 			t.Fatal("probe depends on chunk boundaries")
 		}
 	})

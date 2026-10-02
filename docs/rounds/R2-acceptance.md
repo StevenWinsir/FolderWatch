@@ -1,6 +1,6 @@
 # R2 Acceptance — Watcher / Events / Baseline（P3–P5）
 
-Status: **实现 / 本地与 GitHub 自动化验收 PASS；Round 集成状态 IN_REVIEW（待 PR 合并）**。
+Status: **PASS — 实现与自动化验收通过，PR #1 已合并**。此合并状态为 R3 期间于 2026-10-02 根据远端原文补正，不追加未执行的人工验收。
 
 Date: 2026-10-01 至 2026-10-02（本机 CDT）
 
@@ -8,7 +8,7 @@ Owner / Review: 编码助手依据仓库所有者本轮授权实施；完成实�
 
 Start commit: `720ecdb06044145a0f9f8a15b0220a0b4be45113`（R1 checkpoint）
 
-Branch: `feat/r2-watch-baseline`。最终交付 checkpoint：`r2-complete.1`，完成推送后用 `git rev-parse r2-complete.1^{commit}` 解析精确提交；首次 `r2-complete` 保留为修复前历史，不覆盖。
+Branch: `feat/r2-watch-baseline`。最终修复提交 `32529a7dad7014c5cb54f2aff8791a8969e66bc7`，已合并为 `1dbdb5bfdb99f1f1e2f04a6f366e3e78fc640627`。先前预告的 r2-complete.1 实际未创建/推送；首次 r2-complete 仍为修复前历史，不覆盖。
 
 Repository: https://github.com/StevenWinsir/FolderWatch （private）
 
@@ -109,8 +109,8 @@ R2 未实现文本 diff、Changed List、rename语义识别、Pause/Resume、TUI
 
 [GitHub Actions 36968383149](https://github.com/StevenWinsir/FolderWatch/actions/runs/36968383149) 实际结论为 **success**，headSha 与上述实现提交完全一致。5 个 job 均成功：macOS/Linux × Go 1.23/1.26 四个 test job（lint/build/test/race/重复核心集成/两组CLI smoke），以及 macOS/Windows cross-build。
 
-PR 创建调用被工具层安全检查拦截，没有创建 PR；未通过其他途径重试该受阻操作，也未直接修改/合并 main。R2 的实现、测试和远端分支推送已完成，但不能把“待 PR 合并”写成“已合入主分支”。main 仍保持 R1，R2 代码从 `feat/r2-watch-baseline` 或修订 `r2-complete.1` 获取。
+R2 当轮 PR 创建曾被拦截；后续仓库流程已完成 [PR #1](https://github.com/StevenWinsir/FolderWatch/pull/1)，mergedAt=2026-10-02T06:00:44Z，mergeCommit=1dbdb5bfdb99f1f1e2f04a6f366e3e78fc640627。R3 期间实际读取远端并核对源码树相同，纠正先前“main仍为R1”的过期记录。未据此虚构独立人工 reviewer。
 
 首次分支交付 `016fe06` 的 [分支 CI 36968813633](https://github.com/StevenWinsir/FolderWatch/actions/runs/36968813633) 通过，但同源码的 [标签 CI 36968813218](https://github.com/StevenWinsir/FolderWatch/actions/runs/36968813218) 在 macOS/Go 1.23 重复目录迁移测试中遇到 transient `fsnotify.dirChange: no such file or directory`。这不是把失败重跑到绿色：已修改 watcher.nativeFailure，将原生子项消失转为 root reconciliation（仍保证重查），并保留其他错误的 warning；新增 TestNativeDisappearanceRequiresReconcileWithoutSpuriousWarning。
 
-修复后本地 `go test -race -count=20 ./internal/watcher`、全量 `go test -race -count=10 -coverprofile=coverage.out ./...` 及 `make build test race lint smoke` 再次通过，最终总覆盖率仍为 84.3%。首次 `r2-complete` 标签不覆盖，最终使用 `r2-complete.1` 修订 checkpoint。修订后的远端结果按 [Actions](https://github.com/StevenWinsir/FolderWatch/actions) 的对应 headSha 查询；分支交付不代替 PR 合并流程。
+修复后本地 `go test -race -count=20 ./internal/watcher`、全量 `go test -race -count=10 -coverprofile=coverage.out ./...` 及 `make build test race lint smoke` 再次通过，最终总覆盖率仍为 84.3%。首次 r2-complete 不覆盖，r2-complete.1 实际未创建。最终32529a7的 [CI 36969190085](https://github.com/StevenWinsir/FolderWatch/actions/runs/36969190085) 已通过，随后PR #1完成合并；以该提交/合并记录作为R2终点。

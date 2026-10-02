@@ -43,6 +43,9 @@ type Matcher struct {
 	git        map[string]ruleSet
 }
 
+// Root identifies the immutable namespace to which these rules apply.
+func (m *Matcher) Root() string { return m.root }
+
 func New(opts Options) (*Matcher, error) {
 	root, err := pathutil.NormalizeRoot(opts.Root, ".")
 	if err != nil {

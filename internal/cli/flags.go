@@ -17,6 +17,7 @@ type Request struct {
 	JSON    bool
 	Scan    bool
 	Watch   bool
+	TUI     bool
 }
 
 // Parse does not touch the filesystem, making help/version usable anywhere.
@@ -33,6 +34,7 @@ func Parse(args []string) (Request, error) {
 	fs.BoolVar(&r.JSON, "json", false, "Print scan JSON")
 	fs.BoolVar(&r.Scan, "scan", false, "Scan once and exit")
 	fs.BoolVar(&r.Watch, "watch", false, "Monitor with settled path events and a baseline")
+	fs.BoolVar(&r.TUI, "tui", false, "Require interactive Terminal/TUI mode")
 	var pending, dirs, files int
 	var memory, cache string
 	var snapshotBytes string
@@ -49,11 +51,11 @@ func Parse(args []string) (Request, error) {
 	fs.StringVar(&ignoreFile, "ignore-file", "", "Additional ignore file")
 	fs.BoolVar(&respectGit, "respect-gitignore", false, "Read root/nested .gitignore")
 	fs.BoolVar(&includeGit, "include-git", false, "Disable built-in .git/ ignore")
-	fs.BoolVar(&noMouse, "no-mouse", false, "Disable TUI mouse (reserved until R4)")
+	fs.BoolVar(&noMouse, "no-mouse", false, "Disable TUI mouse")
 	fs.StringVar(&maxBytes, "max-diff-bytes", "5MiB", "Diff byte budget (separate from snapshot retention)")
 	fs.StringVar(&editor, "editor", "", "Editor command text (stored only)")
-	fs.StringVar(&logFile, "log-file", "", "Log destination (validated only)")
-	fs.BoolVar(&debug, "debug", false, "Debug setting (reserved until R4)")
+	fs.StringVar(&logFile, "log-file", "", "New private log file outside watched root (live modes only)")
+	fs.BoolVar(&debug, "debug", false, "Add metadata diagnostics to the bounded log ring")
 	if err := fs.Parse(args); err != nil {
 		return Request{}, err
 	}
@@ -62,6 +64,9 @@ func Parse(args []string) (Request, error) {
 	}
 	if r.Watch && r.Scan {
 		return Request{}, fmt.Errorf("--watch and --scan cannot be combined")
+	}
+	if r.TUI && (r.Watch || r.Scan || r.JSON) {
+		return Request{}, fmt.Errorf("--tui cannot be combined with --watch, --scan or --json")
 	}
 	if fs.Changed("max-snapshot-bytes") {
 		r.Overlay.MaxSnapshotBytes = &snapshotBytes
@@ -132,16 +137,18 @@ Usage:
   folderwatch [flags] [path]
   folderwatch --scan --json .
 
-R3 (P0–P8): default/--scan scans once; --watch captures a baseline and emits
-versioned Added/Modified/Deleted changes until Ctrl+C. --watch --json emits
-NDJSON metadata, never file contents. Changes/GetDiff/ResetBaseline are Go APIs.
-Default path is the current directory. TUI and GUI are not implemented yet.
+R4 (P0–P11): in an interactive terminal the default opens a live TUI.
+With redirected stdin/stdout the default remains a one-shot scan. --tui requires
+a terminal. --scan/--json scan once; --watch emits semantic changes until Ctrl+C.
+--watch --json emits NDJSON metadata, never file contents. No GUI yet.
+Default path is the current directory.
 Flags may appear before or after path; -- ends flag parsing.
 
 Options:
   -h, --help                  Show this help; no config or filesystem scan
       --version               Show version, commit and optional build date
-      --scan                  Explicit one-shot scan (also the default)
+      --scan                  Explicit one-shot scan (also the non-TTY default)
+      --tui                   Require interactive TUI; incompatible with scan/watch/json
       --watch                 Capture baseline and continuously report semantic changes
       --json                  Scan JSON or streaming --watch NDJSON
       --ignore <pattern>      Repeatable gitignore-style rule; quote globs
@@ -152,10 +159,10 @@ Options:
       --max-diff-bytes <size> Diff byte cap per side (default 5MiB; ceiling 64MiB)
       --max-snapshot-bytes <size> Classification/retention cap (default 8MiB)
       --max-diff-lines <n>    Diff lines per side (default 20000; ceiling 200000)
-      --no-mouse              Disable mouse (default false; R4 reserved)
+      --no-mouse              Disable TUI mouse; all actions support the keyboard
       --editor <command>      Store editor text only; not executed
-      --log-file <path>       Validate destination only; not created
-      --debug                 Store debug setting only (R4 reserved)
+      --log-file <path>       Create a NEW 0600 log outside root, max 4MiB (live modes)
+      --debug                 Metadata diagnostics in a 200-entry ring; e shows details
 
 Resource limits (also snake_case TOML keys):
       --max-pending-events <n>       Default 4096; overflow requires reconciliation
@@ -177,7 +184,11 @@ Root .folderwatchignore is always read; explicit ignore files are additive.
 Rule priority: default .git/ < enabled .gitignore < .folderwatchignore < explicit
 ignore file < config/CLI rules. Unignore an excluded parent before its children.
 Descendant symlinks are reported but never followed. Rule edits require restart.
-No files are written under the monitored root. --watch uses a private OS temp
-cache outside root, removed at Close. Default/--scan never reads file contents.
-Exit codes: 0 success (warnings possible), 2 input/config, 1 runtime/I/O, 130 cancel.
+No files are written under the monitored root. Live modes use private OS temp
+caches outside root, removed at Close. --scan/--json never read file contents.
+TUI: ↑↓/j/k select, Enter/Space expand, PgUp/PgDn scroll diff, ←→/h/l horizontal,
+/ filter, p pause/resume, r reset (y/Enter confirms), ? help, e details, q quit.
+Pause keeps watcher alive; Resume reconciles against the same baseline.
+NO_COLOR disables styling; +/- and A/M/D remain readable without color.
+Exit codes: 0 success/q (warnings possible), 2 input/config, 1 runtime/I/O, 130 Ctrl+C/cancel.
 `

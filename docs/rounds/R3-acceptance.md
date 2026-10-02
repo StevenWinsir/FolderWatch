@@ -1,6 +1,6 @@
 # R3 Acceptance — Classifier / Diff / ChangeStore（P6–P8）
 
-Status: **实现、本地与 GitHub 自动化验收 PASS；Round 集成状态 IN_REVIEW（PR #2 待评审/合并）**。分支推送及修订后的分支/PR CI 均已确认；没有擅自合入 main 或声称独立人工评审通过。
+Status: **PASS（实现、本地与 GitHub 自动化验收通过；PR #2 已合并）**。R4 于 2026-10-02 实查：PR #2 merged_at=2026-10-02T07:08:58Z，merge=`1b52fcc23d199f6962206205e585c1d695cc0bae`，head=`c0f626b63735fba6ae43feaeb0c860089ffad0ea`，两者源码树相同。以下保留 R3 时点范围及验收，不将旧的未实现 TUI 当作当前状态；R4 记录见 [R4 acceptance](R4-acceptance.md)。不据合并推断额外独立人工评审。
 
 Date: 2026-10-02（本机 CDT）
 
@@ -97,7 +97,7 @@ Architecture: [ADR-010](../adr/010-classification-and-safe-content.md)、[ADR-01
 
 ## GitHub delivery / integration
 
-实现提交 `d4d0f5a5c06f63e88e7ec0bf12689f0c08f2bdf4` 已推送并创建 [PR #2](https://github.com/StevenWinsir/FolderWatch/pull/2)，目标 main；尚未合并。
+实现提交 `d4d0f5a5c06f63e88e7ec0bf12689f0c08f2bdf4` 已推送并创建 [PR #2](https://github.com/StevenWinsir/FolderWatch/pull/2)，目标 main；R3 首次交付时尚未合并，后续已合并，事实见本文件顶部 R4 复核。
 
 首次 [CI 36974988165](https://github.com/StevenWinsir/FolderWatch/actions/runs/36974988165) 四个 job 通过、Ubuntu/Go1.23 失败。失败点是 TestIndependentClassificationAndDiffConfig：等待 kind=Modified 不代表文件版本已固定，启动窗口重查与 truncate/write 时序可使 GetDiff 合法返回 ErrStale。原测试错误假定单次调用必成功。修正 integration helper 仅在限定期限内重试 ErrStale，其他错误和最终内容/状态断言不放宽；保留原有 gated-engine 的必然 stale 拒绝测试。生产 GetDiff 未为迁就测试而取消版本保护。修订后 `go test -race -count=50 -run=^TestIndependentClassificationAndDiffConfig$ ./internal/app`、全量 `go test -race -count=10 -coverprofile=coverage.out ./...` 和 `make build test race lint smoke` 均再次 PASS。生产代码与原实现提交相同。同期首次 [PR CI 36975049737](https://github.com/StevenWinsir/FolderWatch/actions/runs/36975049737) 在 Ubuntu 1.23/1.26 暴露同一单次调用假设，也由此修订覆盖；保留这些历史失败，不伪装一次全绿。
 
@@ -115,8 +115,8 @@ Architecture: [ADR-010](../adr/010-classification-and-safe-content.md)、[ADR-01
 
 四个 test job 均含 lint、build、完整 tests、race、核心3轮重复与三组 CLI smoke。最后记录这些结果的提交只改交接文档/README，不更改已验证的源码、测试、依赖或工作流。完整交付以 **`r3-complete`** 所指代码与文档为准；可用 `git rev-parse r3-complete^{commit}` 核对。后续标签/分支运行的实时结果以 [Actions](https://github.com/StevenWinsir/FolderWatch/actions) 为准，本文件不预告尚未发生的 CI 结论。
 
-[PR #2](https://github.com/StevenWinsir/FolderWatch/pull/2) 已创建并保持 OPEN，供仓库评审/合并；本轮交付不强推或直接修改 main。R2 主分支已合入事实与 R3 待集成状态分别记录。
+[PR #2](https://github.com/StevenWinsir/FolderWatch/pull/2) 在 R3 交付时为 OPEN，后续已通过仓库流程合并；R4 从实际 merge `1b52fcc` 建立独立分支。没有强推、改写历史或把自动化验证说成额外人工 QA。
 
-## Next developer — R4 / P9–P11
+## Historical next-developer instructions at R3 — R4 / P9–P11
 
 使用 Session.Changes/ChangeState/GetDiff 和语义 Batch，不从 Paths/fsnotify flags 派生状态。Reload 取 View，以 generation/version 拒绝旧消息；Removed 意为不再变化。Diff 按需且可取消，处理 ErrNotChanged/ErrStale、Binary/Unsupported/TooLarge/Unavailable。Reset 只调用 core 原子API。保留 R1–R3 tests、三组 CLI smoke 和 vendor guard。确认 R3 PR/集成状态后再接 TUI；Gate A 未通过，不进入 GUI。

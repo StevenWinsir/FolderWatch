@@ -247,6 +247,15 @@ func (w *FSNotify) handle(ctx context.Context, e fsnotify.Event) error {
 	if key == "." && e.Op&(fsnotify.Remove|fsnotify.Rename) != 0 {
 		return ErrRootGone
 	}
+	if key == "." {
+		// Root notifications are invalidations, not proof that the path still
+		// names the original directory. Native events can also be entirely
+		// absent after unlink while Linux retains a cwd/open reference; the
+		// event-loop health check below covers that independent case.
+		if err := w.checkRoot(); err != nil {
+			return err
+		}
+	}
 	if wasDir && e.Op&(fsnotify.Remove|fsnotify.Rename) != 0 {
 		w.dropTree(e.Name)
 	}
@@ -286,8 +295,12 @@ func (w *FSNotify) loop(ctx context.Context) {
 	defer close(w.events)
 	defer close(w.errors)
 	defer w.native.Close()
-	// No periodic scans. The application requests registration reconciliation
-	// after an overflow or directory invalidation.
+	// One O(1) root-identity health check, never a recursive scan. On Linux,
+	// unlinking a directory held as cwd/open fd can yield NO native event
+	// until the last reference closes. This must remain live during Pause.
+	// Avoid watching the parent: that can enroll unrelated files on kqueue.
+	rootHealth := time.NewTicker(time.Second)
+	defer rootHealth.Stop()
 	for {
 		var delivery chan RawEvent
 		if w.dirty {
@@ -296,6 +309,11 @@ func (w *FSNotify) loop(ctx context.Context) {
 		select {
 		case <-ctx.Done():
 			return
+		case <-rootHealth.C:
+			if err := w.checkRoot(); err != nil {
+				w.warn(err)
+				return
+			}
 		case delivery <- RawEvent{Path: ".", Reconcile: true, At: time.Now()}:
 			w.dirty = false
 		case call := <-w.calls:

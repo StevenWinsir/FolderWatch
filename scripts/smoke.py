@@ -62,7 +62,9 @@ def main() -> None:
         with (root / "huge.bin").open("wb") as large:
             large.truncate(5 * 1024 ** 3)  # Sparse 5 GiB fixture; metadata only.
 
-        check("default/--scan scans once" in run("--help").stdout, "help must preserve the default scan-only contract")
+        help_text = run("--help").stdout
+        check("default opens a live TUI" in help_text and "default remains a one-shot scan" in help_text,
+              "help must explain the R4 terminal default and preserved non-TTY scan contract")
         check("folderwatch" in run("--version").stdout, "missing version")
         result = scan()
         found = paths(result)

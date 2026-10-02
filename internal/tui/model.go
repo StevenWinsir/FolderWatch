@@ -75,7 +75,10 @@ func (m *Model) Update(message tea.Msg) (tea.Model, tea.Cmd) {
 		}
 		return m, tea.Quit
 	case eventMsg:
-		m.status = msg.status
+		// Event and control commands can finish out of order. Status has no
+		// ChangeState version, so consult the core's short-lock accessor rather
+		// than letting a captured pre-Pause snapshot roll the controls back.
+		m.status = m.service.Status()
 		m.acceptView(msg.state)
 		m.log.Record("debug", fmt.Sprintf("event=%s generation=%d version=%d changed=%d", msg.event.Type, msg.state.Generation, msg.state.Version, len(msg.state.Changes)))
 		if msg.event.Type == "warning" {
@@ -91,7 +94,7 @@ func (m *Model) Update(message tea.Msg) (tea.Model, tea.Cmd) {
 		return m, tea.Batch(waitEvent(m.ctx, m.service), m.requestDiff())
 	case controlMsg:
 		m.busy = ""
-		m.status = msg.status
+		m.status = m.service.Status()
 		m.acceptView(msg.state)
 		if msg.err != nil {
 			m.notice = msg.action + " failed: " + msg.err.Error() + "; previous baseline retained (e: details)."

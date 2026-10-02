@@ -218,7 +218,7 @@ P0–P25 继续作为能力阶段编号；**Round 才是实际开发、Code Revi
 
 ### 2.6 R4 — Terminal/TUI 产品体验（P9–P11）
 
-**当前状态：IN_REVIEW（实现、本地自动化验收 PASS，2026-10-02）**。280 个 Go 测试/子测试、全包 race 10 轮、R1–R3 原有 60/17/16 项与 R4 新增 21 项真实二进制 PTY 冒烟均通过；四种 target 交叉编译通过。PTY 不是 Terminal.app/iTerm2 人工签字。远端 PR/CI 实测与已知边界见第 28 节、R4 acceptance。
+**当前状态：IN_REVIEW（实现、本地自动化验收 PASS，2026-10-02）**。287 个 Go 测试/子测试、全包 race 10 轮、R1–R3 原有 60/17/16 项与 R4 新增 21 项真实二进制 PTY 冒烟均通过；四种 target 交叉编译通过。PTY 不是 Terminal.app/iTerm2 人工签字。远端 PR/CI 实测与已知边界见第 28 节、R4 acceptance。
 
 **目标**：把稳定 core 变成可完整使用的 Terminal 产品。
 
@@ -2516,7 +2516,7 @@ debug仅含元数据。默认日志在内存200条ring，显式日志必须root�
 
 ### 28.4 实际验证与修复
 
-本机macOS26.6.2 / Apple M4 / darwin-arm64 / Go1.26.6：`make build test race lint smoke`、`go mod tidy -diff`、`go mod verify`通过；**280个测试/子测试、125个顶层测试/模糊目标，失败0/测试级跳过0；全包race连续10轮PASS**。语句覆盖率85.6%，TUI84.2%、app83.3%、logging86.4%。父子测试计数并非独立场景数，真实PTY进程不计入进程内coverage。
+本机macOS26.6.2 / Apple M4 / darwin-arm64 / Go1.26.6：`make build test race lint smoke`、`go mod tidy -diff`、`go mod verify`通过；**287个测试/子测试、129个顶层测试/模糊目标，失败0/测试级跳过0；最终源码全包race连续10轮PASS**。语句覆盖率85.7%，TUI84.2%、app83.0%、watcher81.7%、logging86.4%。父子测试计数并非独立场景数，真实PTY进程不计入进程内coverage。
 
 R1扫描60项、R2监听17项、R3语义16项、R4真实二进制PTY21项全部通过，实际headless Vim两种保存保留。PTY走通0/1/112文件、1500行滚动、过滤、鼠标/无鼠标、无色/红绿、权限warning/继续、pause/resume/reset、baseline before变更、启动中退出、q/Ctrl+C/fatal与缓存/终端恢复。只掩蔽macOS内核维护的PENDIN位，其余终端flags/控制字符/速率、光标与alt screen严格检查。**这不是实际Terminal.app/iTerm2人工验收。**
 
@@ -2525,6 +2525,10 @@ macOS arm64/amd64、Linux amd64、Windows amd64交叉编译通过；Windows只�
 开发过程发现并修复：控制/Close并发泄漏watcher closed；Diff错误预览阻止真正重试；no-mouse残留报告；日志root大小写别名。旧scan-only帮助断言按明确TTY/管道分流契约更新，实际扫描断言全保留。PTY过滤输入改为先进入过滤再提交粘贴查询，并正确区分内核PENDIN位；未删除生产版本保护或正确性测试来掩盖问题。所有最终源码/测试/脚本均已复跑。
 
 首次 [分支 CI 36980505335](https://github.com/StevenWinsir/FolderWatch/actions/runs/36980505335) 暴露 PTY 测试继承 `CI=true` 导致 termenv 按设计关闭自动颜色，而断言期望红绿输出。本机先带CI变量重现，再仅隔离PTY子进程的CI/颜色偏好环境；保留全部颜色/无色/内容/恢复断言，未改生产行为或依赖。带CI及禁用颜色变量的外部环境复测21项通过；详细修订验证见R4 acceptance。
+
+随后 `e3b22c0` 的 [PR CI 36981497710](https://github.com/StevenWinsir/FolderWatch/actions/runs/36981497710) 中，macOS两个Go版本通过，Linux在暂停时删除作为cwd的root后没有退出。Linux持有目录引用时可以完全没有root原生事件，不能只检查Chmod。修复在watcher责任层：每个既有事件循环增加一个1秒ticker，只做root的Lstat/目录身份比较；不扫描子树、不读正文、不推进暂停语义状态，退出停止ticker。新增无原生订阅时健康检查不发语义事件/根消失仍fatal、保留open-directory引用、root通知身份回归，保留原PTY断言。1秒是调度间隔，不是慢文件系统上的硬实时承诺。测试fixture使用实际注册的w.root规范路径，不忽略macOS /var→/private/var差异导致的Remove错误。
+
+同时补齐状态消息乱序回归：旧event/control的Status快照不再覆盖更新后的Pause/Resume/Error；UI处理消息时读取core短锁Status，列表仍有generation/version水位保护。最终源码重新执行`CI=true make build test race lint smoke`、全包10轮race/coverage、JSON计数及四target构建，均通过；上方计数已原文更新。修订远端结果按实际完成后补记。
 
 ### 28.5 明确未完成与下一轮
 

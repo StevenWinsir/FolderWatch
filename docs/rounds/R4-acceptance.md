@@ -51,7 +51,7 @@ Environment: **macOS 26.6.2 / darwin-arm64 / Apple M4 / Go 1.26.6**。
 |---|---|
 | `make fmt`、`go mod tidy -diff`、`go mod verify` | PASS；all modules verified |
 | `make build test race lint smoke` | PASS；包含 gofmt/go vet/vendor guard 与全部四组 smoke |
-| `go test -json -count=1 ./...` | **280 个测试/子测试 PASS**，125 个顶层测试/模糊目标；失败0、测试级跳过0 |
+| `go test -json -count=1 ./...` | **287 个测试/子测试 PASS**，129 个顶层测试/模糊目标；失败0、测试级跳过0 |
 | `go test -race -count=10 -coverprofile=coverage.out ./...` | **全包连续10轮 PASS** |
 | R1 `scripts/smoke.py` | **60 checks，0 skipped**；包含更新后的TTY/管道帮助契约 |
 | R2 `scripts/watch_smoke.py` | **17 checks**；实际 headless Vim backupcopy=yes/no 保存继续 PASS |
@@ -59,7 +59,7 @@ Environment: **macOS 26.6.2 / darwin-arm64 / Apple M4 / Go 1.26.6**。
 | R4 `scripts/tui_smoke.py` | **21 checks**；真实二进制 PTY，非 Terminal/iTerm2 人工 QA |
 | darwin/arm64、darwin/amd64、linux/amd64、windows/amd64 `go build ./...` | 全部 PASS；跨编译不是 Windows runtime 支持 |
 
-整体语句覆盖率 **85.6%**，app **83.3%**、TUI **84.2%**、logging **86.4%**、CLI **82.9%**。真实二进制 PTY/CLI 进程不计入 Go 进程内覆盖率；上述280包括父测试与子测试，不是280个互不重叠场景。JSON 证据在本机被忽略的 `artifacts/validation/r4-tests.jsonl`，coverage.out 同为验证产物，不作为业务文件提交。
+最终源码整体语句覆盖率 **85.7%**，app **83.0%**、watcher **81.7%**、TUI **84.2%**、logging **86.4%**、CLI **82.9%**。真实二进制 PTY/CLI 进程不计入 Go 进程内覆盖率；上述287包括父测试与子测试，不是287个互不重叠场景。JSON 证据在本机被忽略的 `artifacts/validation/r4-tests.jsonl`，coverage.out 同为验证产物，不作为业务文件提交。
 
 孤立渲染微基准 `go test -run='^$' -bench='^BenchmarkVisibleDiffRendering$' -benchtime=1s -benchmem ./internal/tui`：1500行预览、120×40视口，**55,925 ns/op、5,162 B/op、136 allocs/op**（20,485次）。只测选定可见帧 View，不包括 FS、Diff、终端输出延迟或复杂目录；**不是 P12/P95/内存/长期稳定性 Gate**。
 
@@ -94,4 +94,14 @@ Environment: **macOS 26.6.2 / darwin-arm64 / Apple M4 / Go 1.26.6**。
 
 首次 [分支 CI 36980505335](https://github.com/StevenWinsir/FolderWatch/actions/runs/36980505335) 在 macOS/Linux × Go1.23/1.26 的 TUI PTY smoke 颜色断言失败：测试子进程继承 `CI=true`，锁定的 termenv 会因此把自动颜色 profile 降为 Ascii。真实增删文本与原三组 smoke 已通过，但测试仍要求红绿 ANSI 输出。先在本机用 `CI=true python3 scripts/tui_smoke.py bin/folderwatch` 重现了同一行失败，确认不是 OS 特定渲染 bug。
 
-修正仅隔离 PTY 子进程继承的 `CI`、`CLICOLOR`、`CLICOLOR_FORCE`，继续固定 TERM=xterm-256color，并由测试明确设置/移除 NO_COLOR。**保留原红绿 ANSI、无色、文本及终端恢复全部断言；未修改生产代码/依赖，也未强迫普通 CI 输出颜色。** 修正后带 `CI=true CLICOLOR=0 CLICOLOR_FORCE=0 NO_COLOR=1` 的外部环境运行，21 项 PTY 验证全部通过。随后 `CI=true make build test race lint smoke` 再次全通过（含全部四组 smoke）。Go 生产与单元测试源码未变，原全包10轮race证据继续适用；修订远端结果按实际执行补记。
+修正仅隔离 PTY 子进程继承的 `CI`、`CLICOLOR`、`CLICOLOR_FORCE`，继续固定 TERM=xterm-256color，并由测试明确设置/移除 NO_COLOR。**保留原红绿 ANSI、无色、文本及终端恢复全部断言；未修改生产代码/依赖，也未强迫普通 CI 输出颜色。** 修正后带 `CI=true CLICOLOR=0 CLICOLOR_FORCE=0 NO_COLOR=1` 的外部环境运行，21 项 PTY 验证全部通过。随后 `CI=true make build test race lint smoke` 再次全通过（含全部四组 smoke）。这一提交仅改测试环境和文档；后续生产修正及重新验证如下。
+
+### 第二次远端结果：Linux无原生事件的根目录丢失
+
+`e3b22c0f2d2e52222a5bd9215bdce5da9aadfc74` 的 [PR CI 36981497710](https://github.com/StevenWinsir/FolderWatch/actions/runs/36981497710) 与 [push CI 36981493020](https://github.com/StevenWinsir/FolderWatch/actions/runs/36981493020) 均为macOS两个Go版本及cross-build通过、Linux两个Go版本在PTY暂停root删除测试失败。cwd仍持有已删除目录，Linux可推迟全部root通知到最后引用释放；只检查Chmod不能覆盖。
+
+最终修复：唯一watcher事件循环加入1秒root-only身份健康检查（Lstat、类型、SameFile），暂停中仍运行，退出停止ticker；不扫描子树、不读文件、不推进ChangeStore、不监控root父目录。1秒是名义调度间隔，不是硬实时I/O保证。原`cwd=root`的PTY删除/非零退出/恢复断言完整保留。新增`TestRootHealthWithoutNativeNotifications`（移除原生订阅，健康root不产生周期语义事件、无通知删除仍fatal）、`TestRootNotificationChecksIdentity`三种状态、暂停持有目录fd的app回归。fixture首次在macOS使用原始/var路径不能移除规范/private/var订阅，已改用实际注册的`w.root`，不忽略错误。
+
+另有状态消息乱序修复：Update读取core短锁Status，避免旧event/control快照暂时回退Pause/Resume或覆盖终止状态；新增确定性回归，保留generation/version列表水位。
+
+最终源码重跑`CI=true make build test race lint smoke`全部通过；全包race连续10轮通过；JSON计数287/129、失败0/跳过0，总覆盖率85.7%；四target构建、tidy-diff、mod verify、diff check通过。前表已原文更新，不沿用修复前280/125与85.6%的旧数字。最终远端结果按实际完成后记录。

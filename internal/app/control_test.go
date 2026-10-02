@@ -130,6 +130,32 @@ func TestPausedRootLossRemainsFatal(t *testing.T) {
 	}
 }
 
+func TestPausedRootLossWithOpenDirectoryRemainsFatal(t *testing.T) {
+	root := t.TempDir()
+	s := sessionFixture(t, root)
+	if err := s.Pause(context.Background()); err != nil {
+		t.Fatal(err)
+	}
+	// Like a CLI whose cwd is root, retain a live directory reference after
+	// unlink. Linux can delay Remove until this reference closes.
+	dir, err := os.Open(root)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer dir.Close()
+	if err := os.Remove(root); err != nil {
+		t.Fatal(err)
+	}
+	select {
+	case <-s.Done():
+		if s.Err() == nil || s.Status() != Error {
+			t.Fatal(s.Err(), s.Status())
+		}
+	case <-time.After(5 * time.Second):
+		t.Fatal("paused root loss was deferred until directory reference closed")
+	}
+}
+
 func TestConcurrentControlsAndStop(t *testing.T) {
 	root := t.TempDir()
 	putSession(t, root, "a", "base")

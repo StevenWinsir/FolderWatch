@@ -49,7 +49,7 @@ Diff 仅按需获取并且可取消，快速切换/再次保存/Reset 不会让�
 
 `--watch --json` 输出逐行 NDJSON。首条 `ready` 表示已注册 Watcher、完成启动基线，并附 `state`。后续 `changes.batch` 含 `generation/version/upserts/removed`，不发送文件正文。`upserts` 的 kind=deleted 才表示文件删除；`removed` 表示该路径已不再变化（如恢复原内容、先新增后删除）。`ready/reset/reload` 带权威 `state`；批次以 generation/version 排序，CLI 会丢弃已被较新 state 覆盖的排队旧批次。`sequence` 是输出事件序号，可能有跳号。Ctrl+C 退出码 130，清理监听、计时器和缓存。文本模式显示 A/M/D、转义路径及分类。
 
-默认 debounce 为 150ms，持续写入最长等待 4 倍窗口。新建/移入目录递归注册，注册窗口、原始事件溢出由 core reconciliation 补齐。只改 mtime/chmod、内容 hash 不变不会新增内容修改。单次保存的重复通知不增加重复条目；重命名安全降级为 Deleted(old)+Added(new)，不基于相似内容猜测。运行时不可读/瞬间消失会保留最后已知状态并发 warning，使用一个 100ms–2s 退避计时器补查，成功后停止重试，不是空闲全盘轮询。
+默认 debounce 为 150ms，持续写入最长等待 4 倍窗口。新建/移入目录递归注册，注册窗口、原始事件溢出由 core reconciliation 补齐。只改 mtime/chmod、内容 hash 不变不会新增内容修改。单次保存的重复通知不增加重复条目；重命名安全降级为 Deleted(old)+Added(new)，不基于相似内容猜测。运行时不可读/瞬间消失会保留最后已知状态并发 warning，使用一个 100ms–2s 退避计时器补查，成功后停止重试，不是空闲全盘轮询。另有每watcher一个1秒root身份健康检查，仅Lstat根目录并比较身份，不扫描子树或读取正文；用于Linux持有cwd/目录fd时，根被删除却没有原生通知的情况。暂停时也检查，退出停止计时器。调度间隔不是慢文件系统上的硬实时保证。
 
 Go core 入口仍是 `app.Prepare` → `app.StartSession`。`Session.Changes()` 返回排序后的变化副本，`ChangeState()` 同时返回 generation/version，`GetDiff(ctx,path)` 返回带 hunk、行号、Added/Removed/Context 与无末尾换行标记的结构化 Diff。`Events()` 只需消费语义 Batch；`Batch.Reload` 时重新取 ChangeState，UI 不得自行 stat/hash 推导变化。`Baseline/ReadBaseline/ResetBaseline/Close` 保留。Reset 失败/取消保留旧基线及变化表，成功后一次清空并换代；正在计算的旧 Diff 返回 ErrStale，未变化路径返回 ErrNotChanged。普通保存不推进基线。R4 的交互式 Reset、Diff Viewer 直接复用这些 API；新增 `Pause(ctx)`、`Resume(ctx)`、`Status()` 供其他 adapter 同样调用。
 

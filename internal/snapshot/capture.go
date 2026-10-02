@@ -80,6 +80,7 @@ func (s *Store) capture(ctx context.Context, path string) (stored, error) {
 		item.ref.Retention = "size"
 	} else if before.Size() <= s.opts.MemoryFileBytes && before.Size() <= memoryRoom {
 		item.ref.Retention = "memory"
+		memory.Grow(int(before.Size())) // bounded, avoid geometric spare capacity
 	} else if before.Size() <= diskRoom {
 		disk, err = os.CreateTemp(s.dir, "content-")
 		if err != nil {
@@ -167,7 +168,10 @@ func (s *Store) capture(ctx context.Context, path string) (stored, error) {
 			item.file = disk.Name()
 			keep = true
 		} else {
-			item.content = append([]byte{}, memory.Bytes()...)
+			// This buffer belongs to this capture only and is never reused.
+			// Transfer ownership instead of copying every small baseline again.
+			// ReadContent still returns a defensive copy to callers.
+			item.content = memory.Bytes()
 		}
 	}
 	return item, nil

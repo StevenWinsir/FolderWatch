@@ -1,0 +1,39 @@
+name: Terminal release candidate
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: 'SemVer candidate, for example v0.1.0-rc.1'
+        required: true
+        type: string
+permissions:
+  contents: read
+env:
+  GOFLAGS: -mod=vendor
+  GOWORK: 'off'
+jobs:
+  candidate:
+    runs-on: macos-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.26.x'
+          cache: true
+      - run: go mod download
+      - run: make lint scripts-test test race smoke
+      - name: Build exact requested version (no shell interpolation)
+        env:
+          RELEASE_VERSION: ${{ inputs.version }}
+        run: python3 scripts/release.py --version "$RELEASE_VERSION" --output dist/candidate
+      - run: python3 scripts/release_smoke.py dist/candidate
+      - run: ruby -c dist/candidate/folderwatch.rb
+      - uses: actions/upload-artifact@v4
+        with:
+          name: terminal-candidate-${{ github.sha }}
+          path: dist/candidate/
+          if-no-files-found: error
+          retention-days: 30
+      # This workflow intentionally cannot create tags, upload a public release,
+      # sign Gate A or grant a project license. Owner approval is separate.

@@ -1,0 +1,18 @@
+{
+  "commit": "f3e662f2059d47a0b9f108b8b8d0b17dcb760fe4",
+  "started_utc": "2026-10-02T09:13:10.924784+00:00",
+  "finished_utc": "2026-10-02T09:15:35.936662+00:00",
+  "command": [
+    "bin/fwbench",
+    "--files",
+    "1000",
+    "--burst",
+    "100",
+    "--samples",
+    "100",
+    "--idle",
+    "120s",
+    "--cycles",
+    "100"
+  ]
+}

@@ -1,0 +1,64 @@
+File: fwbench
+Type: inuse_space
+Time: 2026-10-02 03:53:34 CDT
+Showing nodes accounting for 28586.65kB, 100% of 28586.65kB total
+      flat  flat%   sum%        cum   cum%
+ 8712.50kB 30.48% 30.48%  8712.50kB 30.48%  bytes.growSlice
+ 5632.69kB 19.70% 50.18%  5632.69kB 19.70%  internal/bytealg.MakeNoZero
+ 2560.55kB  8.96% 59.14% 14857.44kB 51.97%  github.com/StevenWinsir/FolderWatch/internal/snapshot.(*Store).Capture
+ 2155.05kB  7.54% 66.68%  2155.05kB  7.54%  github.com/fsnotify/fsnotify.(*watches).add
+ 2101.71kB  7.35% 74.03%  2101.71kB  7.35%  github.com/StevenWinsir/FolderWatch/internal/snapshot.(*Store).Baseline
+ 1762.94kB  6.17% 80.20%  1762.94kB  6.17%  runtime/pprof.StartCPUProfile
+ 1549.60kB  5.42% 85.62% 16919.10kB 59.19%  github.com/StevenWinsir/FolderWatch/internal/snapshot.(*Store).Reset
+ 1538.01kB  5.38% 91.00%  1538.01kB  5.38%  runtime.mallocgc
+  525.43kB  1.84% 92.84%   525.43kB  1.84%  github.com/fsnotify/fsnotify.(*watches).markSeen
+  512.05kB  1.79% 94.63%  1024.11kB  3.58%  github.com/StevenWinsir/FolderWatch/internal/watcher.(*FSNotify).loop
+  512.05kB  1.79% 96.42%   512.05kB  1.79%  os/exec.(*Cmd).watchCtx
+  512.05kB  1.79% 98.21%   512.05kB  1.79%  time.NewTicker
+  512.02kB  1.79%   100% 12296.89kB 43.02%  github.com/StevenWinsir/FolderWatch/internal/snapshot.(*Store).capture
+         0     0%   100%  8712.50kB 30.48%  bytes.(*Buffer).Grow (inline)
+         0     0%   100%  8712.50kB 30.48%  bytes.(*Buffer).grow
+         0     0%   100% 16919.10kB 59.19%  github.com/StevenWinsir/FolderWatch/internal/app.(*Session).captureBaseline
+         0     0%   100% 23749.54kB 83.08%  github.com/StevenWinsir/FolderWatch/internal/app.StartSession
+         0     0%   100%  2101.71kB  7.35%  github.com/StevenWinsir/FolderWatch/internal/changes.New
+         0     0%   100%  3584.44kB 12.54%  github.com/StevenWinsir/FolderWatch/internal/pathutil.Key
+         0     0%   100%  4728.73kB 16.54%  github.com/StevenWinsir/FolderWatch/internal/watcher.(*FSNotify).Start
+         0     0%   100%  4728.73kB 16.54%  github.com/StevenWinsir/FolderWatch/internal/watcher.(*FSNotify).syncTree
+         0     0%   100%  4728.73kB 16.54%  github.com/StevenWinsir/FolderWatch/internal/watcher.(*FSNotify).syncTree.func1
+         0     0%   100%  4728.73kB 16.54%  github.com/fsnotify/fsnotify.(*Watcher).Add (inline)
+         0     0%   100%  4728.73kB 16.54%  github.com/fsnotify/fsnotify.(*kqueue).Add
+         0     0%   100%  4728.73kB 16.54%  github.com/fsnotify/fsnotify.(*kqueue).AddWith
+         0     0%   100%  4728.73kB 16.54%  github.com/fsnotify/fsnotify.(*kqueue).addWatch
+         0     0%   100%  2155.05kB  7.54%  github.com/fsnotify/fsnotify.(*kqueue).internalWatch
+         0     0%   100%  2155.05kB  7.54%  github.com/fsnotify/fsnotify.(*kqueue).registerWatch
+         0     0%   100%  4728.73kB 16.54%  github.com/fsnotify/fsnotify.(*kqueue).watchDirectoryFiles
+         0     0%   100%  1762.94kB  6.17%  main.cpuProfile
+         0     0%   100% 25512.48kB 89.25%  main.main
+         0     0%   100% 25512.48kB 89.25%  main.run
+         0     0%   100%  5632.69kB 19.70%  path/filepath.Join (inline)
+         0     0%   100%  4728.73kB 16.54%  path/filepath.WalkDir
+         0     0%   100%  5632.69kB 19.70%  path/filepath.join
+         0     0%   100%  4728.73kB 16.54%  path/filepath.walkDir
+         0     0%   100%   512.01kB  1.79%  runtime.(*scavengerState).sleep
+         0     0%   100%   512.01kB  1.79%  runtime.(*timer).maybeAdd
+         0     0%   100%   512.01kB  1.79%  runtime.(*timer).modify
+         0     0%   100%   512.01kB  1.79%  runtime.(*timer).reset (inline)
+         0     0%   100%   512.01kB  1.79%  runtime.(*timers).addHeap
+         0     0%   100%     1026kB  3.59%  runtime.allocm
+         0     0%   100%   512.01kB  1.79%  runtime.bgscavenge
+         0     0%   100%   512.01kB  1.79%  runtime.growslice
+         0     0%   100% 25512.48kB 89.25%  runtime.main
+         0     0%   100%      513kB  1.79%  runtime.mcall
+         0     0%   100%      513kB  1.79%  runtime.mstart
+         0     0%   100%      513kB  1.79%  runtime.mstart0
+         0     0%   100%      513kB  1.79%  runtime.mstart1
+         0     0%   100%     1026kB  3.59%  runtime.newm
+         0     0%   100%     1026kB  3.59%  runtime.newobject
+         0     0%   100%      513kB  1.79%  runtime.park_m
+         0     0%   100%     1026kB  3.59%  runtime.resetspinning
+         0     0%   100%     1026kB  3.59%  runtime.schedule
+         0     0%   100%     1026kB  3.59%  runtime.startm
+         0     0%   100%     1026kB  3.59%  runtime.wakep
+         0     0%   100%  5632.69kB 19.70%  strings.(*Builder).Grow
+         0     0%   100%  5632.69kB 19.70%  strings.(*Builder).grow
+         0     0%   100%  5632.69kB 19.70%  strings.Join

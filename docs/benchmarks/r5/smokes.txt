@@ -1,0 +1,10 @@
+go build -trimpath -ldflags "-X main.version=dev -X main.commit=a775148 -X main.buildDate=2026-10-02T03:35:02-05:00" -o bin/folderwatch ./cmd/folderwatch
+python3 scripts/smoke.py bin/folderwatch
+CLI smoke: 60 checks passed (0 skipped)
+python3 scripts/watch_smoke.py bin/folderwatch
+Vim actual headless saves: backupcopy=yes/no PASS
+R2 watch smoke: 17 checks passed; direct-write and atomic-save models verified
+python3 scripts/semantic_smoke.py bin/folderwatch
+R3 semantic smoke: 16 checks passed
+python3 scripts/tui_smoke.py bin/folderwatch
+R4 TUI PTY smoke: 21 checks passed (not Terminal.app/iTerm2 manual QA)

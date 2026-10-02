@@ -1,6 +1,17 @@
 # Changelog
 
-## Unreleased — R4 / P9–P11 (2026-10-02)
+## Unreleased — R5 / P12–P14 engineering (2026-10-02)
+
+### Added / fixed
+- Generated 1k/10k/burst/large-text/binary/deep-tree/lifecycle measurements, CPU/heap/goroutine profiles and real-binary PTY latency evidence with explicit measurement boundaries.
+- Fixed the kqueue descriptor leak caused by Close setting done before a now-no-op Remove. The vendor patch now fences fd ownership, joins the reader, releases every watch and synchronizes concurrent Close; native opens are close-on-exec. Existing no-follow and reconciliation patches remain.
+- Removed the redundant small-text snapshot copy while preserving capture ownership, bounded retention and defensive ReadContent copies.
+- Added native/session cleanup, burst overflow, ownership and event-normalization fuzz regressions; retained all R1–R4 tests and included R4 native fixture synchronization.
+- Hardened macOS/Linux × Go1.23/1.26 CI, six-target bounded fuzzing, retained test/coverage logs, cross-builds, Core/UI dependency checks and native candidate installation tests.
+- Added deterministic darwin arm64/amd64 archives, exact version/commit/build-date, checksums, provenance/license files, checksum-specific Homebrew formula and private candidate workflow. No public release/tag/tap or signing/notarization is implied.
+- Added R5 performance/acceptance, ADR-014 and explicit Gate A records. Human Terminal.app/iTerm2, clean-Mac and project-license signoff remain separate; GUI is blocked until Gate A PASS.
+
+## R4 checkpoint — P9–P11 (2026-10-02)
 
 ### Added
 - Interactive-terminal default and explicit --tui mode, preserving non-TTY default/--scan/--json and --watch text/NDJSON.

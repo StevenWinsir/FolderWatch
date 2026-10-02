@@ -1,0 +1,143 @@
+File: fwbench
+Type: cpu
+Time: 2026-10-02 03:53:33 CDT
+Duration: 14.57s, Total samples = 1.64s (11.26%)
+Showing nodes accounting for 1.64s, 100% of 1.64s total
+      flat  flat%   sum%        cum   cum%
+     1.21s 73.78% 73.78%      1.21s 73.78%  syscall.rawsyscalln
+     0.20s 12.20% 85.98%      0.20s 12.20%  runtime.pthread_cond_wait
+     0.10s  6.10% 92.07%      0.10s  6.10%  runtime.kevent
+     0.04s  2.44% 94.51%      0.04s  2.44%  runtime.memclrNoHeapPointers
+     0.04s  2.44% 96.95%      0.04s  2.44%  runtime.pthread_cond_signal
+     0.01s  0.61% 97.56%      0.01s  0.61%  runtime.(*atomicHeadTailIndex).incTail
+     0.01s  0.61% 98.17%      0.01s  0.61%  runtime.(*mspan).init
+     0.01s  0.61% 98.78%      0.01s  0.61%  runtime.(*mspan).moveInlineMarks
+     0.01s  0.61% 99.39%      0.01s  0.61%  runtime.scanObject
+     0.01s  0.61%   100%      0.01s  0.61%  runtime.scanObjectsSmall
+         0     0%   100%      0.04s  2.44%  github.com/StevenWinsir/FolderWatch/internal/app.(*Session).ChangeState (inline)
+         0     0%   100%      0.21s 12.80%  github.com/StevenWinsir/FolderWatch/internal/app.(*Session).captureBaseline
+         0     0%   100%      0.52s 31.71%  github.com/StevenWinsir/FolderWatch/internal/app.(*Session).loop
+         0     0%   100%      0.18s 10.98%  github.com/StevenWinsir/FolderWatch/internal/app.(*Session).resolveChanges (inline)
+         0     0%   100%      0.52s 31.71%  github.com/StevenWinsir/FolderWatch/internal/app.(*Session).resolveChangesContext
+         0     0%   100%      0.03s  1.83%  github.com/StevenWinsir/FolderWatch/internal/app.Prepare
+         0     0%   100%      0.33s 20.12%  github.com/StevenWinsir/FolderWatch/internal/app.StartSession
+         0     0%   100%      0.52s 31.71%  github.com/StevenWinsir/FolderWatch/internal/changes.(*Store).ResolveBatch
+         0     0%   100%      0.04s  2.44%  github.com/StevenWinsir/FolderWatch/internal/changes.(*Store).View
+         0     0%   100%      0.04s  2.44%  github.com/StevenWinsir/FolderWatch/internal/changes.copySummary (inline)
+         0     0%   100%      0.02s  1.22%  github.com/StevenWinsir/FolderWatch/internal/debounce.Start.func1
+         0     0%   100%      0.02s  1.22%  github.com/StevenWinsir/FolderWatch/internal/eventnorm.Normalize
+         0     0%   100%      0.10s  6.10%  github.com/StevenWinsir/FolderWatch/internal/ignore.(*Matcher).Match
+         0     0%   100%      0.17s 10.37%  github.com/StevenWinsir/FolderWatch/internal/pathutil.CheckParents
+         0     0%   100%      0.10s  6.10%  github.com/StevenWinsir/FolderWatch/internal/scan.Scan
+         0     0%   100%      0.10s  6.10%  github.com/StevenWinsir/FolderWatch/internal/scan.scanWithWalker
+         0     0%   100%      0.10s  6.10%  github.com/StevenWinsir/FolderWatch/internal/scan.scanWithWalker.func1
+         0     0%   100%      0.57s 34.76%  github.com/StevenWinsir/FolderWatch/internal/snapshot.(*Store).Capture
+         0     0%   100%      0.18s 10.98%  github.com/StevenWinsir/FolderWatch/internal/snapshot.(*Store).Reset
+         0     0%   100%      0.57s 34.76%  github.com/StevenWinsir/FolderWatch/internal/snapshot.(*Store).capture
+         0     0%   100%      0.33s 20.12%  github.com/StevenWinsir/FolderWatch/internal/snapshot.openRegular
+         0     0%   100%      0.12s  7.32%  github.com/StevenWinsir/FolderWatch/internal/watcher.(*FSNotify).Start
+         0     0%   100%      0.07s  4.27%  github.com/StevenWinsir/FolderWatch/internal/watcher.(*FSNotify).handle
+         0     0%   100%      0.09s  5.49%  github.com/StevenWinsir/FolderWatch/internal/watcher.(*FSNotify).loop
+         0     0%   100%      0.13s  7.93%  github.com/StevenWinsir/FolderWatch/internal/watcher.(*FSNotify).syncTree
+         0     0%   100%      0.11s  6.71%  github.com/StevenWinsir/FolderWatch/internal/watcher.(*FSNotify).syncTree.func1
+         0     0%   100%      0.11s  6.71%  github.com/fsnotify/fsnotify.(*Watcher).Add (inline)
+         0     0%   100%      0.01s  0.61%  github.com/fsnotify/fsnotify.(*Watcher).Close
+         0     0%   100%      0.11s  6.71%  github.com/fsnotify/fsnotify.(*kqueue).Add
+         0     0%   100%      0.11s  6.71%  github.com/fsnotify/fsnotify.(*kqueue).AddWith
+         0     0%   100%      0.01s  0.61%  github.com/fsnotify/fsnotify.(*kqueue).Close
+         0     0%   100%      0.11s  6.71%  github.com/fsnotify/fsnotify.(*kqueue).addWatch
+         0     0%   100%      0.09s  5.49%  github.com/fsnotify/fsnotify.(*kqueue).internalWatch
+         0     0%   100%      0.01s  0.61%  github.com/fsnotify/fsnotify.(*kqueue).read
+         0     0%   100%      0.02s  1.22%  github.com/fsnotify/fsnotify.(*kqueue).readEvents
+         0     0%   100%      0.01s  0.61%  github.com/fsnotify/fsnotify.(*kqueue).readEvents.func1
+         0     0%   100%      0.09s  5.49%  github.com/fsnotify/fsnotify.(*kqueue).registerWatch
+         0     0%   100%      0.11s  6.71%  github.com/fsnotify/fsnotify.(*kqueue).watchDirectoryFiles
+         0     0%   100%      0.02s  1.22%  golang.org/x/sys/unix.Close
+         0     0%   100%      0.01s  0.61%  golang.org/x/sys/unix.Kevent
+         0     0%   100%      0.09s  5.49%  golang.org/x/sys/unix.Open
+         0     0%   100%      0.01s  0.61%  golang.org/x/sys/unix.kevent
+         0     0%   100%      0.08s  4.88%  internal/poll.(*FD).Close
+         0     0%   100%      0.07s  4.27%  internal/poll.(*FD).Read
+         0     0%   100%      0.03s  1.83%  internal/poll.(*FD).Write
+         0     0%   100%      0.08s  4.88%  internal/poll.(*FD).decref
+         0     0%   100%      0.08s  4.88%  internal/poll.(*FD).destroy
+         0     0%   100%      0.08s  4.88%  internal/poll.(*SysFile).destroy (inline)
+         0     0%   100%      0.10s  6.10%  internal/poll.ignoringEINTRIO (inline)
+         0     0%   100%      0.04s  2.44%  main.awaitChanges
+         0     0%   100%      0.61s 37.20%  main.main
+         0     0%   100%      0.61s 37.20%  main.run
+         0     0%   100%      0.08s  4.88%  os.(*File).Close (partial-inline)
+         0     0%   100%      0.07s  4.27%  os.(*File).Read
+         0     0%   100%      0.03s  1.83%  os.(*File).ReadDir
+         0     0%   100%      0.03s  1.83%  os.(*File).Write
+         0     0%   100%      0.07s  4.27%  os.(*File).read (inline)
+         0     0%   100%      0.03s  1.83%  os.(*File).readdir
+         0     0%   100%      0.03s  1.83%  os.(*File).write (inline)
+         0     0%   100%      0.08s  4.88%  os.(*file).close
+         0     0%   100%      0.07s  4.27%  os.(*unixDirent).Info
+         0     0%   100%      0.43s 26.22%  os.Lstat
+         0     0%   100%      0.13s  7.93%  os.OpenFile
+         0     0%   100%      0.03s  1.83%  os.ReadDir
+         0     0%   100%      0.21s 12.80%  os.WriteFile
+         0     0%   100%      0.56s 34.15%  os.ignoringEINTR (inline)
+         0     0%   100%      0.43s 26.22%  os.lstatNolog
+         0     0%   100%      0.43s 26.22%  os.lstatNolog.func1 (inline)
+         0     0%   100%      0.13s  7.93%  os.open (inline)
+         0     0%   100%      0.13s  7.93%  os.openFileNolog
+         0     0%   100%      0.13s  7.93%  os.openFileNolog.func1 (inline)
+         0     0%   100%      0.23s 14.02%  path/filepath.WalkDir
+         0     0%   100%      0.23s 14.02%  path/filepath.walkDir
+         0     0%   100%      0.04s  2.44%  runtime.(*mcache).nextFree
+         0     0%   100%      0.04s  2.44%  runtime.(*mcache).refill
+         0     0%   100%      0.04s  2.44%  runtime.(*mcentral).cacheSpan
+         0     0%   100%      0.04s  2.44%  runtime.(*mcentral).grow
+         0     0%   100%      0.01s  0.61%  runtime.(*mheap).alloc
+         0     0%   100%      0.01s  0.61%  runtime.(*mheap).alloc.func1
+         0     0%   100%      0.01s  0.61%  runtime.(*mheap).allocSpan
+         0     0%   100%      0.01s  0.61%  runtime.(*mheap).initSpan
+         0     0%   100%      0.03s  1.83%  runtime.(*mspan).initHeapBits
+         0     0%   100%      0.01s  0.61%  runtime.(*spanSet).push
+         0     0%   100%      0.02s  1.22%  runtime.(*sweepLocked).sweep
+         0     0%   100%      0.02s  1.22%  runtime.bgsweep
+         0     0%   100%      0.30s 18.29%  runtime.findRunnable
+         0     0%   100%      0.02s  1.22%  runtime.gcBgMarkWorker
+         0     0%   100%      0.02s  1.22%  runtime.gcBgMarkWorker.func2
+         0     0%   100%      0.02s  1.22%  runtime.gcDrain
+         0     0%   100%      0.01s  0.61%  runtime.gcDrainMarkWorkerDedicated (inline)
+         0     0%   100%      0.01s  0.61%  runtime.gcDrainMarkWorkerIdle (inline)
+         0     0%   100%      0.20s 12.20%  runtime.mPark (inline)
+         0     0%   100%      0.61s 37.20%  runtime.main
+         0     0%   100%      0.01s  0.61%  runtime.makeslicecopy
+         0     0%   100%      0.04s  2.44%  runtime.mallocgc
+         0     0%   100%      0.04s  2.44%  runtime.mallocgcSmallScanNoHeader
+         0     0%   100%      0.32s 19.51%  runtime.mcall
+         0     0%   100%      0.10s  6.10%  runtime.netpoll
+         0     0%   100%      0.04s  2.44%  runtime.newobject
+         0     0%   100%      0.20s 12.20%  runtime.notesleep
+         0     0%   100%      0.04s  2.44%  runtime.notewakeup
+         0     0%   100%      0.32s 19.51%  runtime.park_m
+         0     0%   100%      0.02s  1.22%  runtime.ready
+         0     0%   100%      0.02s  1.22%  runtime.resetspinning
+         0     0%   100%      0.01s  0.61%  runtime.scanSpan
+         0     0%   100%      0.32s 19.51%  runtime.schedule
+         0     0%   100%      0.20s 12.20%  runtime.semasleep
+         0     0%   100%      0.04s  2.44%  runtime.semawakeup
+         0     0%   100%      0.02s  1.22%  runtime.send.goready.func1
+         0     0%   100%      0.04s  2.44%  runtime.startm
+         0     0%   100%      0.20s 12.20%  runtime.stopm
+         0     0%   100%      0.02s  1.22%  runtime.sweepone
+         0     0%   100%      0.05s  3.05%  runtime.systemstack
+         0     0%   100%      0.04s  2.44%  runtime.wakep
+         0     0%   100%      0.01s  0.61%  syscall.BytePtrFromString (inline)
+         0     0%   100%      0.01s  0.61%  syscall.ByteSliceFromString
+         0     0%   100%      0.08s  4.88%  syscall.Close
+         0     0%   100%      0.43s 26.22%  syscall.Lstat
+         0     0%   100%      0.46s 28.05%  syscall.Open
+         0     0%   100%      0.07s  4.27%  syscall.Read (inline)
+         0     0%   100%      0.03s  1.83%  syscall.Write (inline)
+         0     0%   100%      0.07s  4.27%  syscall.read
+         0     0%   100%      0.03s  1.83%  syscall.readdir_r
+         0     0%   100%      1.20s 73.17%  syscall.syscall
+         0     0%   100%      0.01s  0.61%  syscall.syscall6
+         0     0%   100%      1.21s 73.78%  syscall.syscalln
+         0     0%   100%      0.03s  1.83%  syscall.write

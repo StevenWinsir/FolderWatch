@@ -8,7 +8,27 @@
  	"sync"
  	"time"
  
-@@ -159,6 +160,15 @@
+@@ -19,11 +20,14 @@
+ 	Events chan Event
+ 	Errors chan error
+ 
+-	kq        int    // File descriptor (as returned by the kqueue() syscall).
+-	closepipe [2]int // Pipe used for closing kq.
+-	watches   *watches
+-	done      chan struct{}
+-	doneMu    sync.Mutex
++	kq         int    // File descriptor (as returned by the kqueue() syscall).
++	closepipe  [2]int // Pipe used for closing kq.
++	watches    *watches
++	done       chan struct{}
++	doneMu     sync.Mutex
++	readerDone chan struct{}
++	closeDone  chan struct{}
++	closeErr   error
+ }
+ 
+ type (
+@@ -159,6 +163,15 @@
  
  	delete(w.wd, fd)
  	delete(w.seen, path)
@@ -24,11 +44,184 @@
  	return isDir
  }
  
-@@ -385,37 +395,16 @@
- 			return "", nil
+@@ -190,12 +203,14 @@
+ 	}
+ 
+ 	w := &kqueue{
+-		Events:    ev,
+-		Errors:    errs,
+-		kq:        kq,
+-		closepipe: closepipe,
+-		done:      make(chan struct{}),
+-		watches:   newWatches(),
++		Events:     ev,
++		Errors:     errs,
++		kq:         kq,
++		closepipe:  closepipe,
++		done:       make(chan struct{}),
++		readerDone: make(chan struct{}),
++		closeDone:  make(chan struct{}),
++		watches:    newWatches(),
+ 	}
+ 
+ 	go w.readEvents()
+@@ -213,6 +228,7 @@
+ 	if kq == -1 {
+ 		return kq, closepipe, err
+ 	}
++	unix.CloseOnExec(kq)
+ 
+ 	// Register the close pipe.
+ 	err = unix.Pipe(closepipe[:])
+@@ -275,19 +291,32 @@
+ 	w.doneMu.Lock()
+ 	if w.isClosed() {
+ 		w.doneMu.Unlock()
+-		return nil
++		<-w.closeDone
++		return w.closeErr
+ 	}
+ 	close(w.done)
+ 	w.doneMu.Unlock()
+ 
+-	pathsToRemove := w.watches.listPaths(false)
+-	for _, name := range pathsToRemove {
+-		w.Remove(name)
+-	}
+-
+-	// Send "quit" message to the reader goroutine.
+-	unix.Close(w.closepipe[1])
+-	return nil
++	// FolderWatch R5: Remove is deliberately a no-op after done closes.
++	// Wake and JOIN the reader before directly retiring the owned descriptors.
++	// registerWatch/removeWatch serialize their fd ownership with doneMu, so
++	// no admitted native operation can publish a descriptor after this fence.
++	w.closeErr = unix.Close(w.closepipe[1])
++	<-w.readerDone
++	w.watches.mu.Lock()
++	for fd := range w.watches.wd {
++		if err := unix.Close(fd); w.closeErr == nil {
++			w.closeErr = err
++		}
++	}
++	w.watches.wd = make(map[int]watch)
++	w.watches.path = make(map[string]int)
++	w.watches.byDir = make(map[string]map[int]struct{})
++	w.watches.seen = make(map[string]struct{})
++	w.watches.byUser = make(map[string]struct{})
++	w.watches.mu.Unlock()
++	close(w.closeDone)
++	return w.closeErr
+ }
+ 
+ func (w *kqueue) Add(name string) error { return w.AddWith(name) }
+@@ -307,6 +336,11 @@
+ 	if err != nil {
+ 		return err
+ 	}
++	w.doneMu.Lock()
++	defer w.doneMu.Unlock()
++	if w.isClosed() {
++		return ErrClosed
++	}
+ 	w.watches.addUserWatch(name)
+ 	return nil
+ }
+@@ -320,24 +354,11 @@
+ }
+ 
+ func (w *kqueue) remove(name string, unwatchFiles bool) error {
+-	if w.isClosed() {
+-		return nil
+-	}
+-
+ 	name = filepath.Clean(name)
+-	info, ok := w.watches.byPath(name)
+-	if !ok {
+-		return fmt.Errorf("%w: %s", ErrNonExistentWatch, name)
+-	}
+-
+-	err := w.register([]int{info.wd}, unix.EV_DELETE, 0)
++	isDir, err := w.removeWatch(name)
+ 	if err != nil {
+ 		return err
+ 	}
+-
+-	unix.Close(info.wd)
+-
+-	isDir := w.watches.remove(info.wd, name)
+ 
+ 	// Find all watched paths that are in this directory that are not external.
+ 	if unwatchFiles && isDir {
+@@ -352,6 +373,25 @@
+ 	return nil
+ }
+ 
++// Own only one descriptor under doneMu; recursive child removal stays outside
++// the lock so reader shutdown and directory recursion cannot deadlock.
++func (w *kqueue) removeWatch(name string) (bool, error) {
++	w.doneMu.Lock()
++	defer w.doneMu.Unlock()
++	if w.isClosed() {
++		return false, nil
++	}
++	info, ok := w.watches.byPath(name)
++	if !ok {
++		return false, fmt.Errorf("%w: %s", ErrNonExistentWatch, name)
++	}
++	if err := w.register([]int{info.wd}, unix.EV_DELETE, 0); err != nil {
++		return false, err
++	}
++	err := unix.Close(info.wd)
++	return w.watches.remove(info.wd, name), err
++}
++
+ func (w *kqueue) WatchList() []string {
+ 	if w.isClosed() {
+ 		return nil
+@@ -367,8 +407,24 @@
+ //
+ // Returns the real path to the file which was added, with symlinks resolved.
+ func (w *kqueue) addWatch(name string, flags uint32) (string, error) {
++	name, watchDir, err := w.registerWatch(name, flags)
++	if err != nil {
++		return "", err
++	}
++	// Child registration recursively calls addWatch. Do not hold doneMu here.
++	if watchDir {
++		if err := w.watchDirectoryFiles(name); err != nil {
++			return "", err
++		}
++	}
++	return name, nil
++}
++
++func (w *kqueue) registerWatch(name string, flags uint32) (string, bool, error) {
++	w.doneMu.Lock()
++	defer w.doneMu.Unlock()
+ 	if w.isClosed() {
+-		return "", ErrClosed
++		return "", false, ErrClosed
+ 	}
+ 
+ 	name = filepath.Clean(name)
+@@ -377,45 +433,24 @@
+ 	if !alreadyWatching {
+ 		fi, err := os.Lstat(name)
+ 		if err != nil {
+-			return "", err
++			return "", false, err
  		}
  
+ 		// Don't watch sockets or named pipes.
+ 		if (fi.Mode()&os.ModeSocket == os.ModeSocket) || (fi.Mode()&os.ModeNamedPipe == os.ModeNamedPipe) {
+-			return "", nil
+-		}
+-
 -		// Follow symlinks.
++			return "", false, nil
++		}
++
 +		// FolderWatch patch: never open/traverse a symlink target internally.
 +		// Parent-directory WRITE invalidations below cover link removal/replacement.
  		if fi.Mode()&os.ModeSymlink == os.ModeSymlink {
@@ -55,18 +248,65 @@
 -			if err != nil {
 -				return "", nil
 -			}
-+			return name, nil
++			return name, false, nil
  		}
  
  		// Retry on EINTR; open() can return EINTR in practice on macOS.
  		// See #354, and Go issues 11180 and 39237.
  		for {
 -			info.wd, err = unix.Open(name, openMode, 0)
-+			info.wd, err = unix.Open(name, openMode|unix.O_NOFOLLOW, 0)
++			info.wd, err = unix.Open(name, openMode|unix.O_NOFOLLOW|unix.O_CLOEXEC, 0)
  			if err == nil {
  				break
  			}
-@@ -514,6 +503,15 @@
+@@ -423,7 +458,7 @@
+ 				continue
+ 			}
+ 
+-			return "", err
++			return "", false, err
+ 		}
+ 
+ 		info.isDir = fi.IsDir()
+@@ -431,8 +466,10 @@
+ 
+ 	err := w.register([]int{info.wd}, unix.EV_ADD|unix.EV_CLEAR|unix.EV_ENABLE, flags)
+ 	if err != nil {
+-		unix.Close(info.wd)
+-		return "", err
++		if !alreadyWatching {
++			unix.Close(info.wd)
++		}
++		return "", false, err
+ 	}
+ 
+ 	if !alreadyWatching {
+@@ -446,13 +483,9 @@
+ 			(!alreadyWatching || (info.dirFlags&unix.NOTE_WRITE) != unix.NOTE_WRITE)
+ 		w.watches.updateDirFlags(name, flags)
+ 
+-		if watchDir {
+-			if err := w.watchDirectoryFiles(name); err != nil {
+-				return "", err
+-			}
+-		}
+-	}
+-	return name, nil
++		return name, watchDir, nil
++	}
++	return name, false, nil
+ }
+ 
+ // readEvents reads from kqueue and converts the received kevents into
+@@ -463,6 +496,7 @@
+ 		close(w.Errors)
+ 		_ = unix.Close(w.kq)
+ 		unix.Close(w.closepipe[0])
++		close(w.readerDone)
+ 	}()
+ 
+ 	eventBuffer := make([]unix.Kevent_t, 10)
+@@ -514,6 +548,15 @@
  				continue
  			}
  
@@ -82,7 +322,7 @@
  			event := w.newEvent(path.name, path.linkName, mask)
  
  			if event.Has(Rename) || event.Has(Remove) {
-@@ -522,7 +520,16 @@
+@@ -522,7 +565,16 @@
  			}
  
  			if path.isDir && event.Has(Write) && !event.Has(Remove) {
@@ -100,7 +340,7 @@
  			} else if !w.sendEvent(event) {
  				return
  			}
-@@ -647,6 +654,22 @@
+@@ -647,6 +699,22 @@
  		return fmt.Errorf("fsnotify.dirChange: %w", err)
  	}
  

@@ -4,6 +4,12 @@ on:
   pull_request:
 permissions:
   contents: read
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+env:
+  GOFLAGS: -mod=vendor
+  GOWORK: 'off'
 jobs:
   test:
     strategy:
@@ -12,6 +18,7 @@ jobs:
         os: [ubuntu-latest, macos-latest]
         go: ['1.23.x', '1.26.x']
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -19,14 +26,33 @@ jobs:
           go-version: ${{ matrix.go }}
           cache: true
       - run: go mod download
+      - run: go mod verify
       - run: make lint
+      - run: make scripts-test
       - run: go build ./...
-      - run: go test -count=1 ./...
-      - run: go test -race -count=1 ./...
+      - name: Tests and coverage
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p artifacts/ci
+          go test -json -count=1 -coverprofile=artifacts/ci/coverage.out ./... | tee artifacts/ci/tests.jsonl
+      - name: Race and randomized order
+        shell: bash
+        run: |
+          set -o pipefail
+          go test -race -shuffle=on -count=1 ./... | tee artifacts/ci/race.log
       - run: go test -count=3 ./internal/watcher ./internal/debounce ./internal/snapshot ./internal/filetype ./internal/diff ./internal/changes ./internal/app ./internal/tui ./internal/logging
       - run: make smoke
+      - run: python3 scripts/tui_performance.py bin/folderwatch --files 1000 --samples 4 --output artifacts/ci/tui-performance.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-${{ matrix.os }}-go${{ matrix.go }}
+          path: artifacts/ci/
+          retention-days: 14
   cross-build:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
@@ -35,4 +61,43 @@ jobs:
           cache: true
       - run: GOOS=darwin GOARCH=arm64 go build ./...
       - run: GOOS=darwin GOARCH=amd64 go build ./...
+      - run: GOOS=linux GOARCH=amd64 go build ./...
       - run: GOOS=windows GOARCH=amd64 go build ./...
+  fuzz:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.26.x'
+      - run: python3 scripts/fuzz.py --seconds 10
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: fuzz-corpus-evidence
+          path: |
+            artifacts/fuzz/
+            internal/**/testdata/fuzz/
+          retention-days: 14
+  terminal-candidate:
+    runs-on: macos-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.26.x'
+          cache: true
+      - run: go mod download
+      - run: python3 scripts/release.py --version v0.1.0-rc.1
+      - run: python3 scripts/release_smoke.py dist/v0.1.0-rc.1
+      - run: ruby -c dist/v0.1.0-rc.1/folderwatch.rb
+      - name: Resource correctness smoke (not performance-budget evidence)
+        run: go run ./cmd/fwbench --files 100 --burst 100 --samples 3 --idle 1s --cycles 5
+      - uses: actions/upload-artifact@v4
+        with:
+          name: terminal-candidate-${{ github.sha }}
+          path: dist/v0.1.0-rc.1/
+          if-no-files-found: error
+          retention-days: 14

@@ -1,0 +1,136 @@
+[
+  {
+    "step": "benchmarks",
+    "command": [
+      "go",
+      "test",
+      "./internal/snapshot",
+      "./internal/tui",
+      "-run=^$",
+      "-bench=.",
+      "-benchtime=1x",
+      "-count=3",
+      "-benchmem"
+    ],
+    "exit_code": 0,
+    "seconds": 4.281
+  },
+  {
+    "step": "test-json",
+    "command": [
+      "go",
+      "test",
+      "-json",
+      "-count=1",
+      "-coverprofile=artifacts/validation-r5/coverage.out",
+      "./..."
+    ],
+    "exit_code": 0,
+    "seconds": 10.218
+  },
+  {
+    "step": "race-10",
+    "command": [
+      "go",
+      "test",
+      "-race",
+      "-shuffle=on",
+      "-count=10",
+      "./..."
+    ],
+    "exit_code": 0,
+    "seconds": 38.67
+  },
+  {
+    "step": "lint",
+    "command": [
+      "make",
+      "lint",
+      "scripts-test",
+      "build"
+    ],
+    "exit_code": 0,
+    "seconds": 1.237
+  },
+  {
+    "step": "smokes",
+    "command": [
+      "make",
+      "smoke"
+    ],
+    "exit_code": 0,
+    "seconds": 8.862
+  },
+  {
+    "step": "fuzz",
+    "command": [
+      "python3",
+      "scripts/fuzz.py",
+      "--seconds",
+      "10"
+    ],
+    "exit_code": 0,
+    "seconds": 66.526
+  },
+  {
+    "step": "darwin-arm64",
+    "command": [
+      "go",
+      "build",
+      "./..."
+    ],
+    "exit_code": 0,
+    "seconds": 0.291
+  },
+  {
+    "step": "darwin-amd64",
+    "command": [
+      "go",
+      "build",
+      "./..."
+    ],
+    "exit_code": 0,
+    "seconds": 0.809
+  },
+  {
+    "step": "linux-amd64",
+    "command": [
+      "go",
+      "build",
+      "./..."
+    ],
+    "exit_code": 0,
+    "seconds": 0.762
+  },
+  {
+    "step": "windows-amd64",
+    "command": [
+      "go",
+      "build",
+      "./..."
+    ],
+    "exit_code": 0,
+    "seconds": 0.819
+  },
+  {
+    "step": "mod-verify",
+    "command": [
+      "go",
+      "mod",
+      "verify"
+    ],
+    "exit_code": 0,
+    "seconds": 0.233
+  },
+  {
+    "step": "mod-tidy-diff",
+    "command": [
+      "go",
+      "mod",
+      "tidy",
+      "-diff"
+    ],
+    "exit_code": 0,
+    "seconds": 0.037
+  }
+]

@@ -1,0 +1,154 @@
+[
+  {
+    "conclusion": "success",
+    "headSha": "f3e662f2059d47a0b9f108b8b8d0b17dcb760fe4",
+    "status": "completed",
+    "url": "https://github.com/StevenWinsir/FolderWatch/actions/runs/36988380384",
+    "jobs": [
+      {
+        "name": "fuzz",
+        "status": "completed",
+        "conclusion": "success",
+        "databaseId": 110778556946,
+        "url": "https://github.com/StevenWinsir/FolderWatch/actions/runs/36988380384/job/110778556946"
+      },
+      {
+        "name": "terminal-candidate",
+        "status": "completed",
+        "conclusion": "success",
+        "databaseId": 110778557130,
+        "url": "https://github.com/StevenWinsir/FolderWatch/actions/runs/36988380384/job/110778557130"
+      },
+      {
+        "name": "cross-build",
+        "status": "completed",
+        "conclusion": "success",
+        "databaseId": 110778557133,
+        "url": "https://github.com/StevenWinsir/FolderWatch/actions/runs/36988380384/job/110778557133"
+      },
+      {
+        "name": "test (macos-latest, 1.23.x)",
+        "status": "completed",
+        "conclusion": "success",
+        "databaseId": 110778557149,
+        "url": "https://github.com/StevenWinsir/FolderWatch/actions/runs/36988380384/job/110778557149"
+      },
+      {
+        "name": "test (ubuntu-latest, 1.23.x)",
+        "status": "completed",
+        "conclusion": "success",
+        "databaseId": 110778557186,
+        "url": "https://github.com/StevenWinsir/FolderWatch/actions/runs/36988380384/job/110778557186"
+      },
+      {
+        "name": "test (ubuntu-latest, 1.26.x)",
+        "status": "completed",
+        "conclusion": "success",
+        "databaseId": 110778557226,
+        "url": "https://github.com/StevenWinsir/FolderWatch/actions/runs/36988380384/job/110778557226"
+      },
+      {
+        "name": "test (macos-latest, 1.26.x)",
+        "status": "completed",
+        "conclusion": "success",
+        "databaseId": 110778557459,
+        "url": "https://github.com/StevenWinsir/FolderWatch/actions/runs/36988380384/job/110778557459"
+      }
+    ],
+    "artifacts": [
+      {
+        "id": 11218865119,
+        "name": "fuzz-corpus-evidence",
+        "expired": false,
+        "size_in_bytes": 2430
+      },
+      {
+        "id": 11218755256,
+        "name": "test-ubuntu-latest-go1.23.x",
+        "expired": false,
+        "size_in_bytes": 37346
+      },
+      {
+        "id": 11218432417,
+        "name": "terminal-candidate-f3e662f2059d47a0b9f108b8b8d0b17dcb760fe4",
+        "expired": false,
+        "size_in_bytes": 3508160
+      },
+      {
+        "id": 11218233621,
+        "name": "test-macos-latest-go1.26.x",
+        "expired": false,
+        "size_in_bytes": 35398
+      },
+      {
+        "id": 11218203728,
+        "name": "test-ubuntu-latest-go1.26.x",
+        "expired": false,
+        "size_in_bytes": 37652
+      },
+      {
+        "id": 11217644684,
+        "name": "test-macos-latest-go1.23.x",
+        "expired": false,
+        "size_in_bytes": 35295
+      }
+    ]
+  },
+  {
+    "conclusion": "success",
+    "headSha": "f3e662f2059d47a0b9f108b8b8d0b17dcb760fe4",
+    "status": "completed",
+    "url": "https://github.com/StevenWinsir/FolderWatch/actions/runs/36988453642",
+    "jobs": [
+      {
+        "name": "terminal-candidate",
+        "status": "completed",
+        "conclusion": "success",
+        "databaseId": 110778788505,
+        "url": "https://github.com/StevenWinsir/FolderWatch/actions/runs/36988453642/job/110778788505"
+      },
+      {
+        "name": "cross-build",
+        "status": "completed",
+        "conclusion": "success",
+        "databaseId": 110778788625,
+        "url": "https://github.com/StevenWinsir/FolderWatch/actions/runs/36988453642/job/110778788625"
+      },
+      {
+        "name": "test (macos-latest, 1.26.x)",
+        "status": "completed",
+        "conclusion": "success",
+        "databaseId": 110778788670,
+        "url": "https://github.com/StevenWinsir/FolderWatch/actions/runs/36988453642/job/110778788670"
+      },
+      {
+        "name": "test (macos-latest, 1.23.x)",
+        "status": "completed",
+        "conclusion": "success",
+        "databaseId": 110778788673,
+        "url": "https://github.com/StevenWinsir/FolderWatch/actions/runs/36988453642/job/110778788673"
+      },
+      {
+        "name": "test (ubuntu-latest, 1.26.x)",
+        "status": "completed",
+        "conclusion": "success",
+        "databaseId": 110778788679,
+        "url": "https://github.com/StevenWinsir/FolderWatch/actions/runs/36988453642/job/110778788679"
+      },
+      {
+        "name": "fuzz",
+        "status": "completed",
+        "conclusion": "success",
+        "databaseId": 110778788714,
+        "url": "https://github.com/StevenWinsir/FolderWatch/actions/runs/36988453642/job/110778788714"
+      },
+      {
+        "name": "test (ubuntu-latest, 1.23.x)",
+        "status": "completed",
+        "conclusion": "success",
+        "databaseId": 110778788767,
+        "url": "https://github.com/StevenWinsir/FolderWatch/actions/runs/36988453642/job/110778788767"
+      }
+    ]
+  }
+]

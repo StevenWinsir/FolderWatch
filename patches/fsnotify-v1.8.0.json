@@ -3,6 +3,6 @@
   "version": "v1.8.0",
   "path": "vendor/github.com/fsnotify/fsnotify/backend_kqueue.go",
   "upstream_sha256": "7bb8bec9ecbc796bec02b608ec3ea2a024e45d6ce0de3edad3b1f0ff1775e055",
-  "patched_sha256": "12711aa2762a8e38c4fd099b1cb4e4ed348b2330bdd3804ca588059dc710ee7e",
-  "patch_sha256": "7381ea8c7c93262b9f44f5c9bf694ac3d849c81e600f7929608772d5575cbd36"
+  "patched_sha256": "09e09f46c9a6439849a8935dbe72155f325558e9433074aae393b238716591b1",
+  "patch_sha256": "30700615c5f17b0d139ab98a567a7749e0b7a137861595a00075c48749def8aa"
 }

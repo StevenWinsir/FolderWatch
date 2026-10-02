@@ -27,8 +27,9 @@ type Options struct {
 }
 
 type ruleSet struct {
-	rules []rule
-	err   error
+	identity os.FileInfo
+	rules    []rule
+	err      error
 }
 
 // Matcher is concurrent-safe. Rule files (including missing files) are cached
@@ -90,12 +91,40 @@ func readRules(file, base string, optional, allowSymlink bool) ([]rule, error) {
 func (m *Matcher) gitRules(base string) ([]rule, error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	if set, ok := m.git[base]; ok {
+	dir := filepath.Join(m.root, filepath.FromSlash(base))
+	identity, err := os.Lstat(dir)
+	if os.IsNotExist(err) {
+		delete(m.git, base) // missing directories are not session rule scopes
+		return nil, nil
+	}
+	if err != nil {
+		return nil, err
+	}
+	if !identity.IsDir() {
+		return nil, fmt.Errorf("ignore scope %q is not a directory", dir)
+	}
+	if set, ok := m.git[base]; ok && os.SameFile(identity, set.identity) {
 		return set.rules, set.err
 	}
-	rules, err := readRules(filepath.Join(m.root, filepath.FromSlash(base), ".gitignore"), base, true, false)
-	m.git[base] = ruleSet{rules: rules, err: err}
+	rules, err := readRules(filepath.Join(dir, ".gitignore"), base, true, false)
+	m.git[base] = ruleSet{identity: identity, rules: rules, err: err}
 	return rules, err
+}
+
+// ForgetDirectory retires a removed/replaced directory scope, not edits within
+// an existing scope. The watcher calls it when directory identity disappears.
+func (m *Matcher) ForgetDirectory(input string) {
+	key, err := pathutil.Key(m.root, input)
+	if err != nil || key == "." {
+		return
+	}
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	for base := range m.git {
+		if base == key || strings.HasPrefix(base, key+"/") {
+			delete(m.git, base)
+		}
+	}
 }
 
 // Match evaluates ancestors first. An excluded parent cannot be resurrected by

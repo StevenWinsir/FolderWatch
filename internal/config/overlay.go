@@ -11,6 +11,29 @@ import (
 )
 
 func apply(cfg *Config, o Overlay, base string) error {
+	if o.MaxPendingEvents != nil {
+		cfg.MaxPendingEvents = *o.MaxPendingEvents
+	}
+	if o.MaxWatchDirs != nil {
+		cfg.MaxWatchDirs = *o.MaxWatchDirs
+	}
+	if o.MaxSnapshotFiles != nil {
+		cfg.MaxSnapshotFiles = *o.MaxSnapshotFiles
+	}
+	if o.SnapshotMemoryBytes != nil {
+		n, err := ParseSize(*o.SnapshotMemoryBytes)
+		if err != nil {
+			return fmt.Errorf("snapshot-memory-bytes: %w", err)
+		}
+		cfg.SnapshotMemoryBytes = n
+	}
+	if o.SnapshotCacheBytes != nil {
+		n, err := ParseSize(*o.SnapshotCacheBytes)
+		if err != nil {
+			return fmt.Errorf("snapshot-cache-bytes: %w", err)
+		}
+		cfg.SnapshotCacheBytes = n
+	}
 	if o.Debounce != nil {
 		d, err := time.ParseDuration(*o.Debounce)
 		if err != nil || d <= 0 {

@@ -11,12 +11,14 @@ test:
 race:
 	$(GO) test -race ./...
 lint: fmt-check
+	python3 scripts/vendor_guard.py
 	$(GO) vet ./...
 fmt:
-	gofmt -w cmd internal tools
+	gofmt -w cmd internal tools vendor/github.com/fsnotify/fsnotify/backend_kqueue.go
 fmt-check:
-	@test -z "$$(gofmt -l cmd internal tools)" || (gofmt -l cmd internal tools; exit 1)
+	@test -z "$$(gofmt -l cmd internal tools vendor/github.com/fsnotify/fsnotify/backend_kqueue.go)" || (gofmt -l cmd internal tools vendor/github.com/fsnotify/fsnotify/backend_kqueue.go; exit 1)
 run:
 	$(GO) run ./cmd/folderwatch $(ARGS)
 smoke: build
 	python3 scripts/smoke.py bin/folderwatch
+	python3 scripts/watch_smoke.py bin/folderwatch

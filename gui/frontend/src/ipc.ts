@@ -14,7 +14,16 @@ export interface Reply { status: SessionInfo; error?: Problem }
 export interface ConnectionReply extends Reply { clientId: string; app: AppInfo }
 export interface FolderReply { path: string; error?: Problem }
 export interface SessionRequest { clientId: string; sessionId: string }
-export interface StartOptions { clientId: string; root: string }
+export interface StartOptions {
+  clientId: string; root: string; debounce?: string; ignore?: string[];
+  respectGitIgnore?: boolean; maxDiffBytes?: string; editor?: string;
+}
+export interface GUISettings { debounce: string; ignore: string[]; respectGitIgnore: boolean; maxDiffBytes: string; editor: string }
+export interface SettingsRequest { clientId: string; root: string }
+export interface SettingsReply { settings: GUISettings; error?: Problem }
+export interface PathRequest extends SessionRequest { path: string }
+export interface EditorRequest extends PathRequest { editor?: string }
+export interface CopyPathRequest extends PathRequest { relative: boolean }
 export interface CoreEvent {
   protocol: number; name: string; clientId: string;
   status: SessionInfo; reload: boolean; problem?: Problem;
@@ -46,6 +55,13 @@ export interface Bridge {
   status(clientId: string): Promise<Reply>;
   start(options: StartOptions): Promise<Reply>;
   stop(request: SessionRequest): Promise<Reply>;
+  pause?: (request: SessionRequest) => Promise<Reply>;
+  resume?: (request: SessionRequest) => Promise<Reply>;
+  reset?: (request: SessionRequest) => Promise<Reply>;
+  settings?: (request: SettingsRequest) => Promise<SettingsReply>;
+  openEditor?: (request: EditorRequest) => Promise<Reply>;
+  reveal?: (request: PathRequest) => Promise<Reply>;
+  copyPath?: (request: CopyPathRequest) => Promise<Reply>;
   selectFolder?: () => Promise<FolderReply>;
   changes?: (request: ChangesRequest) => Promise<ChangesReply>;
   diff?: (request: DiffRequest) => Promise<DiffReply>;

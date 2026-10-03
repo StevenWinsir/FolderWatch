@@ -1,5 +1,5 @@
 import { writable, type Readable } from 'svelte/store';
-import { eventNames, idle, isSession, type AppInfo, type Bridge, type CoreEvent, type SessionInfo, type Reply } from './ipc';
+import { eventNames, idle, isSession, type AppInfo, type Bridge, type CoreEvent, type SessionInfo, type Reply, type StartOptions, type GUISettings } from './ipc';
 
 export interface ViewState {
   connected: boolean; connecting: boolean; pendingStart: boolean;
@@ -126,13 +126,19 @@ export class SessionController {
     } finally { if (this.current(epoch, client)) this.beating = false; }
   }
 
-  async start(root: string) {
+  async start(root: string, settings?: Partial<GUISettings>) {
     if (this.disposed || !this.data.connected || this.data.pendingStart || !['Idle', 'Error'].includes(this.data.status.state)) return;
     const epoch = this.epoch;
     const client = this.client;
     this.patch({ pendingStart: true, error: '' });
     try {
-      const reply = await this.bridge.start({ clientId: client, root });
+      const options: StartOptions = { clientId: client, root };
+      if (settings?.debounce) options.debounce = settings.debounce;
+      if (settings?.ignore) options.ignore = settings.ignore;
+      if (settings?.respectGitIgnore !== undefined) options.respectGitIgnore = settings.respectGitIgnore;
+      if (settings?.maxDiffBytes) options.maxDiffBytes = settings.maxDiffBytes;
+      if (settings?.editor !== undefined) options.editor = settings.editor;
+      const reply = await this.bridge.start(options);
       if (!this.current(epoch, client)) return;
       if (reply.error?.code === 'CANCELLED') return; // intentional Stop during scan
       this.apply(this.check(reply), true);
@@ -151,6 +157,49 @@ export class SessionController {
       if (this.current(epoch, client)) this.apply(this.check(reply), true);
     } catch (error) { if (this.current(epoch, client)) this.patch({ error: this.message(error) }); }
     finally { if (this.current(epoch, client)) this.stopping = false; }
+  }
+
+  private async control(action: 'pause' | 'resume' | 'reset') {
+    const method = this.bridge[action];
+    const sessionId = this.data.status.sessionId;
+    if (!method || this.disposed || !this.data.connected || !sessionId) return;
+    const epoch = this.epoch;
+    const client = this.client;
+    try {
+      const reply = await method({ clientId: client, sessionId });
+      if (this.current(epoch, client)) this.apply(this.check(reply), true);
+    } catch (error) { if (this.current(epoch, client)) this.patch({ error: this.message(error) }); }
+  }
+  pause() { return this.control('pause'); }
+  resume() { return this.control('resume'); }
+  reset() { return this.control('reset'); }
+
+  async loadSettings(root: string) {
+    if (!this.bridge.settings || !this.client || !root.trim()) return undefined;
+    try {
+      const reply = await this.bridge.settings({ clientId: this.client, root: root.trim() });
+      if (reply.error) throw new Error(`${reply.error.code}: ${reply.error.message}`);
+      return reply.settings;
+    } catch (error) { this.setError(this.message(error)); return undefined; }
+  }
+
+  async openEditor(path: string, editor = '') { return this.systemAction('openEditor', { path, editor }); }
+  async reveal(path: string) { return this.systemAction('reveal', { path }); }
+  async copyPath(path: string, relative: boolean) { return this.systemAction('copyPath', { path, relative }); }
+  private async systemAction(action: 'openEditor' | 'reveal' | 'copyPath', value: { path: string; editor?: string; relative?: boolean }) {
+    const method = this.bridge[action];
+    const sessionId = this.data.status.sessionId;
+    if (!method || !this.client || !sessionId) return;
+    try {
+      const reply = await method({ clientId: this.client, sessionId, ...value } as never);
+      if (reply.error) throw new Error(`${reply.error.code}: ${reply.error.message}`);
+    } catch (error) { this.setError(this.message(error)); }
+  }
+
+  async wake() {
+    if (this.disposed) return;
+    if (this.data.connected) await this.heartbeat(this.epoch);
+    else await this.connect();
   }
 
   dispose() {

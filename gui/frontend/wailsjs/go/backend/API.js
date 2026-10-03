@@ -6,6 +6,10 @@ export function AttachFrontend() {
   return window['go']['backend']['API']['AttachFrontend']();
 }
 
+export function CopyPath(arg1) {
+  return window['go']['backend']['API']['CopyPath'](arg1);
+}
+
 export function DetachFrontend(arg1) {
   return window['go']['backend']['API']['DetachFrontend'](arg1);
 }
@@ -26,8 +30,16 @@ export function GetSessionStatus(arg1) {
   return window['go']['backend']['API']['GetSessionStatus'](arg1);
 }
 
+export function GetSettings(arg1) {
+  return window['go']['backend']['API']['GetSettings'](arg1);
+}
+
 export function Heartbeat(arg1) {
   return window['go']['backend']['API']['Heartbeat'](arg1);
+}
+
+export function OpenInEditor(arg1) {
+  return window['go']['backend']['API']['OpenInEditor'](arg1);
 }
 
 export function PauseSession(arg1) {
@@ -40,6 +52,10 @@ export function ResetBaseline(arg1) {
 
 export function ResumeSession(arg1) {
   return window['go']['backend']['API']['ResumeSession'](arg1);
+}
+
+export function RevealInFinder(arg1) {
+  return window['go']['backend']['API']['RevealInFinder'](arg1);
 }
 
 export function SelectFolder() {

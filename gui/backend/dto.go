@@ -68,6 +68,28 @@ type StartOptions struct {
 	Ignore           []string `json:"ignore,omitempty"`
 	RespectGitIgnore *bool    `json:"respectGitIgnore,omitempty"`
 	MaxDiffBytes     *string  `json:"maxDiffBytes,omitempty"`
+	Editor           *string  `json:"editor,omitempty"`
+}
+
+// GUISettings is the small, normalized subset of the shared config contract
+// that the desktop UI can change. Values are encoded in the same textual form
+// accepted by config.Overlay so GUI and CLI startup follow one model.
+type GUISettings struct {
+	Debounce         string   `json:"debounce"`
+	Ignore           []string `json:"ignore"`
+	RespectGitIgnore bool     `json:"respectGitIgnore"`
+	MaxDiffBytes     string   `json:"maxDiffBytes"`
+	Editor           string   `json:"editor"`
+}
+
+type SettingsRequest struct {
+	ClientID string `json:"clientId"`
+	Root     string `json:"root"`
+}
+
+type SettingsReply struct {
+	Settings GUISettings `json:"settings"`
+	Error    *Problem    `json:"error,omitempty"`
 }
 
 type Reply struct {
@@ -80,6 +102,21 @@ type Reply struct {
 type FolderReply struct {
 	Path  string   `json:"path"`
 	Error *Problem `json:"error,omitempty"`
+}
+
+type PathRequest struct {
+	SessionRequest
+	Path string `json:"path"`
+}
+
+type EditorRequest struct {
+	PathRequest
+	Editor string `json:"editor,omitempty"`
+}
+
+type CopyPathRequest struct {
+	PathRequest
+	Relative bool `json:"relative"`
 }
 
 type ChangesRequest struct {

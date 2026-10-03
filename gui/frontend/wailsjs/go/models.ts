@@ -244,6 +244,24 @@ export namespace backend {
 		    return a;
 		}
 	}
+	export class CopyPathRequest {
+	    clientId: string;
+	    sessionId: string;
+	    path: string;
+	    relative: boolean;
+	
+	    static createFrom(source: any = {}) {
+	        return new CopyPathRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.clientId = source["clientId"];
+	        this.sessionId = source["sessionId"];
+	        this.path = source["path"];
+	        this.relative = source["relative"];
+	    }
+	}
 	export class DiffLine {
 	    kind: string;
 	    oldLine: number;
@@ -400,6 +418,24 @@ export namespace backend {
 	    }
 	}
 	
+	export class EditorRequest {
+	    clientId: string;
+	    sessionId: string;
+	    path: string;
+	    editor?: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new EditorRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.clientId = source["clientId"];
+	        this.sessionId = source["sessionId"];
+	        this.path = source["path"];
+	        this.editor = source["editor"];
+	    }
+	}
 	
 	export class FolderReply {
 	    path: string;
@@ -432,6 +468,42 @@ export namespace backend {
 		    }
 		    return a;
 		}
+	}
+	export class GUISettings {
+	    debounce: string;
+	    ignore: string[];
+	    respectGitIgnore: boolean;
+	    maxDiffBytes: string;
+	    editor: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new GUISettings(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.debounce = source["debounce"];
+	        this.ignore = source["ignore"];
+	        this.respectGitIgnore = source["respectGitIgnore"];
+	        this.maxDiffBytes = source["maxDiffBytes"];
+	        this.editor = source["editor"];
+	    }
+	}
+	export class PathRequest {
+	    clientId: string;
+	    sessionId: string;
+	    path: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new PathRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.clientId = source["clientId"];
+	        this.sessionId = source["sessionId"];
+	        this.path = source["path"];
+	    }
 	}
 	
 	export class Reply {
@@ -481,6 +553,52 @@ export namespace backend {
 	        this.sessionId = source["sessionId"];
 	    }
 	}
+	export class SettingsReply {
+	    settings: GUISettings;
+	    error?: Problem;
+	
+	    static createFrom(source: any = {}) {
+	        return new SettingsReply(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.settings = this.convertValues(source["settings"], GUISettings);
+	        this.error = this.convertValues(source["error"], Problem);
+	    }
+	
+		convertValues(a: any, classs: any, asMap: boolean = false): any {
+		    if (!a) {
+		        return a;
+		    }
+		    if (a.slice && a.map) {
+		        return (a as any[]).map(elem => this.convertValues(elem, classs));
+		    } else if ("object" === typeof a) {
+		        if (asMap) {
+		            for (const key of Object.keys(a)) {
+		                a[key] = new classs(a[key]);
+		            }
+		            return a;
+		        }
+		        return new classs(a);
+		    }
+		    return a;
+		}
+	}
+	export class SettingsRequest {
+	    clientId: string;
+	    root: string;
+	
+	    static createFrom(source: any = {}) {
+	        return new SettingsRequest(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.clientId = source["clientId"];
+	        this.root = source["root"];
+	    }
+	}
 	export class StartOptions {
 	    clientId: string;
 	    root: string;
@@ -488,6 +606,7 @@ export namespace backend {
 	    ignore?: string[];
 	    respectGitIgnore?: boolean;
 	    maxDiffBytes?: string;
+	    editor?: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new StartOptions(source);
@@ -501,6 +620,7 @@ export namespace backend {
 	        this.ignore = source["ignore"];
 	        this.respectGitIgnore = source["respectGitIgnore"];
 	        this.maxDiffBytes = source["maxDiffBytes"];
+	        this.editor = source["editor"];
 	    }
 	}
 

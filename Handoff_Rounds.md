@@ -2733,3 +2733,9 @@ P21 完成：System/Light/Dark 主题、持久化主题选择、键盘列表/按
 ### 32.5 R9 交接
 
 R9 只继续 E2E 覆盖、发布打包、签名/公证和 Gate B，不应把编辑器命令执行移回前端或复制 core 语义。当前开发构建不代表正式 GUI 发布候选；PR、远端 CI、人工原生 QA 和合并状态必须分别记录实际结果。
+
+### 32.6 R8 follow-up — Monaco diff line-number correction (2026-10-02)
+
+后续复核发现 Monaco 只接收 hunk 内容时会把每段 diff 从第 1 行重新编号，导致文件中部修改的右侧行号错误。`gui/frontend/src/DiffEditor.svelte` 现在按 core 返回的 `oldLine/newLine` 为 original/modified editor 提供自定义 line-number renderer；`gui/frontend/src/diff-lines.ts` 集中处理两侧内容与行号映射。新增 Vitest 回归和真实 Wails E2E 断言，覆盖 hunk 从第 7 行开始、修改第 10 行的场景。
+
+本地复验：`npm test -- --run`（4 files/12 tests）、`npm run check`（0 diagnostics）、`npm run build`、`go test ./internal/diff ./gui/backend ./internal/app ./internal/changes`、`FW_GUI_START_SERVER=1 FW_BROWSER_CHANNEL=chrome make gui-e2e`（2/2）均 PASS。该修复只改 GUI 展示层，不改变 core 的 path-based rename fallback 语义；远端 CI 以新 PR head 的实际 Actions 结果为准。

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { onDestroy, onMount } from 'svelte';
+  import { afterUpdate, onDestroy, onMount } from 'svelte';
   import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js';
   import type { DiffResult } from './ipc';
 
@@ -13,30 +13,35 @@
   let mounted = false;
   let modelKey = '';
 
-  function sideText(side: 'original' | 'modified') {
-    if (!diff) return '';
+  function sideText(side: 'original' | 'modified', currentDiff = diff) {
+    if (!currentDiff) return '';
     const kinds = side === 'original' ? new Set(['context', 'removed']) : new Set(['context', 'added']);
-    return diff.hunks.flatMap(hunk => hunk.lines.filter(line => kinds.has(line.kind)).map(line => line.text)).join('\n');
+    return currentDiff.hunks.flatMap(hunk => hunk.lines.filter(line => kinds.has(line.kind)).map(line => line.text)).join('\n');
   }
 
-  function updateModels() {
+  function disposeModels() {
+    editor?.setModel(null);
+    original?.dispose();
+    modified?.dispose();
+    original = undefined;
+    modified = undefined;
+    modelKey = '';
+  }
+
+  function updateModels(currentDiff = diff) {
     if (!mounted) return;
-    if (!diff || diff.status !== 'text') {
-      if (modelKey) {
-        editor?.setModel(null);
-        original?.dispose(); modified?.dispose();
-        original = undefined; modified = undefined; modelKey = '';
-      }
+    if (!currentDiff || currentDiff.status !== 'text') {
+      if (modelKey) disposeModels();
       return;
     }
     ensureEditor();
     if (!editor) return;
-    const nextKey = `${diff.path}:${diff.generation}:${diff.version}`;
+    const nextKey = `${currentDiff.path}:${currentDiff.generation}:${currentDiff.version}`;
     if (nextKey === modelKey) return;
+    disposeModels();
     modelKey = nextKey;
-    original?.dispose(); modified?.dispose();
-    original = monaco.editor.createModel(sideText('original'), 'plaintext');
-    modified = monaco.editor.createModel(sideText('modified'), 'plaintext');
+    original = monaco.editor.createModel(sideText('original', currentDiff), 'plaintext');
+    modified = monaco.editor.createModel(sideText('modified', currentDiff), 'plaintext');
     editor.setModel({ original, modified });
   }
 
@@ -63,27 +68,29 @@
 
   onMount(() => {
     mounted = true;
-    // jsdom (and lightweight component tests) has no media-query API. The
-    // real Wails WebView always provides it; the accessible fallback remains
-    // rendered when Monaco cannot be mounted in a test DOM.
-    updateModels();
+    // Lightweight component tests do not provide Monaco's browser APIs.
+    updateModels(diff);
   });
 
-  $: if (mounted) updateModels();
+  // Apply asynchronous diff responses after DOM bindings and visibility update.
+  afterUpdate(() => {
+    if (mounted) updateModels(diff);
+  });
 
   onDestroy(() => {
-    original?.dispose(); modified?.dispose(); editor?.dispose();
+    disposeModels();
+    editor?.dispose();
   });
 </script>
 
 <div class="diff-shell">
+  <!-- Preserve the host across loading/empty/binary states: Monaco owns its DOM. -->
+  <div bind:this={container} class="monaco-host" class:hidden={loading || diff?.status !== 'text'} aria-label="Read-only file diff"></div>
   {#if loading}
     <div class="diff-state"><span class="spinner" aria-hidden="true"></span><strong>Reading diff</strong><span>Fetching file content from the local core…</span></div>
   {:else if !diff}
     <div class="diff-state"><div class="state-mark">⌁</div><strong>Select a changed file</strong><span>Choose a file on the left to inspect its before and after content.</span></div>
   {:else if diff.status !== 'text'}
     <div class="diff-state"><div class="state-mark muted">{diff.status === 'binary' ? '◈' : '⊘'}</div><strong>{diff.status === 'binary' ? 'Binary file' : diff.status === 'too-large' ? 'File is too large to preview' : diff.status === 'unsupported-text' ? 'Text encoding is not supported' : 'Preview unavailable'}</strong><span>{diff.reason || 'FolderWatch keeps this file metadata-only.'}</span></div>
-  {:else}
-    <div bind:this={container} class="monaco-host" aria-label="Read-only file diff"></div>
   {/if}
 </div>

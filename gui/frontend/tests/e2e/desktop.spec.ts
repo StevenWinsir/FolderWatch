@@ -82,6 +82,17 @@ test('real Wails IPC: visible Start/Stop, core changes/diff, pause/reset and res
     expect(diff.diff?.status).toBe('text');
     expect(JSON.stringify(diff.diff?.hunks)).toContain('PRIVATE_BEFORE_SENTINEL');
     expect(JSON.stringify(diff.diff?.hunks)).toContain('PRIVATE_AFTER_SENTINEL');
+    await expect(page.locator('.file-row')).toHaveCount(1);
+    await page.locator('.file-row').click();
+    await expect(page.locator('.selected-file h2')).toHaveText(key);
+    await expect.poll(() => page.locator('.monaco-host .view-lines').count()).toBeGreaterThan(0);
+    await expect(page.locator('.monaco-host')).toContainText('PRIVATE_BEFORE_SENTINEL');
+    await expect(page.locator('.monaco-host')).toContainText('PRIVATE_AFTER_SENTINEL');
+    await page.screenshot({ path: info.outputPath('diff-visible.png'), fullPage: true });
+    // Re-selecting recreates the loading state and must keep a live editor host.
+    await page.locator('.file-row').click();
+    await expect(page.locator('.monaco-host .view-lines')).not.toHaveCount(0);
+    await expect(page.locator('.monaco-host')).toContainText('PRIVATE_AFTER_SENTINEL');
     expect(await page.evaluate(() => JSON.stringify(window.__r6Events))).not.toContain('PRIVATE_');
     const outside = await rpc<backend.DiffReply>(page, 'GetDiff', { ...req, path: '../outside', generation: changes.generation, version: changes.changes[0].version });
     expect(outside.error?.code).toBe('INVALID_PATH');
@@ -89,6 +100,7 @@ test('real Wails IPC: visible Start/Stop, core changes/diff, pause/reset and res
     await expect(page.getByRole('status')).toHaveText('Paused');
     await writeFile(path.join(root, key), 'PRIVATE_RESUMED_SENTINEL\n');
     expect((await rpc<Reply>(page, 'ResumeSession', req)).status.state).toBe('Monitoring');
+    await expect(page.locator('.monaco-host')).toContainText('PRIVATE_RESUMED_SENTINEL');
     const reset = await rpc<Reply>(page, 'ResetBaseline', req);
     expect(reset.error).toBeUndefined();
     expect(BigInt(reset.status.generation)).toBeGreaterThan(BigInt(changes.generation));

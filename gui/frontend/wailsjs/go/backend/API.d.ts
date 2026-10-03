@@ -22,6 +22,8 @@ export function ResetBaseline(arg1:backend.SessionRequest):Promise<backend.Reply
 
 export function ResumeSession(arg1:backend.SessionRequest):Promise<backend.Reply>;
 
+export function SelectFolder():Promise<backend.FolderReply>;
+
 export function StartSession(arg1:backend.StartOptions):Promise<backend.Reply>;
 
 export function StopSession(arg1:backend.SessionRequest):Promise<backend.Reply>;

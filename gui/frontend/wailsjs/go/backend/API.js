@@ -42,6 +42,10 @@ export function ResumeSession(arg1) {
   return window['go']['backend']['API']['ResumeSession'](arg1);
 }
 
+export function SelectFolder() {
+  return window['go']['backend']['API']['SelectFolder']();
+}
+
 export function StartSession(arg1) {
   return window['go']['backend']['API']['StartSession'](arg1);
 }

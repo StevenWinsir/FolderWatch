@@ -12,6 +12,7 @@ export interface AppInfo {
 }
 export interface Reply { status: SessionInfo; error?: Problem }
 export interface ConnectionReply extends Reply { clientId: string; app: AppInfo }
+export interface FolderReply { path: string; error?: Problem }
 export interface SessionRequest { clientId: string; sessionId: string }
 export interface StartOptions { clientId: string; root: string }
 export interface CoreEvent {
@@ -19,6 +20,24 @@ export interface CoreEvent {
   status: SessionInfo; reload: boolean; problem?: Problem;
 }
 export const eventNames = ['session.status', 'changes.updated', 'session.warning', 'session.error'] as const;
+export interface FileInfo { sizeBytes: string; kind: string; classification: string; reason: string }
+export interface ChangeSummary {
+  path: string; oldPath: string; kind: string; version: string;
+  before?: FileInfo; after?: FileInfo; firstSeen: string; lastSeen: string;
+}
+export interface ChangesRequest extends SessionRequest { offset: number; limit: number; generation: string; version: string }
+export interface ChangesReply {
+  sessionId: string; generation: string; version: string; changes: ChangeSummary[];
+  total: number; nextOffset: number; error?: Problem;
+}
+export interface DiffRequest extends SessionRequest { path: string; generation: string; version: string }
+export interface DiffLine { kind: string; oldLine: number; newLine: number; text: string; noNewline: boolean }
+export interface DiffHunk { oldStart: number; oldLines: number; newStart: number; newLines: number; lines: DiffLine[] }
+export interface DiffResult {
+  sessionId: string; path: string; kind: string; status: string; reason: string;
+  generation: string; version: string; hunks: DiffHunk[];
+}
+export interface DiffReply { diff?: DiffResult; error?: Problem }
 export interface Bridge {
   available(): boolean;
   attach(): Promise<ConnectionReply>;
@@ -27,6 +46,9 @@ export interface Bridge {
   status(clientId: string): Promise<Reply>;
   start(options: StartOptions): Promise<Reply>;
   stop(request: SessionRequest): Promise<Reply>;
+  selectFolder?: () => Promise<FolderReply>;
+  changes?: (request: ChangesRequest) => Promise<ChangesReply>;
+  diff?: (request: DiffRequest) => Promise<DiffReply>;
   on(name: string, callback: (event: CoreEvent) => void): () => void;
 }
 export const idle = (): SessionInfo => ({

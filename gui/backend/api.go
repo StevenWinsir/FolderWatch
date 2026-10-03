@@ -2,6 +2,7 @@ package backend
 
 import (
 	"context"
+	"errors"
 	"strconv"
 	"time"
 
@@ -10,10 +11,27 @@ import (
 
 // API is the ONLY object bound to Wails. Lifecycle hooks and the core remain
 // unreachable from JavaScript; every RPC has an explicit DTO response envelope.
-type API struct{ f *Facade }
+type API struct {
+	f            *Facade
+	selectFolder func() (string, error)
+}
 
-func NewAPI(f *Facade) *API        { return &API{f: f} }
+func NewAPI(f *Facade, picker ...func() (string, error)) *API {
+	a := &API{f: f}
+	if len(picker) > 0 {
+		a.selectFolder = picker[0]
+	}
+	return a
+}
 func (a *API) GetAppInfo() AppInfo { return a.f.info }
+
+func (a *API) SelectFolder() FolderReply {
+	if a.selectFolder == nil {
+		return FolderReply{Error: problem(errors.New("native folder picker is unavailable"))}
+	}
+	path, err := a.selectFolder()
+	return FolderReply{Path: path, Error: problem(err)}
+}
 
 func (a *API) AttachFrontend() ConnectionReply {
 	client, state, err := a.f.attach()

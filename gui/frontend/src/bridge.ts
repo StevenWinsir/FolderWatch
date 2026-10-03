@@ -11,5 +11,8 @@ export const bridge: Bridge = {
   status: API.GetSessionStatus,
   start: API.StartSession,
   stop: API.StopSession,
+  selectFolder: API.SelectFolder,
+  changes: API.GetChanges,
+  diff: API.GetDiff,
   on: (name, callback) => EventsOn(name, (event: CoreEvent) => callback(event)),
 };

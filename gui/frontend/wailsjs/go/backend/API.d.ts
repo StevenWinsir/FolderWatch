@@ -4,6 +4,8 @@ import {backend} from '../models';
 
 export function AttachFrontend():Promise<backend.ConnectionReply>;
 
+export function CopyPath(arg1:backend.CopyPathRequest):Promise<backend.Reply>;
+
 export function DetachFrontend(arg1:string):Promise<backend.Reply>;
 
 export function GetAppInfo():Promise<backend.AppInfo>;
@@ -14,13 +16,19 @@ export function GetDiff(arg1:backend.DiffRequest):Promise<backend.DiffReply>;
 
 export function GetSessionStatus(arg1:string):Promise<backend.Reply>;
 
+export function GetSettings(arg1:backend.SettingsRequest):Promise<backend.SettingsReply>;
+
 export function Heartbeat(arg1:string):Promise<backend.Reply>;
+
+export function OpenInEditor(arg1:backend.EditorRequest):Promise<backend.Reply>;
 
 export function PauseSession(arg1:backend.SessionRequest):Promise<backend.Reply>;
 
 export function ResetBaseline(arg1:backend.SessionRequest):Promise<backend.Reply>;
 
 export function ResumeSession(arg1:backend.SessionRequest):Promise<backend.Reply>;
+
+export function RevealInFinder(arg1:backend.PathRequest):Promise<backend.Reply>;
 
 export function SelectFolder():Promise<backend.FolderReply>;
 

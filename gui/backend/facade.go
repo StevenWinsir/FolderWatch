@@ -25,12 +25,12 @@ type options struct {
 }
 
 type run struct {
-	id, client, root string
-	ctx              context.Context
-	cancel           context.CancelFunc
-	ready, done      chan struct{}
-	session          *app.Session // protected by Facade.mu
-	startErr         error        // published by closing ready, never subsequently changed
+	id, client, root, editor string
+	ctx                      context.Context
+	cancel                   context.CancelFunc
+	ready, done              chan struct{}
+	session                  *app.Session // protected by Facade.mu
+	startErr                 error        // published by closing ready, never subsequently changed
 }
 
 // Facade owns one frontend lease and at most one core session (including startup
@@ -79,9 +79,12 @@ func token() (string, error) {
 }
 
 func startCore(ctx context.Context, opts StartOptions) (*app.Session, string, error) {
-	prepared, err := app.Prepare(ctx, opts.Root, config.Overlay{Debounce: opts.Debounce, Ignore: opts.Ignore, RespectGitIgnore: opts.RespectGitIgnore, MaxDiffBytes: opts.MaxDiffBytes}, config.LoadOptions{})
+	prepared, err := app.Prepare(ctx, opts.Root, config.Overlay{Debounce: opts.Debounce, Ignore: opts.Ignore, RespectGitIgnore: opts.RespectGitIgnore, MaxDiffBytes: opts.MaxDiffBytes, Editor: opts.Editor}, config.LoadOptions{})
 	if err != nil {
 		return nil, "", err
+	}
+	if opts.Editor == nil {
+		opts.Editor = &prepared.Config.Editor
 	}
 	s, err := app.StartSession(ctx, prepared)
 	return s, prepared.Config.Root, err
@@ -239,6 +242,14 @@ func (f *Facade) start(opts StartOptions) (SessionInfo, error) {
 			return idle(), fault("INVALID_OPTIONS", "An ignore pattern is too long.")
 		}
 	}
+	// Resolve the shared CLI/project editor default once for the run. The
+	// actual session still loads and validates the complete config in app.Prepare;
+	// this lookup only lets system integration use the same editor afterward.
+	if opts.Editor == nil {
+		if cfg, cfgErr := config.Load(opts.Root, config.Overlay{}, config.LoadOptions{}); cfgErr == nil {
+			opts.Editor = &cfg.Editor
+		}
+	}
 	id, err := token()
 	if err != nil {
 		return idle(), err
@@ -253,7 +264,11 @@ func (f *Facade) start(opts StartOptions) (SessionInfo, error) {
 		return idle(), fault("BUSY", "Stop the current session before starting another.")
 	}
 	ctx, cancel := context.WithCancel(f.ctx)
-	r := &run{id: id, client: opts.ClientID, ctx: ctx, cancel: cancel, ready: make(chan struct{}), done: make(chan struct{})}
+	editor := ""
+	if opts.Editor != nil {
+		editor = *opts.Editor
+	}
+	r := &run{id: id, client: opts.ClientID, editor: editor, ctx: ctx, cancel: cancel, ready: make(chan struct{}), done: make(chan struct{})}
 	f.current = r
 	f.status, f.generation, f.version = idle(), 0, 0
 	f.status.State, f.status.SessionID, f.status.Root = "Scanning", id, opts.Root

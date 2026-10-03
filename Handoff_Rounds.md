@@ -7,8 +7,8 @@
 > GUI 技术栈：**Wails + Svelte + TypeScript + Monaco Diff Editor**  
 > 开发阶段：**阶段一 Terminal/TUI → 质量闸门 → 阶段二 GUI**
 >
-> **当前工程状态（2026-10-02）：R7 / P17–P18 的实现与本地自动化验收完成，集成状态为 IN_REVIEW。** 已新增 Wails/Svelte 壳层、唯一 Core Facade、IPC v1、会话租约/取消、分页摘要与按需 Diff；原 P0–P14 和 Gate A 仍为 PASS。R6 从已合并 PR #6 的 `88b3541` 开始，分支为 `feat/r6-gui-shell-ipc`。P19–P25 尚未实施，Gate B 未通过；本轮 `.app` 是开发构建，不是签名/公证或正式 GUI 发布。
-> 本轮完成范围、验收数字、修复与限制见 **第30节**、[`docs/rounds/R6-acceptance.md`](docs/rounds/R6-acceptance.md)、[`docs/gui-ipc-v1.md`](docs/gui-ipc-v1.md)及 ADR-015。第25–29节保留 R1–R5 历史证据；Gate A 人工签字仍以 [`docs/gates/Gate-A.md`](docs/gates/Gate-A.md) 的既有候选为准。原生 WKWebView 按钮/菜单人工交互尚未复验：本次机器未授予辅助功能和屏幕录制权限，浏览器真实 IPC 测试不替代该项。PR、远端 CI 与合并只记录实际结果。
+> **当前工程状态（2026-10-02）：R8 / P19–P21 的实现与本地自动化验收完成，集成状态为 IN_REVIEW。** 已补齐 GUI Settings、Pause/Resume/Reset/Change folder、外部编辑器/Finder/剪贴板系统集成、sleep/wake 续租与刷新、主题、键盘可访问性、错误态和生命周期清理；原 P0–P18 与 Gate A 仍为既有验收结果。R8 代码尚未合并；本轮 `.app` 是开发构建，不是签名/公证或正式 GUI 发布。
+> 本轮完成范围、验收数字、修复与限制见 **第32节**、[`docs/rounds/R8-acceptance.md`](docs/rounds/R8-acceptance.md)、第31节的 R7 记录及 [`docs/gui-ipc-v1.md`](docs/gui-ipc-v1.md)。第25–31节保留 R1–R7 历史证据；Gate A 人工签字仍以 [`docs/gates/Gate-A.md`](docs/gates/Gate-A.md) 的既有候选为准。原生 WKWebView 按钮/菜单人工交互尚未复验：本次机器未授予辅助功能和屏幕录制权限，浏览器真实 IPC 测试不替代该项。PR、远端 CI 与合并只记录实际结果。
 
 ---
 
@@ -88,7 +88,7 @@ P0–P25 继续作为能力阶段编号；**Round 才是实际开发、Code Revi
 | R5 | Terminal | P12–P14 | 工程硬化与发布 | 性能、测试、CI、Terminal 发布 | **PASS（2026-10-02）；Gate A PASS**，阶段一验收完成，可进入R6；集成状态见§29 |
 | R6 | GUI | P15–P16 | GUI 壳层与 IPC 契约 | Wails/Svelte、Core Facade、DTO/Event | **实现/本地自动化 PASS；集成 IN_REVIEW**；真实 IPC、资源/安全回归通过，原生交互与 PR 评审边界见§30 |
 | R7 | GUI | P17–P18 | GUI 主流程与 Diff | Folder Picker、变化列表、Diff Viewer | **实现/本地自动化 PASS；集成 IN_REVIEW** |
-| R8 | GUI | P19–P21 | GUI 功能补全与系统鲁棒性 | Settings、系统集成、可访问性 | GUI 功能完整可长期运行 |
+| R8 | GUI | P19–P21 | GUI 功能补全与系统鲁棒性 | Settings、系统集成、可访问性 | **实现/本地自动化 PASS；集成 IN_REVIEW（2026-10-02）** |
 | R9 | GUI | P22–P24 | 测试、打包与发布 | E2E、签名/公证、最终 QA | **Gate B PASS** |
 | R10 | v1 收尾 | P25 | 冻结与长期维护交接 | 文档、兼容性矩阵、backlog | v1 可长期维护 |
 
@@ -2677,3 +2677,57 @@ P18 完成：Monaco 只读 side-by-side Diff Editor；文本按 Go hunks/line ki
 ### 31.5 GitHub integration
 
 R7 实现与生成绑定收尾提交 **`911c52f`** 已推送至分支 `codex/r7-gui-main-diff`，GitHub **[PR #8](https://github.com/StevenWinsir/FolderWatch/pull/8)**（base=`main`，OPEN）。首轮远端 GUI build 检出生成 bindings 的文件模式/位置漂移，已按生成器实际输出修正并推送 `911c52f`；随后 Actions run `37087365946`（push）与 `37087371245`（PR）均已完成，GUI build、前端矩阵、Go 测试矩阵、fuzz、cross-build 和 terminal-candidate 全部 PASS。原生 WKWebView / picker 人工验收与 PR 合并仍保留 IN_REVIEW，不将 CI 全绿误写为 Gate B 完成。
+
+---
+
+## 32. 本轮交付记录 — R8 / P19–P21（2026-10-02）
+
+### 32.1 状态与实现范围
+
+**P19–P21 已实现并完成本地自动化验收；Round 实现/自动化状态 PASS，集成状态 IN_REVIEW。** 本轮延续 R7 的唯一 Core Facade 与 IPC v1，没有在 GUI 重写 watcher、baseline、ChangeStore 或 diff。完整交付和命令结果见 [`docs/rounds/R8-acceptance.md`](docs/rounds/R8-acceptance.md)。
+
+P19 完成：Settings 面板读取同一份 user/project TOML 配置，支持 debounce、ignore patterns、respect `.gitignore`、max diff bytes 和 external editor；Start 把设置映射为现有 `config.Overlay`。新增 Pause、Resume、Reset Baseline、Stop、Change folder；Reset 在调用前显示“当前状态将成为新基线，现有变化列表清空”的确认提示。
+
+P20 完成：选中文件可 Open in Editor、Reveal in Finder、Copy relative path。路径先按活动 session 的 canonical root-relative key 校验，再转换为绝对路径；编辑器命令用带引号解析器生成可执行文件 + 参数数组并调用 `exec.CommandContext`，拒绝 NUL、换行、shell operator、未闭合引号/转义，不经过 `sh -c`。默认 macOS editor 使用 `open`，Finder 使用 `open -R`，剪贴板使用 `pbcopy`；其他平台返回可见错误。
+
+P21 完成：System/Light/Dark 主题、持久化主题选择、键盘列表/按钮和文本状态、空态/加载态/错误态、目录消失/移动错误反馈、窗口 resize、visibility wake 的 heartbeat/reconnect + authoritative list refresh、pagehide/destroy listener/timer/subscription/Monaco model 清理。空 Settings ignore 列表始终编码为空数组，避免恢复时把 `null` 当成可迭代列表。
+
+### 32.2 代码与接口变化
+
+| 位置 | 变化 |
+|---|---|
+| `gui/backend/dto.go` | `GUISettings`、`SettingsRequest/Reply`、`PathRequest`、`EditorRequest`、`CopyPathRequest`；`StartOptions.Editor` |
+| `gui/backend/api.go` | `GetSettings`、`OpenInEditor`、`RevealInFinder`、`CopyPath`，统一 session/root 校验 |
+| `gui/backend/system.go` | 无 shell 的命令解析与 macOS system actions；`system_test.go` 覆盖注入动作、Unicode/空格/引号和 traversal 拒绝 |
+| `gui/frontend/src/controller.ts` | settings 加载、会话控制、系统操作、wake/reconnect、可取消/清理生命周期 |
+| `gui/frontend/src/App.svelte` / `style.css` | Settings UI、Reset confirmation、session action bar、editor/Finder/copy buttons、三种主题、responsive/accessibility 状态 |
+| `gui/frontend/wailsjs/` | 重新生成 API/models bindings |
+
+### 32.3 自动化验收
+
+本机 macOS arm64、Go 1.26.6、Node 26.10.0、Wails 2.10.1、Chrome：
+
+- `go test ./...`：PASS。
+- `go test -race ./...`：PASS；另行 `go test -race ./gui/backend ./gui/host` PASS。
+- `make lint`：vendor guard、Core boundary、`go vet` PASS。
+- `make gui-check`：Svelte/TypeScript 0 errors/0 warnings、Vitest 3 files/11 tests PASS、Vite production build PASS。
+- `make gui-build VERSION=0.2.0-dev`：产出 `gui/build/bin/FolderWatch.app`，unsigned development build。
+- `FW_GUI_START_SERVER=1 FW_BROWSER_CHANNEL=chrome make gui-e2e`：真实 Wails IPC **2/2 PASS（13.2s）**。
+
+首次真实 E2E 暴露 GetSettings 空 ignore 序列化为 `null`，造成页面恢复时 `join` 错误；修复 `guiSettings` 保证空数组后完整套件再次 2/2 PASS。该问题、修复和边界已记录在 R8 acceptance，不把首次失败隐藏为最终结果。
+
+### 32.4 验收对应关系与边界
+
+- [x] GUI/CLI 共用默认值、配置加载和 Overlay schema；GUI 不创建第二套 watcher/config。
+- [x] Reset Baseline 有清晰确认提示并清空权威变化列表。
+- [x] 空格、引号、Unicode path 经 root-relative canonical key 校验后安全传递。
+- [x] 外部编辑器不使用 `sh -c` 字符串拼接；shell operators/未闭合 quote 拒绝。
+- [x] visibility wake 后续租/重连并刷新权威状态；lease 已过期时不假装自动恢复旧 session。
+- [x] 反复切目录、reload、pagehide 和 component destroy 有 listener/timer/subscription/model 清理；已有 core descriptor/goroutine regression 继续通过。
+- [x] System/Light/Dark 可切换且选择持久化；字母/文本状态不只依赖颜色。
+- [ ] 原生 WKWebView 人工按钮、菜单、folder picker、VoiceOver/辅助功能仍需拥有权限的独立评审；真实 Playwright IPC 不替代该项。
+- [ ] 签名、公证、clean-machine 安装与 Gate B 由 R9/P23–P24 负责。
+
+### 32.5 R9 交接
+
+R9 只继续 E2E 覆盖、发布打包、签名/公证和 Gate B，不应把编辑器命令执行移回前端或复制 core 语义。当前开发构建不代表正式 GUI 发布候选；PR、远端 CI、人工原生 QA 和合并状态必须分别记录实际结果。

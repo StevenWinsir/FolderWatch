@@ -2676,4 +2676,4 @@ P18 完成：Monaco 只读 side-by-side Diff Editor；文本按 Go hunks/line ki
 
 ### 31.5 GitHub integration
 
-R7 实现提交 **`e9ad3d7`** 已推送至分支 `codex/r7-gui-main-diff`，GitHub **[PR #8](https://github.com/StevenWinsir/FolderWatch/pull/8)**（base=`main`，OPEN）。创建时远端 Actions 已启动；最近检查时所有 Go/cross-build/fuzz/GUI build job 仍为 `pending`，`gui-frontend (22)` 已 `pass`。远端 CI 结果只在对应 Actions run 完成后更新，不用本地通过推断远端全绿。
+R7 实现与生成绑定收尾提交 **`2f7bea3`** 已推送至分支 `codex/r7-gui-main-diff`，GitHub **[PR #8](https://github.com/StevenWinsir/FolderWatch/pull/8)**（base=`main`，OPEN）。首轮远端 GUI build 检出生成 bindings 的文件模式/位置漂移，已按生成器实际输出修正并推送 `2f7bea3`；新 head 的 Actions 需重新完成，不能沿用首轮状态。远端 CI 结果只在对应 Actions run 完成后更新，不用本地通过推断远端全绿。

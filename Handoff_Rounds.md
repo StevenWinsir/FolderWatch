@@ -7,7 +7,7 @@
 > GUI 技术栈：**Wails + Svelte + TypeScript + Monaco Diff Editor**  
 > 开发阶段：**阶段一 Terminal/TUI → 质量闸门 → 阶段二 GUI**
 >
-> **当前工程状态（2026-10-02）：R6 / P15–P16 的实现与本地自动化验收完成，集成状态为 IN_REVIEW。** 已新增 Wails/Svelte 壳层、唯一 Core Facade、IPC v1、会话租约/取消、分页摘要与按需 Diff；原 P0–P14 和 Gate A 仍为 PASS。R6 从已合并 PR #6 的 `88b3541` 开始，分支为 `feat/r6-gui-shell-ipc`。P17–P25 尚未实施，Gate B 未通过；本轮 `.app` 是开发构建，不是签名/公证或正式 GUI 发布。
+> **当前工程状态（2026-10-02）：R7 / P17–P18 的实现与本地自动化验收完成，集成状态为 IN_REVIEW。** 已新增 Wails/Svelte 壳层、唯一 Core Facade、IPC v1、会话租约/取消、分页摘要与按需 Diff；原 P0–P14 和 Gate A 仍为 PASS。R6 从已合并 PR #6 的 `88b3541` 开始，分支为 `feat/r6-gui-shell-ipc`。P19–P25 尚未实施，Gate B 未通过；本轮 `.app` 是开发构建，不是签名/公证或正式 GUI 发布。
 > 本轮完成范围、验收数字、修复与限制见 **第30节**、[`docs/rounds/R6-acceptance.md`](docs/rounds/R6-acceptance.md)、[`docs/gui-ipc-v1.md`](docs/gui-ipc-v1.md)及 ADR-015。第25–29节保留 R1–R5 历史证据；Gate A 人工签字仍以 [`docs/gates/Gate-A.md`](docs/gates/Gate-A.md) 的既有候选为准。原生 WKWebView 按钮/菜单人工交互尚未复验：本次机器未授予辅助功能和屏幕录制权限，浏览器真实 IPC 测试不替代该项。PR、远端 CI 与合并只记录实际结果。
 
 ---
@@ -87,7 +87,7 @@ P0–P25 继续作为能力阶段编号；**Round 才是实际开发、Code Revi
 | R4 | Terminal | P9–P11 | TUI 产品体验 | 文件列表、Diff Viewer、Session 控制与日志 | **PASS；主PR #3与测试同步补充PR #4均已合并**；历史证据见§28 |
 | R5 | Terminal | P12–P14 | 工程硬化与发布 | 性能、测试、CI、Terminal 发布 | **PASS（2026-10-02）；Gate A PASS**，阶段一验收完成，可进入R6；集成状态见§29 |
 | R6 | GUI | P15–P16 | GUI 壳层与 IPC 契约 | Wails/Svelte、Core Facade、DTO/Event | **实现/本地自动化 PASS；集成 IN_REVIEW**；真实 IPC、资源/安全回归通过，原生交互与 PR 评审边界见§30 |
-| R7 | GUI | P17–P18 | GUI 主流程与 Diff | Folder Picker、变化列表、Diff Viewer | GUI 核心用户路径闭环 |
+| R7 | GUI | P17–P18 | GUI 主流程与 Diff | Folder Picker、变化列表、Diff Viewer | **实现/本地自动化 PASS；集成 IN_REVIEW** |
 | R8 | GUI | P19–P21 | GUI 功能补全与系统鲁棒性 | Settings、系统集成、可访问性 | GUI 功能完整可长期运行 |
 | R9 | GUI | P22–P24 | 测试、打包与发布 | E2E、签名/公证、最终 QA | **Gate B PASS** |
 | R10 | v1 收尾 | P25 | 冻结与长期维护交接 | 文档、兼容性矩阵、backlog | v1 可长期维护 |
@@ -336,12 +336,12 @@ P0–P25 继续作为能力阶段编号；**Round 才是实际开发、Code Revi
 - keyboard navigation / empty state
 
 **R7 验收**：
-- [ ] 无需 Terminal 可选择目录并启动监控
-- [ ] 文件修改后列表出现
-- [ ] 文本文件显示正确 diff
-- [ ] Binary/TooLarge 不进入文本编辑器渲染
-- [ ] 快速切换多个文件不显示旧 diff
-- [ ] 文件再次变化后，旧请求不能覆盖新版本
+- [x] 无需 Terminal 可选择目录并启动监控
+- [x] 文件修改后列表出现
+- [x] 文本文件显示正确 diff
+- [x] Binary/TooLarge 不进入文本编辑器渲染
+- [x] 快速切换多个文件不显示旧 diff
+- [x] 文件再次变化后，旧请求不能覆盖新版本
 
 **出口定义**：GUI 完成 `Open Folder → Monitoring → Modify → Changed List → Select → View Diff`。
 
@@ -2294,7 +2294,7 @@ P0–P14 与 Gate A 已验收通过；R6/P15–P16 已实现并通过本地自�
 4. 保持唯一 ChangeStore、Classifier、Snapshot、Diff；Removed 是“不再变化”而不是 Deleted。不要把后台全量 Diff 或 JS 文件扫描放进 render、store 或 heartbeat。变更摘要不含正文。
 5. 保留 native Close fence/reader join/fd 清理和根目录 no-follow 策略；依赖刷新不得抹去 fsnotify 补丁。单 root、单 core session，启动/停止/重载均需等待资源回收。
 6. 2 秒心跳/15 秒租约在休眠或 WebView 长时间停顿后可能主动停止监控；R8 负责后台/睡眠 UX，不得悄悄自动恢复。小时级 soak、旧版 macOS、网络盘等仍需另行测量。
-7. Gate A 签字仍对应原 Terminal 候选，不以 R6 的不同二进制替代。R7 实现原生 picker/list/只读 Monaco；R8 承接 settings/editor/reveal；R9 才完成签名、公证、安装与 Gate B。当前并非正式 GUI v1。
+7. Gate A 签字仍对应原 Terminal 候选，不以 GUI 二进制替代。R7 已实现原生 picker/list/只读 Monaco；R8 承接 settings/editor/reveal；R9 才完成签名、公证、安装与 Gate B。当前并非正式 GUI v1。
 
 项目的核心价值不是“终端上有颜色”，而是：**文件事件再混乱，最终仍然能稳定、正确、可恢复地告诉用户“相对于 baseline，到底哪些文件变了，以及变了什么”。**
 
@@ -2629,7 +2629,7 @@ GUI backend 18 项、host 3 项；12 次 Stop/reload 资源测试 **fd 6→6、g
 
 ### 30.5 下一轮与已知限制
 
-R7 实现 native Folder Picker、变化列表/过滤及只读 Monaco，复用 IPC v1，继续 selection/client/session/generation/path-version 过期防护。Pause/Resume/Reset 和查询已在 API 可用，但 R6 页面未伪装为完整 Diff 工作区。R8 处理 settings、editor/reveal、后台/睡眠、长时间 UX；R9 承接签名、公证、安装及 Gate B。租约在休眠/严重 WebView 停顿后可能结束监控，不自动重启。路径检查不是抵御恶意并发更换祖先目录的原子沙箱；原有 Ignore 热更新、强杀缓存清扫和可靠 rename 关联边界保持。
+R7 已在§31完成 native Folder Picker、变化列表/过滤及只读 Monaco，复用 IPC v1 并保留 selection/client/session/generation/path-version 过期防护。R8 处理 settings、editor/reveal、后台/睡眠、长时间 UX；R9 承接签名、公证、安装及 Gate B。租约在休眠/严重 WebView 停顿后可能结束监控，不自动重启。路径检查不是抵御恶意并发更换祖先目录的原子沙箱；原有 Ignore 热更新、强杀缓存清扫和可靠 rename 关联边界保持。
 
 ### 30.6 GitHub 集成证据
 
@@ -2638,3 +2638,38 @@ R7 实现 native Folder Picker、变化列表/过滤及只读 Monaco，复用 IP
 提交后从干净 `265e198` 再次执行 `make gui-build VERSION=0.2.0-dev`，frontend 11测试与 native build 通过，`git diff --exit-code` 确认生成绑定与 module/vendor 无漂移。Go build info 实际包含 commit=`265e198`、version=`0.2.0-dev`、buildDate=`2026-10-02T12:11:33-05:00`；本机 arm64 可执行文件 SHA-256 为 `d1cdb6983f32ecb1bda2d82f6bf05fbf6ebb416a40b4c682b658ed446cb1b3a7`，仅适用于该本机构建，不套用其他工具链的 CI 产物。UTC17:16:05 对此干净构建复测 native 启动/存活、无 TCP listener 观测、已确认 graceful Quit/exit 0，详见 `docs/rounds/R6-build.json`。只有 linker ad-hoc 签名，没有 Developer ID、密封 bundle 或公证；不等于 GUI 发布候选。
 
 最终状态仍为 **实现/自动化 PASS，集成 IN_REVIEW**：独立评审、原生 WKWebView 人工交互和合并尚未完成。R7 从评审集成后的基线进入，不把剩余原生检查或 Gate B 省略。
+
+---
+
+## 31. 本轮交付记录 — R7 / P17–P18（2026-10-02）
+
+### 31.1 状态与实现范围
+
+**P17–P18 已实现并完成本地自动化验收；Round 集成状态 IN_REVIEW。** 本轮从 R6/P15–P16 的 Facade 与 IPC v1 继续，未新建第二套 watcher、baseline 或 diff。原生 macOS folder picker 已通过 Wails runtime 接入；变化列表和 Diff Viewer 使用既有 `GetChanges` / `GetDiff` DTO。
+
+P17 完成：原生 `SelectFolder`、目录输入回退、Start/Stop、Scanning/Monitoring/Paused 状态、变化计数与 generation/version、Added/Modified/Deleted 列表、路径过滤、空态/加载态/错误态、键盘方向键/Home/End 导航。
+
+P18 完成：Monaco 只读 side-by-side Diff Editor；文本按 Go hunks/line kinds 显示，Binary、Unsupported Text、Too Large、Unavailable 使用状态说明；refresh epoch、diff epoch、path/generation/version 复核阻止 stale response 覆盖当前选择；Monaco model key 只在实际版本变化时替换，窗口停止后保留容器避免异步 view layer 访问已移除节点。
+
+### 31.2 工程改动
+
+- `gui/backend` 新增 `FolderReply` 与 `SelectFolder`，Picker callback 由 `gui/main.go` 注入，backend 不引入 Wails runtime。
+- `gui/frontend/src/workspace.ts` 新增列表/选择/diff 的 view adapter；`ipc.ts`/`bridge.ts` 扩展分页摘要、Diff DTO 和 folder picker binding。
+- `App.svelte` 与 `style.css` 完成 FolderWatch 主工作区、筛选列表、状态条、空态和窄窗口响应式布局。
+- `DiffEditor.svelte` 使用锁定版本 `monaco-editor@0.52.2`，重新生成 Wails `API`/`models` bindings；`gui/README.md` 与本节同步。
+
+### 31.3 自动化验收
+
+本机 macOS 26.6.2 arm64、Go 1.26.6、Node 26.10.0、Chrome、Wails 2.10.1：
+
+- `make gui-check`：Svelte/TypeScript 0 errors/0 warnings、Vitest 3 files/11 tests、Vite production build PASS。
+- `make lint`、`go test -count=1 ./...`、`go test -race ./gui/backend ./gui/host` PASS；Core boundary、vendor guard PASS。
+- `make gui-build VERSION=0.2.0-dev` 成功产出 `gui/build/bin/FolderWatch.app`。
+- `FW_GUI_START_SERVER=1 FW_BROWSER_CHANNEL=chrome make gui-e2e`：2/2 PASS，13.1s；真实 Wails dev WebSocket → Go binding → core，验证 Start/Stop/Start、Unicode/空格/引号路径、真实变更、结构化文本 diff、Pause/Resume/Reset、reload revoke、非法路径、responsive 680×480/380×800、无横向溢出、无 pageerror/HTTP error。
+- 首次 e2e 暴露 Monaco stop 时异步 DOM 访问错误；保留 Diff Editor 容器并延迟 Monaco 创建、增加稳定模型 key 后修复，最终 e2e 2/2 通过。
+
+机器可读与完整执行记录见 `docs/rounds/R7-acceptance.md`；Playwright 临时截图保留在系统临时目录，未写入仓库。`gui/build/bin/FolderWatch.app` 为 unsigned development build，不代表签名、公证或 Gate B 发布。
+
+### 31.4 未完成边界与下一轮
+
+辅助功能/屏幕录制权限未授予，因此原生 WKWebView 的人工按钮、菜单、folder picker 点击验收仍待有权限的评审者补充；browser e2e 不替代该项。Monaco 初始 bundle 约 2.36 MB（gzip 约 616 KB），后续可在 R8/R9 代码分割。Settings、外部编辑器/Finder、sleep/wake、长时间 GUI soak、签名/公证和 Gate B 仍留给 R8/R9。

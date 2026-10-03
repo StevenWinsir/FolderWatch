@@ -33,7 +33,13 @@ func main() {
 	facade := backend.New(context.Background(), info)
 	desktop := host.New(facade, func(ctx context.Context, event backend.Event) { wruntime.EventsEmit(ctx, event.Name, event) })
 	defer desktop.Close()
-	api := backend.NewAPI(facade)
+	api := backend.NewAPI(facade, func() (string, error) {
+		ctx := desktop.Context()
+		if ctx == nil {
+			return "", fmt.Errorf("native folder picker is unavailable while the app is closing")
+		}
+		return wruntime.OpenDirectoryDialog(ctx, wruntime.OpenDialogOptions{Title: "Choose a folder to watch"})
+	})
 	appMenu := menu.NewMenu()
 	if runtime.GOOS == "darwin" {
 		appMenu.Append(menu.AppMenu())

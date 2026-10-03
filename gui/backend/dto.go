@@ -75,6 +75,13 @@ type Reply struct {
 	Error  *Problem    `json:"error,omitempty"`
 }
 
+// FolderReply keeps the native picker behind the same small, versioned
+// envelope as the rest of the GUI API. An empty path means the user cancelled.
+type FolderReply struct {
+	Path  string   `json:"path"`
+	Error *Problem `json:"error,omitempty"`
+}
+
 type ChangesRequest struct {
 	SessionRequest
 	Offset     int    `json:"offset"`

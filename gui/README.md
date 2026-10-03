@@ -1,4 +1,4 @@
-# FolderWatch desktop shell (R6)
+# FolderWatch desktop shell (R6/R7)
 
 This is the P15–P16 Wails/Svelte adapter, not the final desktop release. The Terminal's watcher, snapshots, classifier, ChangeStore and diff engine remain the only implementation of file semantics.
 
@@ -21,9 +21,9 @@ The native entry point uses `desktop || bindings` build tags. Wails removes `des
 
 For a first binding-generation pass only, the Make target creates an ignored minimal `frontend/dist/index.html` when no frontend build exists. That bootstrap is never the application build: `gui-build` must run and pass the real production frontend build before packaging.
 
-## R6 scope
+## R6/R7 scope
 
-The window has native menus, version metadata, a root path input, Start/Stop, session status, and reconnect/error states. Start requires an absolute path or `~/path`; it respects shared user/project config. Stop can cancel the initial scan. Files are never edited by this shell.
+The window has native menus, version metadata, a native folder picker plus a root path input, Start/Stop, session status, reconnect/error states, a filtered changed-files list, and a read-only Monaco diff viewer. Start requires an absolute path or `~/path`; it respects shared user/project config. Stop can cancel the initial scan. Files are never edited by this shell.
 
 The facade supports pause/resume/reset, versioned summary pagination and on-demand structured diff for R7 consumers, even though the R6 screen deliberately does not pretend to be a completed diff workspace. Binary, unsupported text, huge files and symlinks stay metadata-only when the core says they cannot be diffed. Additional wire-budget fallback is documented in `docs/gui-ipc-v1.md`.
 
@@ -33,4 +33,4 @@ Page reload intentionally closes monitoring. Listener cleanup plus a 15-second b
 
 The committed browser smoke workflow (`npm run test:e2e`) targets an already-started Wails dev server at `http://127.0.0.1:34115`. Alternatively, `FW_GUI_START_SERVER=1 make gui-e2e` starts, waits for and tears down its own Wails dev process, refusing to reuse an occupied port. Set `FW_BROWSER_CHANNEL=chrome` to use installed Chrome, or install Playwright Chromium with `cd gui/frontend && npx playwright install chromium`. It exercises the real Go bindings/core through Wails' development WebSocket transport; it is not a browser mock or proof of production WKWebView rendering. The production `.app` must be checked separately. Browser tests use temporary fixture directories only.
 
-See `docs/rounds/R6-acceptance.md` for the actual executed commands, environments, screenshots, failures/fixes and remaining validation limits. R7 owns native folder selection, the full change list and Monaco. R8 owns settings/system integration and long-running UX. R9/Gate B owns formal packaging, signing/notarization and release acceptance. The generated local `.app` is unsigned development output and must not be represented as Gate B-approved.
+See `docs/rounds/R6-acceptance.md` and `docs/rounds/R7-acceptance.md` for the actual executed commands, environments, screenshots, failures/fixes and remaining validation limits. R8 owns settings/system integration and long-running UX. R9/Gate B owns formal packaging, signing/notarization and release acceptance. The generated local `.app` is unsigned development output and must not be represented as Gate B-approved.

@@ -17,8 +17,10 @@ export class SessionController {
   private disposed = false;
   private listeners: (() => void)[] = [];
   private timer?: ReturnType<typeof setInterval>;
+  private retry?: ReturnType<typeof setTimeout>;
   private beating = false;
   private stopping = false;
+  private subscribers = new Set<(event: CoreEvent) => void>();
 
   constructor(private readonly bridge: Bridge) {}
   private patch(update: Partial<ViewState>) { this.data = { ...this.data, ...update }; this.store.set(this.data); }
@@ -39,19 +41,34 @@ export class SessionController {
   private message(error: unknown) { return error instanceof Error ? error.message : String(error); }
   private unlisten() {
     if (this.timer) clearInterval(this.timer);
+    if (this.retry) clearTimeout(this.retry);
     this.timer = undefined;
+    this.retry = undefined;
     this.listeners.splice(0).forEach(remove => remove());
+  }
+  private scheduleRetry() {
+    if (!this.disposed && !this.retry) this.retry = setTimeout(() => { this.retry = undefined; void this.connect(); }, 180);
   }
   private receive(event: CoreEvent) {
     if (this.disposed || !this.client || event?.protocol !== 1 || event.clientId !== this.client) return;
     if (!eventNames.includes(event.name as typeof eventNames[number]) || !isSession(event.status)) return;
     this.apply(event.status);
+    this.subscribers.forEach(subscriber => subscriber(event));
   }
+
+  subscribe(listener: (event: CoreEvent) => void) {
+    this.subscribers.add(listener);
+    return () => this.subscribers.delete(listener);
+  }
+
+  clientId() { return this.client; }
+  setError(error: string) { if (!this.disposed) this.patch({ error }); }
 
   async connect() {
     if (this.disposed || this.data.connecting || this.data.connected) return;
     if (!this.bridge.available()) {
       this.patch({ error: 'Desktop bridge unavailable. Launch FolderWatch with make gui-dev or open the built .app.' });
+      this.scheduleRetry();
       return;
     }
     const epoch = ++this.epoch;
@@ -78,7 +95,10 @@ export class SessionController {
       const status = await this.bridge.status(this.client);
       if (this.current(epoch)) this.apply(this.check(status), true);
     } catch (error) {
-      if (this.current(epoch)) this.disconnect(this.message(error));
+      if (this.current(epoch)) {
+        this.disconnect(this.message(error));
+        this.scheduleRetry();
+      }
     } finally {
       if (this.current(epoch)) this.patch({ connecting: false });
     }
@@ -138,6 +158,7 @@ export class SessionController {
     this.disposed = true;
     this.epoch++;
     this.unlisten();
+    this.subscribers.clear();
     const old = this.client;
     this.client = '';
     if (old) void this.bridge.detach(old).catch(() => {});

@@ -366,15 +366,17 @@ P0–P25 继续作为能力阶段编号；**Round 才是实际开发、Code Revi
 - 权限/目录移动等错误态
 
 **R8 验收**：
-- [ ] GUI/CLI 使用同一默认值与配置模型
-- [ ] Reset Baseline 有清晰提示
-- [ ] 空格/引号/Unicode path 可安全传递
-- [ ] 外部编辑器不使用 `sh -c` 字符串拼接
-- [ ] sleep/wake 后状态恢复一致
-- [ ] 长时间运行、反复切目录无明显资源泄漏
-- [ ] Light/Dark/System 正常
-- [ ] 颜色不是唯一状态信息
-- [ ] component destroy 时注销 event listener
+- [x] GUI/CLI 使用同一默认值与配置模型
+- [x] Reset Baseline 有清晰提示
+- [x] 空格/引号/Unicode path 可安全传递
+- [x] 外部编辑器不使用 `sh -c` 字符串拼接
+- [x] sleep/wake 后状态恢复一致
+- [x] 长时间运行、反复切目录无明显资源泄漏
+- [x] Light/Dark/System 正常
+- [x] 颜色不是唯一状态信息
+- [x] component destroy 时注销 event listener
+
+以上项目已由本轮 Go/GUI 自动化测试、真实 Wails IPC E2E、重复启停/重载回归和代码级生命周期检查覆盖；小时级 GUI soak、原生 WKWebView 人工辅助功能、签名/公证与 Gate B 仍按 §32.4 记录为后续工作。
 
 **出口定义**：GUI 功能层面冻结；R9 不再新增主功能，只处理测试、发布和 release blocker。
 

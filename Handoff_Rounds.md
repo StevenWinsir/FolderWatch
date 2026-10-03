@@ -2673,3 +2673,7 @@ P18 完成：Monaco 只读 side-by-side Diff Editor；文本按 Go hunks/line ki
 ### 31.4 未完成边界与下一轮
 
 辅助功能/屏幕录制权限未授予，因此原生 WKWebView 的人工按钮、菜单、folder picker 点击验收仍待有权限的评审者补充；browser e2e 不替代该项。Monaco 初始 bundle 约 2.36 MB（gzip 约 616 KB），后续可在 R8/R9 代码分割。Settings、外部编辑器/Finder、sleep/wake、长时间 GUI soak、签名/公证和 Gate B 仍留给 R8/R9。
+
+### 31.5 GitHub integration
+
+R7 实现提交 **`e9ad3d7`** 已推送至分支 `codex/r7-gui-main-diff`，GitHub **[PR #8](https://github.com/StevenWinsir/FolderWatch/pull/8)**（base=`main`，OPEN）。创建时远端 Actions 已启动；最近检查时所有 Go/cross-build/fuzz/GUI build job 仍为 `pending`，`gui-frontend (22)` 已 `pass`。远端 CI 结果只在对应 Actions run 完成后更新，不用本地通过推断远端全绿。

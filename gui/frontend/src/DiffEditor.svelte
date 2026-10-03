@@ -2,6 +2,7 @@
   import { afterUpdate, onDestroy, onMount } from 'svelte';
   import * as monaco from 'monaco-editor/esm/vs/editor/editor.api.js';
   import type { DiffResult } from './ipc';
+  import { displayLines, displayText, type DiffSide, type DisplayLine } from './diff-lines';
 
   export let diff: DiffResult | undefined;
   export let loading = false;
@@ -13,10 +14,12 @@
   let mounted = false;
   let modelKey = '';
 
-  function sideText(side: 'original' | 'modified', currentDiff = diff) {
-    if (!currentDiff) return '';
-    const kinds = side === 'original' ? new Set(['context', 'removed']) : new Set(['context', 'added']);
-    return currentDiff.hunks.flatMap(hunk => hunk.lines.filter(line => kinds.has(line.kind)).map(line => line.text)).join('\n');
+  function sideLines(side: DiffSide, currentDiff = diff): DisplayLine[] {
+    return currentDiff ? displayLines(side, currentDiff) : [];
+  }
+
+  function lineNumberRenderer(lines: DisplayLine[]) {
+    return (lineNumber: number) => String(lines[lineNumber - 1]?.line ?? lineNumber);
   }
 
   function disposeModels() {
@@ -40,9 +43,13 @@
     if (nextKey === modelKey) return;
     disposeModels();
     modelKey = nextKey;
-    original = monaco.editor.createModel(sideText('original', currentDiff), 'plaintext');
-    modified = monaco.editor.createModel(sideText('modified', currentDiff), 'plaintext');
+    const originalLines = sideLines('original', currentDiff);
+    const modifiedLines = sideLines('modified', currentDiff);
+    original = monaco.editor.createModel(displayText(originalLines), 'plaintext');
+    modified = monaco.editor.createModel(displayText(modifiedLines), 'plaintext');
     editor.setModel({ original, modified });
+    editor.getOriginalEditor().updateOptions({ lineNumbers: lineNumberRenderer(originalLines) });
+    editor.getModifiedEditor().updateOptions({ lineNumbers: lineNumberRenderer(modifiedLines) });
   }
 
   function ensureEditor() {

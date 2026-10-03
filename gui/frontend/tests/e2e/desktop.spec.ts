@@ -53,7 +53,8 @@ test('real Wails IPC: visible Start/Stop, core changes/diff, pause/reset and res
   const root = path.join(temp, "项目 with spaces 'quote'");
   await mkdir(root);
   const key = "notes 世界 'quoted'.txt";
-  await writeFile(path.join(root, key), 'PRIVATE_BEFORE_SENTINEL\n');
+  const beforeText = `${Array.from({ length: 9 }, (_, index) => `line-${index + 1}`).join('\n')}\nPRIVATE_BEFORE_SENTINEL\nline-11\nline-12\n`;
+  await writeFile(path.join(root, key), beforeText);
   const errors = checkConsole(page);
   try {
     await page.goto('/');
@@ -71,7 +72,7 @@ test('real Wails IPC: visible Start/Stop, core changes/diff, pause/reset and res
     await page.getByRole('button', { name: 'Start monitoring' }).click();
     await expect(page.getByRole('status')).toHaveText('Monitoring');
     const req = await request(page);
-    await writeFile(path.join(root, key), 'PRIVATE_AFTER_SENTINEL\n');
+    await writeFile(path.join(root, key), beforeText.replace('PRIVATE_BEFORE_SENTINEL', 'PRIVATE_AFTER_SENTINEL'));
     await expect.poll(async () => (await rpc<backend.ChangesReply>(page, 'GetChanges', { ...req, offset: 0, limit: 10 })).total).toBe(1);
     const changes = await rpc<backend.ChangesReply>(page, 'GetChanges', { ...req, offset: 0, limit: 10 });
     expect(changes.error).toBeUndefined();
@@ -88,6 +89,8 @@ test('real Wails IPC: visible Start/Stop, core changes/diff, pause/reset and res
     await expect.poll(() => page.locator('.monaco-host .view-lines').count()).toBeGreaterThan(0);
     await expect(page.locator('.monaco-host')).toContainText('PRIVATE_BEFORE_SENTINEL');
     await expect(page.locator('.monaco-host')).toContainText('PRIVATE_AFTER_SENTINEL');
+    const modifiedLineNumbers = await page.locator('.modified-in-monaco-diff-editor .line-numbers').allTextContents();
+    expect(modifiedLineNumbers.filter(Boolean)).toEqual(expect.arrayContaining(['7', '8', '9', '10', '11', '12']));
     await page.screenshot({ path: info.outputPath('diff-visible.png'), fullPage: true });
     // Re-selecting recreates the loading state and must keep a live editor host.
     await page.locator('.file-row').click();

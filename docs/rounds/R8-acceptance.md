@@ -38,6 +38,18 @@ Environment: macOS arm64, Go 1.26.6, Node 26.10.0, Wails 2.10.1, Chrome.
 
 The real Wails tests cover the existing Start/Stop/change/diff/Pause/Resume/Reset/reload paths and remained green after adding Settings and lifecycle handling. One first E2E run exposed a `null` JSON ignore list on settings hydration; `guiSettings` now guarantees an empty array and the complete E2E suite was rerun to 2/2 PASS.
 
+### Follow-up regression fix — 2026-10-02
+
+The Monaco diff view previously rebuilt each returned hunk as a short standalone model, so its left and right line labels restarted at 1 even when the hunk began later in the file. The frontend now maps each displayed model line to the backend `oldLine`/`newLine` value, preserving source line numbers while still omitting the opposite-side lines. `gui/frontend/tests/diff-lines.test.ts` covers the mapping and the real Wails E2E checks labels 7–12 for a change at line 10.
+
+| Command | Result |
+|---|---|
+| `npm test -- --run` | PASS: 4 files, 12 tests |
+| `npm run check` | PASS: 0 diagnostics |
+| `npm run build` | PASS |
+| `go test ./internal/diff ./gui/backend ./internal/app ./internal/changes` | PASS |
+| `FW_GUI_START_SERVER=1 FW_BROWSER_CHANNEL=chrome make gui-e2e` | PASS: 2/2 real Wails IPC tests |
+
 ## Known limits
 
 - Native WKWebView button/menu/accessibility interaction still needs a reviewer with macOS Accessibility and Screen Recording permission. Playwright Wails IPC is not a substitute for that manual check.
@@ -49,4 +61,3 @@ The real Wails tests cover the existing Start/Stop/change/diff/Pause/Resume/Rese
 ## Handoff
 
 R9 may focus on E2E expansion, packaging, signing/notarization and Gate B. It should preserve the single Core Facade and the direct-command path validation introduced here. Do not move editor execution into the frontend or reimplement watcher/config semantics there.
-

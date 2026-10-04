@@ -15,14 +15,41 @@ type failWatchWriter struct{}
 
 func (failWatchWriter) Write([]byte) (int, error) { return 0, errors.New("intentional output failure") }
 
+type cancelAfterReadyWriter struct {
+	out    *bytes.Buffer
+	cancel context.CancelFunc
+	ready  bool
+}
+
+func (w *cancelAfterReadyWriter) Write(data []byte) (int, error) {
+	n, err := w.out.Write(data)
+	if err != nil || w.ready {
+		return n, err
+	}
+	if end := bytes.IndexByte(w.out.Bytes(), '\n'); end >= 0 {
+		var event struct{ Type string }
+		if json.Unmarshal(w.out.Bytes()[:end], &event) == nil && event.Type == "ready" {
+			// Cancel only after the complete ready record has actually been
+			// written. There is no assumption about startup or disk speed.
+			w.ready = true
+			w.cancel()
+		}
+	}
+	return n, err
+}
+
 func TestWatchCLIStreamsAndCancels(t *testing.T) {
 	root := t.TempDir()
 	var out, errOut bytes.Buffer
-	ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	code := Run(ctx, []string{"--watch", "--json", root}, &out, &errOut, BuildInfo{}, config.LoadOptions{SkipUserConfig: true})
+	writer := &cancelAfterReadyWriter{out: &out, cancel: cancel}
+	code := Run(ctx, []string{"--watch", "--json", root}, writer, &errOut, BuildInfo{}, config.LoadOptions{SkipUserConfig: true})
 	if code != 130 {
 		t.Fatalf("exit=%d stderr=%s", code, errOut.String())
+	}
+	if !writer.ready {
+		t.Fatalf("watchdog expired before ready; stdout=%s stderr=%s", out.String(), errOut.String())
 	}
 	var event struct {
 		Type       string
@@ -41,5 +68,16 @@ func TestWatchCLIStreamsAndCancels(t *testing.T) {
 		if code := Run(context.Background(), args, &out, &errOut, BuildInfo{}, config.LoadOptions{SkipUserConfig: true}); code != 2 {
 			t.Fatalf("%v exit=%d", args, code)
 		}
+	}
+}
+
+func TestWatchCLICancelledStartupDoesNotInventReady(t *testing.T) {
+	root := t.TempDir()
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	var out, errOut bytes.Buffer
+	code := Run(ctx, []string{"--watch", "--json", root}, &out, &errOut, BuildInfo{}, config.LoadOptions{SkipUserConfig: true})
+	if code != 130 || out.Len() != 0 {
+		t.Fatalf("cancelled startup: exit=%d stdout=%s stderr=%s", code, out.String(), errOut.String())
 	}
 }

@@ -61,6 +61,14 @@ The review's two fallback-unlink cases and 501-row GUI probe failed before the f
 
 The workflow adds macOS native/no-CGO large-folder + low-fd coverage and real IPC E2E to the GUI build, alongside the existing Go/Node matrices, fuzz, cross-build and release checks. PR, exact source commit and observed CI are recorded in the delivery section after creation; workflow configuration alone is not remote success. No auto-merge is requested.
 
+### First remote run and test timing correction
+
+[PR #14](https://github.com/StevenWinsir/FolderWatch/pull/14) was opened at implementation commit `9d224e1`. Its first push run [37220181452](https://github.com/StevenWinsir/FolderWatch/actions/runs/37220181452) failed the macOS/Go1.23.12 randomized race job because `TestAllChangePagesAndServerSearchAreAccessible` reused a generic five-second small-fixture convergence helper; the log reported that timeout, not a data-race detector report. The same test passed the independent PR run's Go1.23 matrix, and a local Go1.23.12 single-core race rerun passed ten times (whole test 2.24–3.34s). These passing observations do not erase the first CI failure.
+
+The follow-up changes only that test's wait: retain real live-watcher delivery with no forced reconciliation, use a bounded 30-second functional coverage deadline, renew the frontend lease, poll at 25ms rather than 5ms, reject unexpected API errors immediately, and report last count/status on failure. Every 1001-row ordering, all-page, final-row, full-index-search and cleanup assertion remains. This is not a production timeout relaxation or removal of performance benchmarks. The exact follow-up validation and final PR-head CI are recorded in the PR delivery evidence.
+
+Before pushing this test-only correction: Go1.23.12 `-race -cpu=1 -count=20` passed the exact live pagination case (70.686s total; observed post-write convergence 1.847–2.958s); Go1.26.6 `go test -count=1 ./...` passed again, and GUI backend `-race -shuffle=on -count=10` passed (101.863s). Formatter output was empty. Production Go/C/TypeScript code and generated bindings were unchanged by this correction.
+
 ## Explicit boundaries
 
 No fixed inventory maximum does not mean infinite storage or constant total RSS/time. Metadata disk/mmap/OS cache, optional ignore caches, legacy diagnostic/Terminal/NDJSON full-list consumers, path length, available disk and filesystem I/O remain scale constraints. Initial regular-file hashing still reads the file. Unknown startup bytes remain unknown until a complete explicit Reset. Polling reconciles final state, not every transient event between scans.

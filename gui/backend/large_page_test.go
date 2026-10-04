@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"path/filepath"
 	"testing"
+	"time"
 )
 
 func TestAllChangePagesAndServerSearchAreAccessible(t *testing.T) {
@@ -17,10 +18,30 @@ func TestAllChangePagesAndServerSearchAreAccessible(t *testing.T) {
 	for i := 0; i < 1001; i++ {
 		mustWrite(t, filepath.Join(root, fmt.Sprintf("f-%04d.txt", i)), "new file")
 	}
-	eventually(t, func() bool {
+	// This is a 1001-record functional coverage assertion, not the small-
+	// fixture helper's five-second latency budget. Go 1.23 race instrumentation
+	// on a shared CI runner can exceed that budget while still converging.
+	// Retain live watcher delivery (no forced rescan), all row assertions, and
+	// a bounded deadline with actionable diagnostics instead of a silent retry.
+	waitStarted := time.Now()
+	deadline := waitStarted.Add(30 * time.Second)
+	for {
+		if heartbeat := api.Heartbeat(client); heartbeat.Error != nil {
+			t.Fatalf("frontend lease lost while waiting for coverage: %+v", heartbeat.Error)
+		}
 		page := api.GetChanges(ChangesRequest{SessionRequest: req, Limit: 1})
-		return page.Error == nil && page.Total == 1001
-	})
+		if page.Error != nil && page.Error.Code != "STALE_VERSION" && page.Error.Code != "BUSY" {
+			t.Fatalf("coverage query failed: %+v", page.Error)
+		}
+		if page.Error == nil && page.Total == 1001 {
+			t.Logf("1001 live changes converged in %s", time.Since(waitStarted))
+			break
+		}
+		if time.Now().After(deadline) {
+			t.Fatalf("incomplete live coverage after %s: total=%d error=%+v status=%+v", time.Since(waitStarted), page.Total, page.Error, api.GetSessionStatus(client))
+		}
+		time.Sleep(25 * time.Millisecond)
+	}
 	first := api.GetChanges(ChangesRequest{SessionRequest: req, Limit: 500})
 	if first.Error != nil || first.Total != 1001 || first.Matched != 1001 || first.NextOffset != 500 || len(first.Changes) != 500 {
 		t.Fatal(first)

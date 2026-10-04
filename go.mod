@@ -13,6 +13,7 @@ require (
 	github.com/rivo/uniseg v0.4.7
 	github.com/spf13/pflag v1.0.6
 	github.com/wailsapp/wails/v2 v2.10.1
+	go.etcd.io/bbolt v1.3.11
 )
 
 require (

@@ -1,0 +1,59 @@
+[
+  {
+    "name": "format",
+    "command": [
+      "make",
+      "fmt"
+    ],
+    "exit_code": 0,
+    "seconds": 0.172
+  },
+  {
+    "name": "smoke",
+    "command": [
+      "make",
+      "smoke"
+    ],
+    "exit_code": 0,
+    "seconds": 15.399
+  },
+  {
+    "name": "scripts",
+    "command": [
+      "make",
+      "scripts-test"
+    ],
+    "exit_code": 0,
+    "seconds": 0.156
+  },
+  {
+    "name": "fuzz",
+    "command": [
+      "make",
+      "fuzz"
+    ],
+    "exit_code": 0,
+    "seconds": 68.965
+  },
+  {
+    "name": "modules",
+    "command": [
+      "go",
+      "mod",
+      "verify"
+    ],
+    "exit_code": 0,
+    "seconds": 0.896
+  },
+  {
+    "name": "tidy",
+    "command": [
+      "go",
+      "mod",
+      "tidy",
+      "-diff"
+    ],
+    "exit_code": 0,
+    "seconds": 0.183
+  }
+]

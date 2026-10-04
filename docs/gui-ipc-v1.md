@@ -22,18 +22,24 @@ Call `AttachFrontend()` after registering the four event listeners. It returns `
 | `StartSession` | client ID, explicit root, optional shared config overrides | Monitoring status after baseline capture; Scanning is notified while pending |
 | `StopSession` | client ID + session ID | Idle after cleanup; also works during Scanning and is idempotent for the last stopped session |
 | `PauseSession` / `ResumeSession` / `ResetBaseline` | client ID + session ID | Core-serialized result and current status |
-| `GetChanges` | session request, offset, limit, optional generation/version | Summary page, total, nextOffset, core generation/version |
+| `GetChanges` | session request, offset, limit, optional generation/version/filter | Summary page, global total, filtered matched, nextOffset, core generation/version |
 | `GetDiff` | session request, canonical relative path, generation, selected path version | Core-computed bounded hunks or metadata-only classification |
 
-Settings/edit/reveal APIs are not placeholders in v1: they are deferred to P19–P20.
+P19–P20 APIs are implemented: GetSettings, OpenInEditor, RevealInFinder and CopyPath use the shared configuration, active session path confinement and native argument-array actions.
 
 Start uses the same defaults < user config < project config < explicit overlay layering as the Terminal. Optional overrides are `debounce`, `ignore`, `respectGitIgnore`, and `maxDiffBytes`; omission inherits rather than inventing GUI defaults. A nil ignore list inherits; an explicit empty list clears that overlay. Initial root must be absolute or begin with `~/`, at most 32768 bytes, without NUL. There are at most 1024 explicit ignore patterns of 4096 bytes each.
 
 Change pages default to 200 and have a hard limit of 500. `nextOffset = -1` ends the list. Every continuation page requires the first page's generation/version; `STALE_VERSION` means restart at offset zero. Changes contain relative paths, kinds, decimal byte sizes, classifications, timestamps and per-path versions. They contain no file text, private cache path or snapshot reference.
 
+The optional `filter` is case-insensitive path substring search over the whole index (maximum 4096 UTF-8 bytes, no NUL). `total` counts all rows; `matched` counts the filtered set, and offsets apply to that set. Keep the filter unchanged across a continuation. The GUI retains one 500-row page and exposes Previous/Next; it must not fetch page zero and silently hide the rest. Only one list query is admitted at a time; duplicate work returns BUSY. Status/selection checks use index heads/lookups rather than materializing the full list.
+
+A summary kind `unknown` marks a path/scope whose startup baseline was unavailable. It does not assert Added/Deleted/Modified. Render it as `?` / Baseline unknown; its Diff is Unavailable, never guessed before text. A complete explicit Reset replaces this unknown baseline; failed resets preserve it.
+
 Diff requests require the **selected path's version**, not the list's global version. Responses carry the session ID, generation and path version again. The frontend must discard a response after selection/session/version changes. The facade also rechecks session/generation/path version before returning. Core byte/line/work budgets still apply. Only one diff request is admitted at a time; excess requests return `BUSY`. The facade adds a 15-second context and a conservative 16 MiB JSON wire bound, potentially falling back earlier than the configured core byte limit for huge/escaped lines. Fallback carries `status: "too-large"`, a reason and empty hunks.
 
 ## Events and ordering
+
+Optional status fields `operation` and decimal-string `processed` report scan/reset/reconciliation progress. They contain no file text and are emitted at most once per 250ms plus operation boundaries from existing work owners. Progress-only status must not trigger an unnecessary full-list refresh. Reset/Resume are single-flight, cancellable through Stop/reload/lease; no fixed 30-second tree-size deadline is imposed. Diff retains its separate 15-second work limit.
 
 `session.status`, `changes.updated`, `session.warning`, `session.error` share this envelope:
 

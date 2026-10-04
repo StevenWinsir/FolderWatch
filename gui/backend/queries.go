@@ -2,6 +2,7 @@ package backend
 
 import (
 	"context"
+	"errors"
 	"path"
 	"path/filepath"
 	"strconv"
@@ -14,7 +15,7 @@ import (
 
 func (a *API) GetChanges(req ChangesRequest) ChangesReply {
 	out := ChangesReply{Changes: []ChangeSummary{}, NextOffset: -1}
-	_, s, err := a.session(req.SessionRequest)
+	r, s, err := a.session(req.SessionRequest)
 	if err != nil {
 		out.Error = problem(err)
 		return out
@@ -22,29 +23,41 @@ func (a *API) GetChanges(req ChangesRequest) ChangesReply {
 	if req.Limit == 0 {
 		req.Limit = 200
 	}
-	if req.Limit < 1 || req.Limit > 500 || req.Offset < 0 || (req.Offset > 0 && (req.Generation == "" || req.Version == "")) {
-		out.Error = problem(fault("INVALID_PAGE", "Use limit 1..500, a nonnegative offset, and generation/version for continuation pages."))
+	if req.Limit < 1 || req.Limit > 500 || req.Offset < 0 || len(req.Filter) > 4096 || strings.ContainsRune(req.Filter, 0) || (req.Offset > 0 && (req.Generation == "" || req.Version == "")) {
+		out.Error = problem(fault("INVALID_PAGE", "Use limit 1..500, a nonnegative offset, a filter up to 4096 bytes, and generation/version for continuation pages."))
 		return out
 	}
-	view := s.ChangeState()
-	if (req.Generation != "" && req.Generation != decimal(view.Generation)) || (req.Version != "" && req.Version != decimal(view.Version)) {
-		out.Error = problem(fault("STALE_VERSION", "The change list changed. Reload from its first page."))
+	if (req.Generation != "" && !validCounter(req.Generation)) || (req.Version != "" && !validCounter(req.Version)) {
+		out.Error = problem(fault("INVALID_PAGE", "Use decimal generation/version counters."))
 		return out
 	}
-	if req.Offset > len(view.Changes) {
-		out.Error = problem(fault("INVALID_PAGE", "Offset is beyond the change list."))
+	generation, version := s.ChangeHead()
+	if req.Generation != "" && req.Generation != decimal(generation) || req.Version != "" && req.Version != decimal(version) {
+		out.Error = problem(fault("STALE_VERSION", "The list changed. Reload from its first page."))
 		return out
 	}
-	end := req.Offset + req.Limit
-	if end > len(view.Changes) {
-		end = len(view.Changes)
+	// One bounded query per frontend, instead of accumulating RPC goroutines
+	// and full-list copies when invalidations arrive faster than rendering.
+	select {
+	case a.f.listSlot <- struct{}{}:
+		defer func() { <-a.f.listSlot }()
+	default:
+		out.Error = problem(fault("BUSY", "A change-list request is in progress."))
+		return out
+	}
+	ctx, cancel := context.WithCancel(r.ctx)
+	defer cancel()
+	view, err := s.ChangePage(ctx, req.Offset, req.Limit, req.Filter, generation, version)
+	if err != nil {
+		if errors.Is(err, changes.ErrPage) {
+			err = fault("INVALID_PAGE", "Offset is beyond the filtered change list.")
+		}
+		out.Error = problem(err)
+		return out
 	}
 	out.SessionID, out.Generation, out.Version = req.SessionID, decimal(view.Generation), decimal(view.Version)
-	out.Total = len(view.Changes)
-	if end < out.Total {
-		out.NextOffset = end
-	}
-	for _, summary := range view.Changes[req.Offset:end] {
+	out.Total, out.Matched, out.NextOffset = view.Total, view.Matched, view.NextOffset
+	for _, summary := range view.Changes {
 		out.Changes = append(out.Changes, ChangeSummary{Path: summary.Path, OldPath: summary.OldPath, Kind: string(summary.Kind), Version: decimal(summary.Version), Before: fileInfo(summary.Before), After: fileInfo(summary.After), FirstSeen: summary.FirstSeen.UTC().Format(time.RFC3339Nano), LastSeen: summary.LastSeen.UTC().Format(time.RFC3339Nano)})
 	}
 	a.f.mu.Lock()
@@ -118,19 +131,12 @@ func (a *API) GetDiff(req DiffRequest) DiffReply {
 	if _, err := a.f.sessionLocked(req.SessionRequest); err != nil {
 		return DiffReply{Error: problem(err)}
 	}
-	// Fence reset/path changes that landed while the wire DTO was being built.
-	view := s.ChangeState()
-	if decimal(view.Generation) != req.Generation {
-		return DiffReply{Error: problem(changes.ErrStale)}
+	// Fence reset/path changes without materializing the entire change list.
+	current, generation, exists, err := s.ChangeLookup(req.Path)
+	if err != nil {
+		return DiffReply{Error: problem(err)}
 	}
-	current := false
-	for _, summary := range view.Changes {
-		if summary.Path == req.Path && decimal(summary.Version) == req.Version {
-			current = true
-			break
-		}
-	}
-	if !current {
+	if !exists || decimal(generation) != req.Generation || decimal(current.Version) != req.Version {
 		return DiffReply{Error: problem(changes.ErrStale)}
 	}
 	return DiffReply{Diff: out}

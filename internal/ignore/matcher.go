@@ -2,6 +2,7 @@
 package ignore
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -128,6 +129,36 @@ func (m *Matcher) ForgetDirectory(input string) {
 			delete(m.git, base)
 		}
 	}
+}
+
+// PruneDirectories retires only vanished/replaced scopes after recursive
+// backend notifications or overflow. It does not reload edited rule files in
+// an existing directory. FSEvents needs no per-directory watch registry to do
+// this housekeeping, and the cache cannot accumulate deleted tree identities.
+func (m *Matcher) PruneDirectories(ctx context.Context) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+	for base, set := range m.git {
+		if err := ctx.Err(); err != nil {
+			return err
+		}
+		if base == "." {
+			continue
+		}
+		if err := pathutil.CheckParents(m.root, base+"/_"); err != nil {
+			if os.IsPermission(err) {
+				continue
+			} // unreadable is not proof of replacement
+			// Match will validate this namespace again before loading any rules.
+			delete(m.git, base)
+			continue
+		}
+		info, err := os.Lstat(filepath.Join(m.root, filepath.FromSlash(base)))
+		if os.IsNotExist(err) || err == nil && (!info.IsDir() || !os.SameFile(info, set.identity)) {
+			delete(m.git, base)
+		}
+	}
+	return ctx.Err()
 }
 
 // Match evaluates ancestors first. An excluded parent cannot be resurrected by

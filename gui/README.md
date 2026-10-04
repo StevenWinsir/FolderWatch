@@ -25,7 +25,7 @@ For a first binding-generation pass only, the Make target creates an ignored min
 
 The window has native menus, version metadata, a native folder picker plus a root path input, Start/Stop/Pause/Resume/Reset, shared Settings, session status, reconnect/error states, a filtered changed-files list, a read-only Monaco diff viewer, external editor/Finder/copy actions and System/Light/Dark themes. Start requires an absolute path or `~/path`; it respects shared user/project config. Stop can cancel the initial scan. Files are never edited by this shell.
 
-The facade supports pause/resume/reset, versioned summary pagination and on-demand structured diff for R7 consumers, even though the R6 screen deliberately does not pretend to be a completed diff workspace. Binary, unsupported text, huge files and symlinks stay metadata-only when the core says they cannot be diffed. Additional wire-budget fallback is documented in `docs/gui-ipc-v1.md`.
+The workspace uses bounded versioned pages (500 rows), Previous/Next controls and server-side whole-index search. List/diff RPCs are single-flight with stale-response fences; progress-only events do not reload an unchanged list. Unavailable startup scopes show `?` / Baseline unknown instead of inventing Added/Deleted or before text. Reset remains complete and atomic. See ADR-016, `docs/gui-ipc-v1.md` and `docs/rounds/large-folder-acceptance.md`.
 
 Page reload intentionally closes monitoring. Listener cleanup plus a 15-second backend lease handle lost documents. Visibility wake renews the lease when possible and refreshes authoritative state; if sleep already expired the lease, reconnecting reports Idle and does not silently restart monitoring.
 

@@ -21,14 +21,16 @@ def main():
     parser.add_argument("--output", type=Path, default=ROOT / "artifacts/performance-v1")
     parser.add_argument("--idle-seconds", type=int, default=10)
     parser.add_argument("--samples", type=int, default=20)
+    parser.add_argument("--no-cgo", action="store_true", help="Explicitly measure the no-CGO native/polling fallback build")
     args = parser.parse_args()
     if not 1 <= args.idle_seconds <= 600 or not 1 <= args.samples <= 1000:
         parser.error("idle-seconds must be 1..600 and samples 1..1000")
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=False)
-    env = dict(os.environ, GOFLAGS="-mod=vendor", GOWORK="off", CGO_ENABLED="0")
+    cgo = "0" if args.no_cgo else ("1" if sys.platform == "darwin" else os.environ.get("CGO_ENABLED", "1"))
+    env = dict(os.environ, GOFLAGS="-mod=vendor", GOWORK="off", CGO_ENABLED=cgo)
     subprocess.run(["go", "build", "-trimpath", "-o", "bin/fwbench", "./cmd/fwbench"], cwd=ROOT, env=env, check=True)
-    metadata = {"platform": platform.platform(), "go": command(["go", "version"]),
+    metadata = {"platform": platform.platform(), "go": command(["go", "version"]), "cgo_enabled": cgo == "1",
                 "commit": command(["git", "rev-parse", "HEAD"]),
                 "dirty": bool(command(["git", "status", "--porcelain"])),
                 "filesystem": "not observed", "notes": "Synthetic fixtures; warm local filesystem; no race instrumentation. RSS is process high-water mark, including fixture generation. Latency ends at authoritative Core state, not rendered pixels."}

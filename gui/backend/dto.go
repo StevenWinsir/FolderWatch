@@ -36,6 +36,8 @@ type SessionInfo struct {
 	Generation string   `json:"generation"`
 	Version    string   `json:"version"`
 	Warning    string   `json:"warning"`
+	Operation  string   `json:"operation,omitempty"`
+	Processed  string   `json:"processed,omitempty"`
 	Problem    *Problem `json:"problem,omitempty"`
 }
 
@@ -125,6 +127,7 @@ type ChangesRequest struct {
 	Limit      int    `json:"limit"`
 	Generation string `json:"generation"`
 	Version    string `json:"version"`
+	Filter     string `json:"filter,omitempty"`
 }
 
 type FileInfo struct {
@@ -151,6 +154,7 @@ type ChangesReply struct {
 	Version    string          `json:"version"`
 	Changes    []ChangeSummary `json:"changes"`
 	Total      int             `json:"total"`
+	Matched    int             `json:"matched"`
 	NextOffset int             `json:"nextOffset"` // -1 is the final page
 	Error      *Problem        `json:"error,omitempty"`
 }

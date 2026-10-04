@@ -1,0 +1,18 @@
+{
+  "command": [
+    "artifacts/large-folder-fix-20261004/soak/fwbench",
+    "--files",
+    "1000",
+    "--burst",
+    "100",
+    "--samples",
+    "100",
+    "--idle",
+    "120s",
+    "--cycles",
+    "100"
+  ],
+  "started_unix": 1791133861.901398,
+  "ended_unix": 1791134026.45004,
+  "exit_code": 0
+}

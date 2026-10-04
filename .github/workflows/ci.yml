@@ -85,15 +85,55 @@ jobs:
       - run: make gui-build VERSION=0.2.0-dev
       - name: Bindings and reviewed vendor tree remain reproducible
         run: git diff --exit-code -- go.mod go.sum vendor/ gui/frontend/wailsjs/
+      - name: Install pinned real IPC test browser
+        run: npx playwright install chromium
+        working-directory: gui/frontend
+      - name: Real Wails IPC, large folders and complete pagination
+        env:
+          FW_GUI_START_SERVER: '1'
+          FW_GUI_QA_DIR: ${{ github.workspace }}/artifacts/gui/e2e
+        run: make gui-e2e
       - name: Package unsigned development artifact (not a GUI release)
         run: |
           mkdir -p artifacts/gui
           tar -czf artifacts/gui/FolderWatch-unsigned-dev.tar.gz -C gui/build/bin FolderWatch.app
       - uses: actions/upload-artifact@v4
+        if: always()
         with:
           name: gui-macos-unsigned-dev-${{ github.sha }}
           path: artifacts/gui/
           retention-days: 7
+  large-folder:
+    runs-on: macos-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.26.x'
+          cache: true
+      - name: Recursive native and no-CGO fallback scalability
+        shell: bash
+        run: |
+          set -o pipefail
+          mkdir -p artifacts/large-folder
+          FOLDERWATCH_LARGE_TESTS=1 CGO_ENABLED=1 go test ./internal/app -run '^TestLargeTreePastBothFormerLimits$' -count=1 -v -timeout=10m | tee artifacts/large-folder/native.log
+          FOLDERWATCH_LARGE_TESTS=1 CGO_ENABLED=0 go test ./internal/app -run '^TestLargeTreePastBothFormerLimits$' -count=1 -v -timeout=10m | tee artifacts/large-folder/nocgo.log
+      - name: Hard 64-descriptor native and fallback regressions
+        shell: bash
+        run: |
+          set -o pipefail
+          CGO_ENABLED=1 go build -o artifacts/large-folder/native ./cmd/folderwatch
+          CGO_ENABLED=0 go build -o artifacts/large-folder/nocgo ./cmd/folderwatch
+          python3 scripts/large_tree_smoke.py artifacts/large-folder/native artifacts/large-folder/nocgo | tee artifacts/large-folder/low-fd.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: large-folder-${{ github.sha }}
+          path: |
+            artifacts/large-folder/*.log
+            artifacts/large-folder/*.json
+          retention-days: 14
   cross-build:
     runs-on: ubuntu-latest
     timeout-minutes: 15

@@ -13,7 +13,9 @@ import (
 	"github.com/StevenWinsir/FolderWatch/internal/debounce"
 	"github.com/StevenWinsir/FolderWatch/internal/eventnorm"
 	"github.com/StevenWinsir/FolderWatch/internal/ignore"
+	"github.com/StevenWinsir/FolderWatch/internal/model"
 	"github.com/StevenWinsir/FolderWatch/internal/pathutil"
+	"github.com/StevenWinsir/FolderWatch/internal/progress"
 	"github.com/StevenWinsir/FolderWatch/internal/scan"
 	"github.com/StevenWinsir/FolderWatch/internal/snapshot"
 	"github.com/StevenWinsir/FolderWatch/internal/watcher"
@@ -62,6 +64,7 @@ type Session struct {
 	err                  error
 	status               Status
 	sequence, generation uint64
+	reconcileCost        time.Duration // accessed only by the session work owner
 }
 
 func StartSession(parent context.Context, prepared Prepared) (*Session, error) {
@@ -82,7 +85,7 @@ func StartSession(parent context.Context, prepared Prepared) (*Session, error) {
 		cancel()
 		return nil, err
 	}
-	adapter, err := watcher.New(watcher.Options{Filter: prepared.Matcher, EventBuffer: cfg.MaxPendingEvents, MaxDirectories: cfg.MaxWatchDirs})
+	adapter, err := watcher.NewAdaptive(watcher.Options{Filter: prepared.Matcher, EventBuffer: cfg.MaxPendingEvents, MaxDirectories: cfg.MaxWatchDirs})
 	if err != nil {
 		cancel()
 		_ = store.Close()
@@ -124,35 +127,36 @@ func StartSession(parent context.Context, prepared Prepared) (*Session, error) {
 		_ = store.Close()
 		return nil, err
 	}
-	baseline := store.Baseline()
-	s.generation = baseline.Generation
-	s.publish(Event{Type: "ready", Reconcile: true, BaselineFiles: len(baseline.Files)})
+	generation, baselineFiles := store.Head()
+	s.generation = generation
+	s.publish(Event{Type: "ready", Reconcile: true, BaselineFiles: baselineFiles})
+	if count, first := store.Coverage(); count > 0 {
+		s.publish(Event{Type: "warning", Message: fmt.Sprintf("Partial baseline: %d unavailable path scope(s); %s. Unknown entries are not Added/Deleted. Restore access and reset the baseline for complete comparisons.", count, first)})
+	}
 	go s.loop()
 	return s, nil
 }
 
 func (s *Session) captureBaseline(ctx context.Context) error {
+	reporter := progress.Start(ctx, "Building baseline")
+	defer reporter.Finish()
 	if err := s.watcher.Reconcile(ctx); err != nil {
 		return err
 	}
-	result, err := scan.Scan(ctx, s.root, s.filter)
-	if err != nil {
-		return err
-	}
-	// Do not silently erase previously captured paths when permissions fail.
-	// --scan remains best-effort; a baseline is intentionally all-or-nothing.
-	if len(result.Warnings) > 0 {
-		return fmt.Errorf("baseline requires a complete scan: %d warning(s); first at %q: %s", len(result.Warnings), result.Warnings[0].Path, result.Warnings[0].Message)
-	}
-	paths := make([]string, 0, len(result.Entries))
-	for _, entry := range result.Entries {
-		paths = append(paths, entry.Path)
+	source := func(yield func(string) error, warning func(string, error) error) error {
+		return scan.Stream(ctx, s.root, ".", s.snapshots.CacheDir(), s.filter, func(meta model.FileMeta, err error) error {
+			reporter.Step()
+			if err != nil {
+				return warning(meta.Path, err)
+			}
+			return yield(meta.Path)
+		})
 	}
 	if s.changes != nil {
-		_, err := s.changes.Reset(ctx, paths)
+		_, err := s.changes.ResetFrom(ctx, source)
 		return err
 	}
-	return s.snapshots.Reset(ctx, paths)
+	return s.snapshots.ResetFrom(ctx, source, true)
 }
 
 func (s *Session) publish(e Event) {
@@ -226,7 +230,13 @@ func (s *Session) loop() {
 	retryDelay := 100 * time.Millisecond
 	schedule := func() {
 		if retryC == nil {
-			retry.Reset(retryDelay)
+			// Slow or persistently unreadable trees must not create a full-scan
+			// retry hot loop. Sleep after the previous work, not on a fixed tick.
+			delay := retryDelay
+			if s.reconcileCost > delay/5 {
+				delay = s.reconcileCost * 5
+			}
+			retry.Reset(delay)
 			retryC = retry.C
 			if retryDelay < 2*time.Second {
 				retryDelay *= 2
@@ -301,8 +311,8 @@ func (s *Session) loop() {
 			stop()
 			cancel()
 			if err == nil {
-				baseline := s.snapshots.Baseline()
-				s.generation = baseline.Generation
+				generation, baselineFiles := s.snapshots.Head()
+				s.generation = generation
 				// Old-generation publications cannot arrive after the reset marker. Queued
 				// filesystem/coalescer work stays valid as new-generation invalidations.
 				for {
@@ -313,7 +323,7 @@ func (s *Session) loop() {
 					}
 				}
 			resetDrained:
-				s.publish(Event{Type: "reset", Reconcile: true, BaselineFiles: len(baseline.Files)})
+				s.publish(Event{Type: "reset", Reconcile: true, BaselineFiles: baselineFiles})
 				if !paused {
 					schedule()
 				}
@@ -360,8 +370,16 @@ func (s *Session) loop() {
 	}
 }
 
-func (s *Session) Changes() []changes.Summary { return s.changes.View().Changes }
-func (s *Session) ChangeState() changes.View  { return s.changes.View() }
+func (s *Session) Changes() []changes.Summary   { return s.changes.View().Changes }
+func (s *Session) ChangeState() changes.View    { return s.changes.View() }
+func (s *Session) ChangeHead() (uint64, uint64) { return s.changes.Head() }
+func (s *Session) ChangePage(ctx context.Context, offset, limit int, filter string, generation, version uint64) (changes.Page, error) {
+	return s.changes.Page(ctx, offset, limit, filter, generation, version)
+}
+func (s *Session) ChangeLookup(path string) (changes.Summary, uint64, bool, error) {
+	return s.changes.Lookup(path)
+}
+func (s *Session) BaselineCoverage() (int, string) { return s.snapshots.Coverage() }
 func (s *Session) GetDiff(ctx context.Context, path string) (diff.Result, error) {
 	combined, cancel := context.WithCancel(ctx)
 	defer cancel()
@@ -381,7 +399,10 @@ func (s *Session) ReadBaseline(ctx context.Context, path string) ([]byte, error)
 	if err != nil {
 		return nil, err
 	}
-	ref, ok := s.snapshots.Baseline().Files[key]
+	ref, ok, lookupErr := s.snapshots.Lookup(key)
+	if lookupErr != nil {
+		return nil, lookupErr
+	}
 	if !ok {
 		return nil, os.ErrNotExist
 	}

@@ -1,0 +1,67 @@
+[
+  {
+    "name": "format",
+    "command": [
+      "make",
+      "fmt"
+    ],
+    "exit_code": 0,
+    "seconds": 0.136
+  },
+  {
+    "name": "lint",
+    "command": [
+      "make",
+      "lint"
+    ],
+    "exit_code": 0,
+    "seconds": 1.026
+  },
+  {
+    "name": "tests",
+    "command": [
+      "go",
+      "test",
+      "-count=1",
+      "-json",
+      "./..."
+    ],
+    "exit_code": 0,
+    "seconds": 31.008,
+    "test_pass_events": 350,
+    "test_skip_events": 1,
+    "test_fail_events": 0
+  },
+  {
+    "name": "race",
+    "command": [
+      "go",
+      "test",
+      "-race",
+      "-shuffle=on",
+      "-count=10",
+      "-timeout=12m",
+      "./..."
+    ],
+    "exit_code": 0,
+    "seconds": 194.898
+  },
+  {
+    "name": "smoke",
+    "command": [
+      "make",
+      "smoke"
+    ],
+    "exit_code": 0,
+    "seconds": 15.318
+  },
+  {
+    "name": "scripts",
+    "command": [
+      "make",
+      "scripts-test"
+    ],
+    "exit_code": 0,
+    "seconds": 0.252
+  }
+]

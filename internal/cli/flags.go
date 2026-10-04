@@ -42,8 +42,8 @@ func Parse(args []string) (Request, error) {
 	fs.StringVar(&snapshotBytes, "max-snapshot-bytes", "8MiB", "Classification/retained snapshot byte cap")
 	fs.IntVar(&diffLines, "max-diff-lines", 20000, "Diff line cap per side")
 	fs.IntVar(&pending, "max-pending-events", 4096, "Bounded pending event capacity")
-	fs.IntVar(&dirs, "max-watch-dirs", 8192, "Maximum watched directories")
-	fs.IntVar(&files, "max-snapshot-files", 100000, "Maximum snapshot references")
+	fs.IntVar(&dirs, "max-watch-dirs", 8192, "Native directory registration budget before polling fallback")
+	fs.IntVar(&files, "max-snapshot-files", 0, "Optional snapshot/inventory count cap (0 = no count cap)")
 	fs.StringVar(&memory, "snapshot-memory-bytes", "32MiB", "Total retained memory budget per generation")
 	fs.StringVar(&cache, "snapshot-cache-bytes", "256MiB", "Total retained disk budget per generation")
 	fs.StringVar(&debounce, "debounce", "150ms", "Positive event-settling duration")
@@ -166,14 +166,16 @@ Options:
 
 Resource limits (also snake_case TOML keys):
       --max-pending-events <n>       Default 4096; overflow requires reconciliation
-      --max-watch-dirs <n>           Default 8192
-      --max-snapshot-files <n>       Default 100000
+      --max-watch-dirs <n>           Native registration budget before polling; default 8192
+      --max-snapshot-files <n>       Optional inventory count cap; default 0 (no count cap)
       --snapshot-memory-bytes <size> Default 32MiB per generation
       --snapshot-cache-bytes <size>  Default 256MiB per generation
 Reset can temporarily retain two bounded baseline generations plus one bounded
 on-demand diff snapshot. Current-state resolving retains metadata only.
-Files over limits still receive metadata/hash; non-text bytes are not retained. Watch startup/reset needs
-a complete readable baseline; --scan continues with partial-scan warnings.
+Files over limits still receive metadata/hash; non-text bytes are not retained.
+Initial unreadable scopes are explicitly baseline-unknown; healthy paths remain watched.
+Reset requires a complete readable baseline and preserves the old one on failure.
+Metadata indexes use private temporary disk storage in addition to content budgets.
 
 Config: CLI flags > root .folderwatch.toml > user config > built-in defaults.
 User config: OS user config directory/FolderWatch/config.toml

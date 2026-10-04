@@ -10,6 +10,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/StevenWinsir/FolderWatch/internal/filemeta"
 	"github.com/StevenWinsir/FolderWatch/internal/filetype"
 	"github.com/StevenWinsir/FolderWatch/internal/model"
 	"github.com/StevenWinsir/FolderWatch/internal/pathutil"
@@ -31,6 +32,7 @@ func (s *Store) capture(ctx context.Context, path string) (stored, error) {
 	s.seq++
 	item := stored{ref: Ref{ID: filepath.Base(s.dir) + fmt.Sprintf("-%x", s.seq), Meta: model.FileMeta{Path: key, Size: before.Size(), Mode: before.Mode(), ModTime: before.ModTime(), Kind: model.Other}, Retention: "metadata"}}
 	item.ref.Class = filetype.Result{Kind: filetype.Unsupported, Reason: "not a regular file"}
+	item.ref.Signature = s.MetadataSignature(before)
 	if before.Mode()&os.ModeSymlink != 0 {
 		item.ref.Meta.Kind = model.Symlink
 		target, err := os.Readlink(absolute)
@@ -75,6 +77,9 @@ func (s *Store) capture(ctx context.Context, path string) (stored, error) {
 	}()
 	s.mu.RLock()
 	memoryRoom, diskRoom := s.opts.MemoryBytes-s.memory, s.opts.DiskBytes-s.disk
+	if len(s.items) >= 4096 {
+		memoryRoom = -1
+	} // tiny files also have map/object overhead
 	s.mu.RUnlock()
 	if !retain {
 		item.ref.Retention = "size"
@@ -84,7 +89,7 @@ func (s *Store) capture(ctx context.Context, path string) (stored, error) {
 	} else if before.Size() <= diskRoom {
 		disk, err = os.CreateTemp(s.dir, "content-")
 		if err != nil {
-			return stored{}, err
+			return stored{}, fmt.Errorf("%w: %v", ErrStorage, err)
 		}
 		item.ref.Retention = "disk"
 	} else {
@@ -120,7 +125,7 @@ func (s *Store) capture(ctx context.Context, path string) (stored, error) {
 			if retain { // bounded provisional bytes; non-text spool is discarded below
 				if disk != nil {
 					if _, err := disk.Write(buf[:n]); err != nil {
-						return stored{}, err
+						return stored{}, fmt.Errorf("%w: %v", ErrStorage, err)
 					}
 				} else {
 					_, _ = memory.Write(buf[:n])
@@ -145,6 +150,9 @@ func (s *Store) capture(ctx context.Context, path string) (stored, error) {
 	if err != nil {
 		return stored{}, ErrUnstable
 	}
+	if item.ref.Signature.Strong && (!item.ref.Signature.Same(filemeta.Read(after)) || !item.ref.Signature.Same(filemeta.Read(current))) {
+		return stored{}, ErrUnstable
+	}
 	if total != before.Size() || !os.SameFile(before, current) || before.Size() != after.Size() || !before.ModTime().Equal(after.ModTime()) || before.Mode() != after.Mode() || !after.ModTime().Equal(current.ModTime()) {
 		return stored{}, ErrUnstable
 	}
@@ -163,7 +171,7 @@ func (s *Store) capture(ctx context.Context, path string) (stored, error) {
 		item.ref.HasContent = true
 		if disk != nil {
 			if err := disk.Close(); err != nil {
-				return stored{}, err
+				return stored{}, fmt.Errorf("%w: %v", ErrStorage, err)
 			}
 			item.file = disk.Name()
 			keep = true

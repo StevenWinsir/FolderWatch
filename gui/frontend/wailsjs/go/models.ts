@@ -106,6 +106,7 @@ export namespace backend {
 	    version: string;
 	    changes: ChangeSummary[];
 	    total: number;
+	    matched: number;
 	    nextOffset: number;
 	    error?: Problem;
 	
@@ -120,6 +121,7 @@ export namespace backend {
 	        this.version = source["version"];
 	        this.changes = this.convertValues(source["changes"], ChangeSummary);
 	        this.total = source["total"];
+	        this.matched = source["matched"];
 	        this.nextOffset = source["nextOffset"];
 	        this.error = this.convertValues(source["error"], Problem);
 	    }
@@ -149,6 +151,7 @@ export namespace backend {
 	    limit: number;
 	    generation: string;
 	    version: string;
+	    filter?: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new ChangesRequest(source);
@@ -162,6 +165,7 @@ export namespace backend {
 	        this.limit = source["limit"];
 	        this.generation = source["generation"];
 	        this.version = source["version"];
+	        this.filter = source["filter"];
 	    }
 	}
 	export class SessionInfo {
@@ -172,6 +176,8 @@ export namespace backend {
 	    generation: string;
 	    version: string;
 	    warning: string;
+	    operation?: string;
+	    processed?: string;
 	    problem?: Problem;
 	
 	    static createFrom(source: any = {}) {
@@ -187,6 +193,8 @@ export namespace backend {
 	        this.generation = source["generation"];
 	        this.version = source["version"];
 	        this.warning = source["warning"];
+	        this.operation = source["operation"];
+	        this.processed = source["processed"];
 	        this.problem = this.convertValues(source["problem"], Problem);
 	    }
 	

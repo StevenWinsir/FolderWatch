@@ -32,7 +32,7 @@ func Normalize(root string, filter ignore.Filter, raw watcher.RawEvent) (Event, 
 		return Event{}, false, err
 	}
 	if raw.Reconcile || raw.IsDir {
-		return Event{Reconcile: true}, true, nil
+		return Event{Request: Request{Path: key}, Reconcile: true}, true, nil
 	}
 	if raw.Op == 0 {
 		return Event{}, false, nil

@@ -1,0 +1,49 @@
+[
+  {
+    "name": "fmt",
+    "command": [
+      "make",
+      "fmt"
+    ],
+    "exit_code": 0,
+    "seconds": 0.052
+  },
+  {
+    "name": "lint",
+    "command": [
+      "make",
+      "lint"
+    ],
+    "exit_code": 0,
+    "seconds": 0.949
+  },
+  {
+    "name": "test",
+    "command": [
+      "go",
+      "test",
+      "-json",
+      "-count=1",
+      "./..."
+    ],
+    "exit_code": 0,
+    "seconds": 29.468,
+    "test_pass_events": 350,
+    "test_skip_events": 1,
+    "test_fail_events": 0
+  },
+  {
+    "name": "race",
+    "command": [
+      "go",
+      "test",
+      "-race",
+      "-shuffle=on",
+      "-count=10",
+      "-timeout=12m",
+      "./..."
+    ],
+    "exit_code": 0,
+    "seconds": 194.302
+  }
+]

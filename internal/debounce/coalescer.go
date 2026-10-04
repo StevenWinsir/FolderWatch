@@ -15,6 +15,7 @@ import (
 type Batch struct {
 	Paths     []eventnorm.Request `json:"paths,omitempty"`
 	Reconcile bool                `json:"reconcile,omitempty"`
+	Scopes    []string            `json:"scopes,omitempty"`
 }
 
 type Options struct {
@@ -24,6 +25,7 @@ type Options struct {
 type pending struct {
 	first, last time.Time
 	metadata    bool
+	subtree     bool
 }
 
 // Start returns a single-slot output. Slow consumers collapse work to a root
@@ -69,7 +71,7 @@ func Start(ctx context.Context, root string, filter ignore.Filter, input <-chan 
 				}
 				now := time.Now()
 				e, keep, err := eventnorm.Normalize(root, filter, raw)
-				if err != nil || e.Reconcile {
+				if err != nil || e.Reconcile && (e.Path == "" || e.Path == ".") {
 					markDirty(now)
 					continue
 				}
@@ -90,6 +92,7 @@ func Start(ctx context.Context, root string, filter ignore.Filter, input <-chan 
 				}
 				p.last = now
 				p.metadata = p.metadata && e.MetadataOnly
+				p.subtree = p.subtree || e.Reconcile
 				paths[e.Path] = p
 			case now := <-timer.C:
 				batch := Batch{}
@@ -102,14 +105,19 @@ func Start(ctx context.Context, root string, filter ignore.Filter, input <-chan 
 				} else {
 					for path, p := range paths {
 						if due(p, now) {
-							batch.Paths = append(batch.Paths, eventnorm.Request{Path: path, MetadataOnly: p.metadata})
+							if p.subtree {
+								batch.Scopes = append(batch.Scopes, path)
+							} else {
+								batch.Paths = append(batch.Paths, eventnorm.Request{Path: path, MetadataOnly: p.metadata})
+							}
 							delete(paths, path)
 						}
 					}
-					if len(batch.Paths) == 0 {
+					if len(batch.Paths) == 0 && len(batch.Scopes) == 0 {
 						continue
 					}
 					sort.Slice(batch.Paths, func(i, j int) bool { return batch.Paths[i].Path < batch.Paths[j].Path })
+					sort.Strings(batch.Scopes)
 				}
 				select {
 				case out <- batch:

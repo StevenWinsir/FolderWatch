@@ -38,8 +38,10 @@ def verify(directory):
         if path.is_symlink() or not path.is_file() or sha256(path) != digest:
             raise ValueError("checksum mismatch: " + name)
     manifest = json.loads((directory / "manifest.json").read_text())
-    if manifest.get("schema") != 1 or manifest.get("dependency_mode") != "vendor" or manifest.get("cgo_enabled") is not False:
+    if manifest.get("schema") != 1 or manifest.get("dependency_mode") != "vendor" or type(manifest.get("cgo_enabled")) is not bool:
         raise ValueError("invalid build provenance")
+    if manifest["cgo_enabled"] and manifest.get("watch_backend") != "fsevents-with-polling-fallback":
+        raise ValueError("native macOS artifact must declare its recursive backend")
     version_value(manifest["version"])
     assets = manifest["assets"]
     if len(assets) != 2 or {asset["arch"] for asset in assets} != {"arm64", "amd64"}:

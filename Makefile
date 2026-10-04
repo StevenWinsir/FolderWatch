@@ -12,6 +12,14 @@ build:
 	$(GO) build -trimpath -ldflags "$(LDFLAGS)" -o bin/folderwatch ./cmd/folderwatch
 test:
 	$(GO) test ./...
+
+# Opt-in real scalability fixtures; normal tests retain fast deterministic cases.
+.PHONY: large-tree-test
+large-tree-test: build
+	FOLDERWATCH_LARGE_TESTS=1 $(GO) test ./internal/app -run '^TestLargeTreePastBothFormerLimits$$' -count=1 -v -timeout=10m
+	CGO_ENABLED=0 $(GO) build -trimpath -o bin/folderwatch-nocgo ./cmd/folderwatch
+	python3 scripts/large_tree_smoke.py bin/folderwatch bin/folderwatch-nocgo
+
 race:
 	$(GO) test -race ./...
 lint: fmt-check

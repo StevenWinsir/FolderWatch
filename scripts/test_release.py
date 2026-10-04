@@ -78,7 +78,7 @@ class ReleaseTests(unittest.TestCase):
                     members[doc] = (b"test fixture", 0o644)
                 release.archive(root/name, members)
                 assets.append({"arch": arch, "os": "darwin", "name": name, "sha256": release.sha256(root/name), "bytes": (root/name).stat().st_size})
-            manifest = {"schema": 1, "version": "v0.1.0-rc.1", "dependency_mode": "vendor", "cgo_enabled": False, "assets": assets}
+            manifest = {"schema": 1, "version": "v0.1.0-rc.1", "dependency_mode": "vendor", "cgo_enabled": True, "watch_backend": "fsevents-with-polling-fallback", "assets": assets}
             (root/"manifest.json").write_text(json.dumps(manifest))
             (root/"folderwatch.rb").write_text("formula fixture")
             (root/"SHA256SUMS").write_text("".join(release.sha256(path) + "  " + path.name + "\n" for path in sorted(root.iterdir())))

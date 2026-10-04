@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/StevenWinsir/FolderWatch/internal/changes"
 	"github.com/StevenWinsir/FolderWatch/internal/debounce"
@@ -15,7 +16,11 @@ func (s *Session) resolveChanges(input debounce.Batch) (retry bool, err error) {
 }
 
 func (s *Session) resolveChangesContext(ctx context.Context, input debounce.Batch) (retry bool, err error) {
-	if input.Reconcile {
+	if input.Reconcile || len(input.Scopes) > 0 {
+		started := time.Now()
+		defer func() { s.reconcileCost = time.Since(started) }()
+	}
+	if input.Reconcile || len(input.Scopes) > 0 {
 		if err := s.watcher.Reconcile(ctx); err != nil {
 			if ctx.Err() != nil {
 				return false, ctx.Err()
@@ -31,7 +36,11 @@ func (s *Session) resolveChangesContext(ctx context.Context, input debounce.Batc
 	for _, p := range input.Paths {
 		paths = append(paths, p.Path)
 	}
-	batch, warnings, err := s.changes.ResolveBatch(ctx, paths, input.Reconcile)
+	scopes := input.Scopes
+	if input.Reconcile {
+		scopes = []string{"."}
+	}
+	batch, warnings, err := s.changes.ResolveScoped(ctx, paths, scopes)
 	if err != nil {
 		if ctx.Err() != nil || errors.Is(err, changes.ErrCapacity) || errors.Is(err, changes.ErrClosed) {
 			return false, err

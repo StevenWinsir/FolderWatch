@@ -9,6 +9,7 @@
 - Make every GUI change reachable with bounded 500-row pages and full-index search, single-flight refresh/diff and stale-response fences. Fix long-root active-layout overflow, unknown markers, missing workspace error banners and offline font loading.
 - Align native macOS CLI releases/performance with the FSEvents build; retain separately tested no-CGO builds. Extend CI with native/no-CGO 9000-directory/100005-file tests, 64-descriptor smoke and real Wails IPC pagination/large-folder coverage.
 - Isolate the explicitly opted-in browser E2E frontend from Wails' delayed native development mount, preventing competing clients from revoking the test session; production mounting and client/lease security remain unchanged.
+- Canonicalize only explicitly selected macOS roots to filesystem spelling, so case/NFC-NFD aliases do not silently lose native events. Keep descendant keys unchanged and stop on native root-move signals, including spelling-only renames that still resolve to the same inode.
 - Acceptance, measurements, historical failure notes and remaining platform/release boundaries: `docs/rounds/large-folder-acceptance.md` and ADR-016. This entry does not claim signing/notarization or Gate B.
 
 ## Unreleased — R6 / P15–P16 desktop foundation (2026-10-02)

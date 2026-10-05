@@ -1,0 +1,102 @@
+=== RUN   TestReviewFallbackSurvivesVanishingChild
+=== RUN   TestReviewFallbackSurvivesVanishingChild/startup=true
+    zz_review_recovery_test.go:41: watch error: native watching unavailable (too many open files); monitoring continues using periodic metadata scans (at least 2s between scans; large trees take longer)
+    zz_review_recovery_test.go:41: watch error: poll metadata "racy.txt": lstat /private/var/folders/l7/ysm1mwtj0jv15yyb0srx692h0000gn/T/TestReviewFallbackSurvivesVanishingChildstartup=true3770643237/001/racy.txt: no such file or directory
+=== RUN   TestReviewFallbackSurvivesVanishingChild/startup=false
+    zz_review_recovery_test.go:41: watch error: native watching unavailable (too many open files); monitoring continues using periodic metadata scans (at least 2s between scans; large trees take longer)
+    zz_review_recovery_test.go:41: watch error: poll metadata "racy.txt": lstat /private/var/folders/l7/ysm1mwtj0jv15yyb0srx692h0000gn/T/TestReviewFallbackSurvivesVanishingChildstartup=false653886642/001/racy.txt: no such file or directory
+--- PASS: TestReviewFallbackSurvivesVanishingChild (6.04s)
+    --- PASS: TestReviewFallbackSurvivesVanishingChild/startup=true (3.03s)
+    --- PASS: TestReviewFallbackSurvivesVanishingChild/startup=false (3.00s)
+=== RUN   TestReviewFallbackSurvivesVanishingChild
+=== RUN   TestReviewFallbackSurvivesVanishingChild/startup=true
+    zz_review_recovery_test.go:41: watch error: native watching unavailable (too many open files); monitoring continues using periodic metadata scans (at least 2s between scans; large trees take longer)
+    zz_review_recovery_test.go:41: watch error: poll metadata "racy.txt": lstat /private/var/folders/l7/ysm1mwtj0jv15yyb0srx692h0000gn/T/TestReviewFallbackSurvivesVanishingChildstartup=true1259208876/001/racy.txt: no such file or directory
+=== RUN   TestReviewFallbackSurvivesVanishingChild/startup=false
+    zz_review_recovery_test.go:41: watch error: native watching unavailable (too many open files); monitoring continues using periodic metadata scans (at least 2s between scans; large trees take longer)
+    zz_review_recovery_test.go:41: watch error: poll metadata "racy.txt": lstat /private/var/folders/l7/ysm1mwtj0jv15yyb0srx692h0000gn/T/TestReviewFallbackSurvivesVanishingChildstartup=false2337822261/001/racy.txt: no such file or directory
+--- PASS: TestReviewFallbackSurvivesVanishingChild (6.03s)
+    --- PASS: TestReviewFallbackSurvivesVanishingChild/startup=true (3.03s)
+    --- PASS: TestReviewFallbackSurvivesVanishingChild/startup=false (3.00s)
+=== RUN   TestReviewFallbackSurvivesVanishingChild
+=== RUN   TestReviewFallbackSurvivesVanishingChild/startup=true
+    zz_review_recovery_test.go:41: watch error: native watching unavailable (too many open files); monitoring continues using periodic metadata scans (at least 2s between scans; large trees take longer)
+    zz_review_recovery_test.go:41: watch error: poll metadata "racy.txt": lstat /private/var/folders/l7/ysm1mwtj0jv15yyb0srx692h0000gn/T/TestReviewFallbackSurvivesVanishingChildstartup=true40418495/001/racy.txt: no such file or directory
+=== RUN   TestReviewFallbackSurvivesVanishingChild/startup=false
+    zz_review_recovery_test.go:41: watch error: native watching unavailable (too many open files); monitoring continues using periodic metadata scans (at least 2s between scans; large trees take longer)
+    zz_review_recovery_test.go:41: watch error: poll metadata "racy.txt": lstat /private/var/folders/l7/ysm1mwtj0jv15yyb0srx692h0000gn/T/TestReviewFallbackSurvivesVanishingChildstartup=false2816171443/001/racy.txt: no such file or directory
+--- PASS: TestReviewFallbackSurvivesVanishingChild (6.03s)
+    --- PASS: TestReviewFallbackSurvivesVanishingChild/startup=true (3.03s)
+    --- PASS: TestReviewFallbackSurvivesVanishingChild/startup=false (3.00s)
+=== RUN   TestReviewFallbackSurvivesVanishingChild
+=== RUN   TestReviewFallbackSurvivesVanishingChild/startup=true
+    zz_review_recovery_test.go:41: watch error: native watching unavailable (too many open files); monitoring continues using periodic metadata scans (at least 2s between scans; large trees take longer)
+    zz_review_recovery_test.go:41: watch error: poll metadata "racy.txt": lstat /private/var/folders/l7/ysm1mwtj0jv15yyb0srx692h0000gn/T/TestReviewFallbackSurvivesVanishingChildstartup=true845681466/001/racy.txt: no such file or directory
+=== RUN   TestReviewFallbackSurvivesVanishingChild/startup=false
+    zz_review_recovery_test.go:41: watch error: native watching unavailable (too many open files); monitoring continues using periodic metadata scans (at least 2s between scans; large trees take longer)
+    zz_review_recovery_test.go:41: watch error: poll metadata "racy.txt": lstat /private/var/folders/l7/ysm1mwtj0jv15yyb0srx692h0000gn/T/TestReviewFallbackSurvivesVanishingChildstartup=false3348938926/001/racy.txt: no such file or directory
+--- PASS: TestReviewFallbackSurvivesVanishingChild (6.03s)
+    --- PASS: TestReviewFallbackSurvivesVanishingChild/startup=true (3.03s)
+    --- PASS: TestReviewFallbackSurvivesVanishingChild/startup=false (3.00s)
+=== RUN   TestReviewFallbackSurvivesVanishingChild
+=== RUN   TestReviewFallbackSurvivesVanishingChild/startup=true
+    zz_review_recovery_test.go:41: watch error: native watching unavailable (too many open files); monitoring continues using periodic metadata scans (at least 2s between scans; large trees take longer)
+    zz_review_recovery_test.go:41: watch error: poll metadata "racy.txt": lstat /private/var/folders/l7/ysm1mwtj0jv15yyb0srx692h0000gn/T/TestReviewFallbackSurvivesVanishingChildstartup=true4278542494/001/racy.txt: no such file or directory
+=== RUN   TestReviewFallbackSurvivesVanishingChild/startup=false
+    zz_review_recovery_test.go:41: watch error: native watching unavailable (too many open files); monitoring continues using periodic metadata scans (at least 2s between scans; large trees take longer)
+    zz_review_recovery_test.go:41: watch error: poll metadata "racy.txt": lstat /private/var/folders/l7/ysm1mwtj0jv15yyb0srx692h0000gn/T/TestReviewFallbackSurvivesVanishingChildstartup=false2590777593/001/racy.txt: no such file or directory
+--- PASS: TestReviewFallbackSurvivesVanishingChild (6.03s)
+    --- PASS: TestReviewFallbackSurvivesVanishingChild/startup=true (3.03s)
+    --- PASS: TestReviewFallbackSurvivesVanishingChild/startup=false (3.00s)
+=== RUN   TestReviewFallbackSurvivesVanishingChild
+=== RUN   TestReviewFallbackSurvivesVanishingChild/startup=true
+    zz_review_recovery_test.go:41: watch error: native watching unavailable (too many open files); monitoring continues using periodic metadata scans (at least 2s between scans; large trees take longer)
+    zz_review_recovery_test.go:41: watch error: poll metadata "racy.txt": lstat /private/var/folders/l7/ysm1mwtj0jv15yyb0srx692h0000gn/T/TestReviewFallbackSurvivesVanishingChildstartup=true3495458387/001/racy.txt: no such file or directory
+=== RUN   TestReviewFallbackSurvivesVanishingChild/startup=false
+    zz_review_recovery_test.go:41: watch error: native watching unavailable (too many open files); monitoring continues using periodic metadata scans (at least 2s between scans; large trees take longer)
+    zz_review_recovery_test.go:41: watch error: poll metadata "racy.txt": lstat /private/var/folders/l7/ysm1mwtj0jv15yyb0srx692h0000gn/T/TestReviewFallbackSurvivesVanishingChildstartup=false3308540762/001/racy.txt: no such file or directory
+--- PASS: TestReviewFallbackSurvivesVanishingChild (6.03s)
+    --- PASS: TestReviewFallbackSurvivesVanishingChild/startup=true (3.02s)
+    --- PASS: TestReviewFallbackSurvivesVanishingChild/startup=false (3.00s)
+=== RUN   TestReviewFallbackSurvivesVanishingChild
+=== RUN   TestReviewFallbackSurvivesVanishingChild/startup=true
+    zz_review_recovery_test.go:41: watch error: native watching unavailable (too many open files); monitoring continues using periodic metadata scans (at least 2s between scans; large trees take longer)
+    zz_review_recovery_test.go:41: watch error: poll metadata "racy.txt": lstat /private/var/folders/l7/ysm1mwtj0jv15yyb0srx692h0000gn/T/TestReviewFallbackSurvivesVanishingChildstartup=true4094580296/001/racy.txt: no such file or directory
+=== RUN   TestReviewFallbackSurvivesVanishingChild/startup=false
+    zz_review_recovery_test.go:41: watch error: native watching unavailable (too many open files); monitoring continues using periodic metadata scans (at least 2s between scans; large trees take longer)
+    zz_review_recovery_test.go:41: watch error: poll metadata "racy.txt": lstat /private/var/folders/l7/ysm1mwtj0jv15yyb0srx692h0000gn/T/TestReviewFallbackSurvivesVanishingChildstartup=false1344955722/001/racy.txt: no such file or directory
+--- PASS: TestReviewFallbackSurvivesVanishingChild (6.03s)
+    --- PASS: TestReviewFallbackSurvivesVanishingChild/startup=true (3.02s)
+    --- PASS: TestReviewFallbackSurvivesVanishingChild/startup=false (3.00s)
+=== RUN   TestReviewFallbackSurvivesVanishingChild
+=== RUN   TestReviewFallbackSurvivesVanishingChild/startup=true
+    zz_review_recovery_test.go:41: watch error: native watching unavailable (too many open files); monitoring continues using periodic metadata scans (at least 2s between scans; large trees take longer)
+    zz_review_recovery_test.go:41: watch error: poll metadata "racy.txt": lstat /private/var/folders/l7/ysm1mwtj0jv15yyb0srx692h0000gn/T/TestReviewFallbackSurvivesVanishingChildstartup=true249218287/001/racy.txt: no such file or directory
+=== RUN   TestReviewFallbackSurvivesVanishingChild/startup=false
+    zz_review_recovery_test.go:41: watch error: native watching unavailable (too many open files); monitoring continues using periodic metadata scans (at least 2s between scans; large trees take longer)
+    zz_review_recovery_test.go:41: watch error: poll metadata "racy.txt": lstat /private/var/folders/l7/ysm1mwtj0jv15yyb0srx692h0000gn/T/TestReviewFallbackSurvivesVanishingChildstartup=false2724957017/001/racy.txt: no such file or directory
+--- PASS: TestReviewFallbackSurvivesVanishingChild (6.03s)
+    --- PASS: TestReviewFallbackSurvivesVanishingChild/startup=true (3.03s)
+    --- PASS: TestReviewFallbackSurvivesVanishingChild/startup=false (3.00s)
+=== RUN   TestReviewFallbackSurvivesVanishingChild
+=== RUN   TestReviewFallbackSurvivesVanishingChild/startup=true
+    zz_review_recovery_test.go:41: watch error: native watching unavailable (too many open files); monitoring continues using periodic metadata scans (at least 2s between scans; large trees take longer)
+    zz_review_recovery_test.go:41: watch error: poll metadata "racy.txt": lstat /private/var/folders/l7/ysm1mwtj0jv15yyb0srx692h0000gn/T/TestReviewFallbackSurvivesVanishingChildstartup=true3682453489/001/racy.txt: no such file or directory
+=== RUN   TestReviewFallbackSurvivesVanishingChild/startup=false
+    zz_review_recovery_test.go:41: watch error: native watching unavailable (too many open files); monitoring continues using periodic metadata scans (at least 2s between scans; large trees take longer)
+    zz_review_recovery_test.go:41: watch error: poll metadata "racy.txt": lstat /private/var/folders/l7/ysm1mwtj0jv15yyb0srx692h0000gn/T/TestReviewFallbackSurvivesVanishingChildstartup=false1115458514/001/racy.txt: no such file or directory
+--- PASS: TestReviewFallbackSurvivesVanishingChild (6.03s)
+    --- PASS: TestReviewFallbackSurvivesVanishingChild/startup=true (3.03s)
+    --- PASS: TestReviewFallbackSurvivesVanishingChild/startup=false (3.00s)
+=== RUN   TestReviewFallbackSurvivesVanishingChild
+=== RUN   TestReviewFallbackSurvivesVanishingChild/startup=true
+    zz_review_recovery_test.go:41: watch error: native watching unavailable (too many open files); monitoring continues using periodic metadata scans (at least 2s between scans; large trees take longer)
+    zz_review_recovery_test.go:41: watch error: poll metadata "racy.txt": lstat /private/var/folders/l7/ysm1mwtj0jv15yyb0srx692h0000gn/T/TestReviewFallbackSurvivesVanishingChildstartup=true2420465053/001/racy.txt: no such file or directory
+=== RUN   TestReviewFallbackSurvivesVanishingChild/startup=false
+    zz_review_recovery_test.go:41: watch error: native watching unavailable (too many open files); monitoring continues using periodic metadata scans (at least 2s between scans; large trees take longer)
+    zz_review_recovery_test.go:41: watch error: poll metadata "racy.txt": lstat /private/var/folders/l7/ysm1mwtj0jv15yyb0srx692h0000gn/T/TestReviewFallbackSurvivesVanishingChildstartup=false3671726958/001/racy.txt: no such file or directory
+--- PASS: TestReviewFallbackSurvivesVanishingChild (6.03s)
+    --- PASS: TestReviewFallbackSurvivesVanishingChild/startup=true (3.02s)
+    --- PASS: TestReviewFallbackSurvivesVanishingChild/startup=false (3.00s)
+PASS
+ok  	github.com/StevenWinsir/FolderWatch/internal/watcher	62.055s

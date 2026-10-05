@@ -56,6 +56,10 @@ func NormalizeRoot(input, base string) (string, error) {
 	if !info.IsDir() {
 		return "", fmt.Errorf("root %q is not a directory", input)
 	}
+	root, err = canonicalRoot(root, info)
+	if err != nil {
+		return "", fmt.Errorf("root %q: %w", input, err)
+	}
 	return filepath.Clean(root), nil
 }
 

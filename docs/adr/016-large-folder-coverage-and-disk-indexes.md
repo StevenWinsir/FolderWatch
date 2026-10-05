@@ -18,6 +18,12 @@ No-CGO/non-macOS builds use fsnotify through Adaptive. Native registration budge
 
 Polling keeps private disk-backed previous/next metadata catalogs, not one open handle or goroutine per path. A disappearing or unreadable descendant protects that scope's old metadata while allowing healthy siblings to progress, including the initial fallback scan. Partial scans never imply deletion. Scans do not overlap and wait at least 2 seconds, or five times the previous sweep duration, after finishing. Core retries after failed reconciliation also account for the preceding scan duration. These are work scheduling policies, not hard CPU or latency guarantees on a stalled filesystem.
 
+### macOS root namespace and spelling aliases
+
+An explicitly selected macOS root is canonicalized to its filesystem spelling using a temporary no-follow `O_EVTONLY` descriptor and `F_GETPATH`, with before/opened/after identity checks and immediate descriptor cleanup. `EvalSymlinks` alone does not canonicalize case or NFC/NFD aliases on normalization-insensitive volumes; FSEvents can return a different spelling and a lexical containment check would then silently discard legitimate events. This shared path normalization runs in CGO and no-CGO builds, keeping the matcher, snapshot and watcher namespaces consistent. Non-macOS root behavior is unchanged. The existing pinned `golang.org/x/sys` becomes a direct dependency; its version and vendor bytes do not change.
+
+Only the explicit root uses the filesystem's canonical name. Relative descendant keys keep their original spelling and strict lexical/no-follow validation; global lowercase or Unicode folding is not used because it could conflate genuinely different entries on other volumes. A native `RootChanged` notification is fatal under the existing stop-on-root-move contract, even when a spelling-only rename leaves the old pathname resolving to the same inode. It must not leave a seemingly healthy stream with an obsolete prefix. Root canonicalization is not an atomic sandbox against hostile concurrent replacement, nor permission to follow descendant symlinks.
+
 ### Metadata storage and scanning
 
 Pin `go.etcd.io/bbolt v1.3.11` (MIT license; license included by release packaging) as an internal temporary metadata index. Catalogs are 0600 files in 0700 session directories outside the selected root. They are reconstructible, NoSync temporary state; no catalog from a previous process is trusted as a new baseline. No monitored file content is stored in a metadata record.

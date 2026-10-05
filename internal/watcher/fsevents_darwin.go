@@ -137,7 +137,13 @@ func (w *FSEvents) translate(e nativeEvent) error {
 		isDirectory = 0x20000
 		isSymlink   = 0x40000
 	)
-	if e.flags&(mustScan|mount|rootChanged) != 0 {
+	if e.flags&rootChanged != 0 {
+		// A spelling-only root/ancestor rename may still resolve to the same
+		// inode on macOS, but subsequent event prefixes have changed. Preserve
+		// the stop-on-root-move contract instead of silently losing coverage.
+		return ErrRootGone
+	}
+	if e.flags&(mustScan|mount) != 0 {
 		if err := w.checkRoot(); err != nil {
 			return err
 		}

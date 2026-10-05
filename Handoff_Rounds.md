@@ -2754,4 +2754,6 @@ R9 只继续 E2E 覆盖、发布打包、签名/公证和 Gate B，不应把编�
 
 CLI 原生 macOS 发布切换CGO1并记录FSEvents后端；no-CGO编译与降级作为独立测试。新增依赖bbolt1.3.11仅作可重建的session metadata，原fsnotify vendor补丁逐字节保留。架构、迁移、磁盘/内存及语义边界见 [ADR-016](docs/adr/016-large-folder-coverage-and-disk-indexes.md)。
 
+补充真实原生测试发现：macOS 大小写/NFC-NFD 等价的 root 输入可能与 FSEvents 返回的磁盘拼写不同，导致后续事件被词法边界错误丢弃。共享 NormalizeRoot 现通过临时 no-follow 目录描述符、F_GETPATH 与身份复核，只规范明确选择的 root；不折叠后代文件键、不跟随后代 symlink。原生 RootChanged（包括仍指向同 inode 的仅拼写重命名）维持终止旧会话的约定。新增先失败后修复的真实文件编辑、实际 root 重命名和 Go1.23/no-CGO 回归。
+
 本轮测试命令、真实结果、测量和PR/CI证据统一记录在 [large-folder acceptance](docs/rounds/large-folder-acceptance.md)。原生手工QA、签名/公证、网络盘与任意无限规模不由自动化通过推断。旧§13的资源原则仍然成立：没有固定总条目上限不等于没有物理资源边界；兼容的全清单API/Terminal消费者、ignore缓存与OS页缓存不是常数内存。

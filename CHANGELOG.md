@@ -5,9 +5,10 @@
 - Use recursive FSEvents for native macOS and joined, visible polling fallback when native budgets/descriptors are exhausted; survive disappearing/unreadable child paths during fallback enrollment.
 - Remove the default inventory-count cap while retaining explicit positive caps, bounded content/diff budgets and bounded event payloads. Store metadata/scan queues/polling inventories in private disk indexes (pinned bbolt 1.3.11; reviewed fsnotify patch unchanged).
 - Preserve dirty subtree scopes, avoid full-index copies for ordinary file events, and conservatively reuse verified hashes only with strong local metadata signatures. Untrusted/nested filesystems do not inherit hash-reuse trust.
-- Permit explicitly unknown initial baseline scopes without fabricating Added/Deleted or before text; keep Reset complete and atomic. Expose metadata progress and safe cancellation instead of a fixed 30-second reset limit.
+- Permit explicitly unknown initial baseline scopes without fabricating Added/Deleted or before text; keep Reset complete and atomic. Terminal/TUI and watch text show `?` and count unknown coverage separately. Expose metadata progress and safe cancellation instead of a fixed 30-second reset limit.
 - Make every GUI change reachable with bounded 500-row pages and full-index search, single-flight refresh/diff and stale-response fences. Fix long-root active-layout overflow, unknown markers, missing workspace error banners and offline font loading.
 - Align native macOS CLI releases/performance with the FSEvents build; retain separately tested no-CGO builds. Extend CI with native/no-CGO 9000-directory/100005-file tests, 64-descriptor smoke and real Wails IPC pagination/large-folder coverage.
+- Isolate the explicitly opted-in browser E2E frontend from Wails' delayed native development mount, preventing competing clients from revoking the test session; production mounting and client/lease security remain unchanged.
 - Acceptance, measurements, historical failure notes and remaining platform/release boundaries: `docs/rounds/large-folder-acceptance.md` and ADR-016. This entry does not claim signing/notarization or Gate B.
 
 ## Unreleased — R6 / P15–P16 desktop foundation (2026-10-02)

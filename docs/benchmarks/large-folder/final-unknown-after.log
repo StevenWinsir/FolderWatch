@@ -1,0 +1,8 @@
+=== RUN   TestUnknownBaselineIsExplicitInTerminalListAndHelp
+--- PASS: TestUnknownBaselineIsExplicitInTerminalListAndHelp (0.00s)
+PASS
+ok  	github.com/StevenWinsir/FolderWatch/internal/tui	0.824s
+=== RUN   TestUnknownBaselineIsExplicitInWatchText
+--- PASS: TestUnknownBaselineIsExplicitInWatchText (0.00s)
+PASS
+ok  	github.com/StevenWinsir/FolderWatch/internal/cli	1.199s

@@ -2750,7 +2750,7 @@ R9 只继续 E2E 覆盖、发布打包、签名/公证和 Gate B，不应把编�
 
 当前实现：原生 macOS 使用 FSEvents；native 资源耗尽后先关闭/join再切换 metadata polling，并在首扫子路径瞬间消失/不可读时继续覆盖健康路径。默认快照/清单数量上限为0，可选正数限制仍有效；正文/diff/队列预算保留。元数据改为私有临时磁盘索引，流式扫描有界批次与磁盘目录队列，保留具体脏子树，单文件事件避免复制全量变更表。
 
-初始基线允许明确的未知 scope，GUI 显示 `?` / Baseline unknown，不能误报 Added/Deleted 或伪造 before。恢复可读后仍需完整 Reset 才能建立此前缺失的基线。Reset 仍原子、失败保留旧代。长操作有计数进度并由Stop/会话取消回收，不以固定30秒限制目录规模。GUI完整分页及全索引搜索已接入，列表与Diff请求均有并发/过期边界；每页至多500行。
+初始基线允许明确的未知 scope，GUI 显示 `?` / Baseline unknown，不能误报 Added/Deleted 或伪造 before。Terminal/TUI 与 watch 文本输出同样显示 `?`，并将未知条目与已确认变更分开计数；NDJSON 保留 core 的 `kind=unknown`。恢复可读后仍需完整 Reset 才能建立此前缺失的基线。Reset 仍原子、失败保留旧代。长操作有计数进度并由Stop/会话取消回收，不以固定30秒限制目录规模。GUI完整分页及全索引搜索已接入，列表与Diff请求均有并发/过期边界；每页至多500行。
 
 CLI 原生 macOS 发布切换CGO1并记录FSEvents后端；no-CGO编译与降级作为独立测试。新增依赖bbolt1.3.11仅作可重建的session metadata，原fsnotify vendor补丁逐字节保留。架构、迁移、磁盘/内存及语义边界见 [ADR-016](docs/adr/016-large-folder-coverage-and-disk-indexes.md)。
 

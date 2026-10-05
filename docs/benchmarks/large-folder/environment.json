@@ -1,0 +1,13 @@
+{
+  "platform": "macOS-26.6.2-arm64-arm-64bit",
+  "go": "go version go1.26.6 darwin/arm64",
+  "cgo_enabled": true,
+  "commit": "60e5f492ca9a47457f2ce00dcb329f3b5fe89da2",
+  "dirty": true,
+  "filesystem": "apfs",
+  "notes": "Synthetic fixtures; warm local filesystem; no race instrumentation. RSS is process high-water mark, including fixture generation. Latency ends at authoritative Core state, not rendered pixels.",
+  "cpu": "Apple M4",
+  "ram_bytes": 34359738368,
+  "macos": "26.6.2",
+  "storage": true
+}

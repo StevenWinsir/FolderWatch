@@ -111,8 +111,8 @@ func (a *API) GetSessionStatus(clientID string) Reply {
 	}
 	if r := f.current; r != nil && r.session != nil && r.ctx.Err() == nil {
 		f.status.State = string(r.session.Status())
-		view := r.session.ChangeState()
-		f.headLocked(view.Generation, view.Version)
+		generation, version := r.session.ChangeHead()
+		f.headLocked(generation, version)
 	}
 	return Reply{Status: f.status}
 }
@@ -198,7 +198,15 @@ func (a *API) control(req SessionRequest, action string) Reply {
 	if err != nil {
 		return Reply{Status: idle(), Error: problem(err)}
 	}
-	ctx, cancel := context.WithTimeout(r.ctx, 30*time.Second)
+	// Large resets/recovery are cancellable work, not arbitrary 30-second
+	// deadlines. Stop/reload cancels r.ctx; reject duplicate controls promptly.
+	select {
+	case a.f.controlSlot <- struct{}{}:
+		defer func() { <-a.f.controlSlot }()
+	default:
+		return Reply{Status: a.statusSnapshot(req.ClientID), Error: problem(fault("BUSY", "A session operation is already running. Stop cancels it."))}
+	}
+	ctx, cancel := context.WithCancel(r.ctx)
 	defer cancel()
 	switch action {
 	case "pause":
@@ -217,8 +225,11 @@ func (a *API) control(req SessionRequest, action string) Reply {
 	if _, err := f.sessionLocked(req); err != nil {
 		return Reply{Status: idle(), Error: problem(err)}
 	}
-	view := s.ChangeState()
-	f.headLocked(view.Generation, view.Version)
+	generation, version := s.ChangeHead()
+	f.headLocked(generation, version)
+	if action == "reset" {
+		f.status.Warning = ""
+	}
 	f.status.State = string(s.Status())
 	f.publishLocked(EventStatus, nil)
 	return Reply{Status: f.status}

@@ -15,6 +15,7 @@ import (
 	"github.com/StevenWinsir/FolderWatch/internal/app"
 	"github.com/StevenWinsir/FolderWatch/internal/changes"
 	"github.com/StevenWinsir/FolderWatch/internal/config"
+	"github.com/StevenWinsir/FolderWatch/internal/progress"
 )
 
 type startFunc func(context.Context, StartOptions) (*app.Session, string, error)
@@ -50,6 +51,8 @@ type Facade struct {
 	options                       options
 	info                          AppInfo
 	diffSlot                      chan struct{}
+	listSlot                      chan struct{}
+	controlSlot                   chan struct{}
 }
 
 func New(parent context.Context, info AppInfo) *Facade {
@@ -60,7 +63,7 @@ func newFacade(parent context.Context, info AppInfo, opts options) *Facade {
 	ctx, cancel := context.WithCancel(parent)
 	info.Name, info.Protocol = "FolderWatch", ProtocolVersion
 	info.HeartbeatMillis, info.LeaseMillis = 2000, int(opts.lease/time.Millisecond)
-	f := &Facade{ctx: ctx, cancel: cancel, done: make(chan struct{}), events: make(chan Event, 32), options: opts, info: info, diffSlot: make(chan struct{}, 1)}
+	f := &Facade{ctx: ctx, cancel: cancel, done: make(chan struct{}), events: make(chan Event, 32), options: opts, info: info, diffSlot: make(chan struct{}, 1), listSlot: make(chan struct{}, 1), controlSlot: make(chan struct{}, 1)}
 	f.status = idle()
 	go f.reap()
 	return f
@@ -79,7 +82,7 @@ func token() (string, error) {
 }
 
 func startCore(ctx context.Context, opts StartOptions) (*app.Session, string, error) {
-	prepared, err := app.Prepare(ctx, opts.Root, config.Overlay{Debounce: opts.Debounce, Ignore: opts.Ignore, RespectGitIgnore: opts.RespectGitIgnore, MaxDiffBytes: opts.MaxDiffBytes, Editor: opts.Editor}, config.LoadOptions{})
+	prepared, err := app.PrepareSession(ctx, opts.Root, config.Overlay{Debounce: opts.Debounce, Ignore: opts.Ignore, RespectGitIgnore: opts.RespectGitIgnore, MaxDiffBytes: opts.MaxDiffBytes, Editor: opts.Editor}, config.LoadOptions{})
 	if err != nil {
 		return nil, "", err
 	}
@@ -269,6 +272,15 @@ func (f *Facade) start(opts StartOptions) (SessionInfo, error) {
 		editor = *opts.Editor
 	}
 	r := &run{id: id, client: opts.ClientID, editor: editor, ctx: ctx, cancel: cancel, ready: make(chan struct{}), done: make(chan struct{})}
+	r.ctx = progress.WithCallback(r.ctx, func(update progress.Update) {
+		f.mu.Lock()
+		defer f.mu.Unlock()
+		if f.current == r && f.client == r.client && r.ctx.Err() == nil {
+			f.status.Operation = update.Operation
+			f.status.Processed = decimal(update.Processed)
+			f.publishLocked(EventStatus, nil)
+		}
+	})
 	f.current = r
 	f.status, f.generation, f.version = idle(), 0, 0
 	f.status.State, f.status.SessionID, f.status.Root = "Scanning", id, opts.Root
@@ -308,6 +320,7 @@ func (f *Facade) run(r *run, opts StartOptions) {
 		defer f.mu.Unlock()
 		if f.current == r {
 			f.current = nil
+			f.status.Operation, f.status.Processed = "", ""
 			if f.client == r.client {
 				f.status.State = "Idle"
 				if final != nil {
@@ -334,8 +347,8 @@ func (f *Facade) run(r *run, opts StartOptions) {
 	} else {
 		r.session, r.root = s, root
 		f.status.State, f.status.Root = string(s.Status()), root
-		view := s.ChangeState()
-		f.headLocked(view.Generation, view.Version)
+		generation, version := s.ChangeHead()
+		f.headLocked(generation, version)
 		f.publishLocked(EventStatus, nil)
 	}
 	close(r.ready)

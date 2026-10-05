@@ -24,7 +24,17 @@ func renderWatch(stdout, stderr io.Writer, r watchRecord) error {
 	}
 	var upserts []changes.Summary
 	if r.State != nil {
-		if _, err := fmt.Fprintf(stdout, "%d changed file(s), state version=%d\n", len(r.State.Changes), r.State.Version); err != nil {
+		unknown := 0
+		for _, item := range r.State.Changes {
+			if item.Kind == changes.Unknown {
+				unknown++
+			}
+		}
+		count := fmt.Sprintf("%d changed file(s)", len(r.State.Changes)-unknown)
+		if unknown > 0 {
+			count += fmt.Sprintf(", %d baseline unknown", unknown)
+		}
+		if _, err := fmt.Fprintf(stdout, "%s, state version=%d\n", count, r.State.Version); err != nil {
 			return err
 		}
 		upserts = r.State.Changes
@@ -37,7 +47,7 @@ func renderWatch(stdout, stderr io.Writer, r watchRecord) error {
 		}
 	}
 	for _, change := range upserts {
-		symbol := map[changes.Kind]string{changes.Added: "A", changes.Modified: "M", changes.Deleted: "D", changes.Renamed: "R"}[change.Kind]
+		symbol := map[changes.Kind]string{changes.Added: "A", changes.Modified: "M", changes.Deleted: "D", changes.Renamed: "R", changes.Unknown: "?"}[change.Kind]
 		current := change.After
 		if current == nil {
 			current = change.Before
@@ -45,6 +55,9 @@ func renderWatch(stdout, stderr io.Writer, r watchRecord) error {
 		class := ""
 		if current != nil {
 			class = string(current.Class.Kind)
+		}
+		if change.Kind == changes.Unknown {
+			class = "Baseline unknown"
 		}
 		if _, err := fmt.Fprintf(stdout, "  %s %q [%s]\n", symbol, change.Path, class); err != nil {
 			return err

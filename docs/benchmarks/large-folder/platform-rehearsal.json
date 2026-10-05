@@ -1,0 +1,88 @@
+[
+  {
+    "name": "darwin-arm64",
+    "command": [
+      "go",
+      "build",
+      "./..."
+    ],
+    "env": {
+      "GOOS": "darwin",
+      "GOARCH": "arm64",
+      "CGO_ENABLED": "0"
+    },
+    "exit_code": 0,
+    "seconds": 1.25
+  },
+  {
+    "name": "darwin-amd64",
+    "command": [
+      "go",
+      "build",
+      "./..."
+    ],
+    "env": {
+      "GOOS": "darwin",
+      "GOARCH": "amd64",
+      "CGO_ENABLED": "0"
+    },
+    "exit_code": 0,
+    "seconds": 1.457
+  },
+  {
+    "name": "linux-amd64",
+    "command": [
+      "go",
+      "build",
+      "./..."
+    ],
+    "env": {
+      "GOOS": "linux",
+      "GOARCH": "amd64",
+      "CGO_ENABLED": "0"
+    },
+    "exit_code": 0,
+    "seconds": 1.348
+  },
+  {
+    "name": "windows-amd64",
+    "command": [
+      "go",
+      "build",
+      "./..."
+    ],
+    "env": {
+      "GOOS": "windows",
+      "GOARCH": "amd64",
+      "CGO_ENABLED": "0"
+    },
+    "exit_code": 0,
+    "seconds": 1.362
+  },
+  {
+    "name": "release",
+    "command": [
+      "python3",
+      "scripts/release.py",
+      "--version",
+      "v0.2.0-rc.1",
+      "--output",
+      "artifacts/large-folder-fix-20261004/platform-v2/release",
+      "--allow-dirty"
+    ],
+    "env": {},
+    "exit_code": 0,
+    "seconds": 4.631
+  },
+  {
+    "name": "release-smoke",
+    "command": [
+      "python3",
+      "scripts/release_smoke.py",
+      "artifacts/large-folder-fix-20261004/platform-v2/release"
+    ],
+    "env": {},
+    "exit_code": 0,
+    "seconds": 1.402
+  }
+]

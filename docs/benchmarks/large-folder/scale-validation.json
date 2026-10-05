@@ -1,0 +1,78 @@
+[
+  {
+    "name": "native-large",
+    "command": [
+      "go",
+      "test",
+      "./internal/app",
+      "-run",
+      "^TestLargeTreePastBothFormerLimits$",
+      "-count=1",
+      "-v",
+      "-timeout=10m"
+    ],
+    "env": {},
+    "exit_code": 0,
+    "seconds": 119.908
+  },
+  {
+    "name": "nocgo-large",
+    "command": [
+      "go",
+      "test",
+      "./internal/app",
+      "-run",
+      "^TestLargeTreePastBothFormerLimits$",
+      "-count=1",
+      "-v",
+      "-timeout=10m"
+    ],
+    "env": {
+      "CGO_ENABLED": "0"
+    },
+    "exit_code": 0,
+    "seconds": 159.724
+  },
+  {
+    "name": "native-build",
+    "command": [
+      "go",
+      "build",
+      "-o",
+      "artifacts/large-folder-fix-20261004/scale-v2/native",
+      "./cmd/folderwatch"
+    ],
+    "env": {
+      "CGO_ENABLED": "1"
+    },
+    "exit_code": 0,
+    "seconds": 1.483
+  },
+  {
+    "name": "nocgo-build",
+    "command": [
+      "go",
+      "build",
+      "-o",
+      "artifacts/large-folder-fix-20261004/scale-v2/nocgo",
+      "./cmd/folderwatch"
+    ],
+    "env": {
+      "CGO_ENABLED": "0"
+    },
+    "exit_code": 0,
+    "seconds": 0.35
+  },
+  {
+    "name": "low-fd",
+    "command": [
+      "python3",
+      "scripts/large_tree_smoke.py",
+      "artifacts/large-folder-fix-20261004/scale-v2/native",
+      "artifacts/large-folder-fix-20261004/scale-v2/nocgo"
+    ],
+    "env": {},
+    "exit_code": 0,
+    "seconds": 6.455
+  }
+]

@@ -1,5 +1,7 @@
 # FolderWatch — Handoff_Rounds.md
 
+> **2026-10-04 大目录修复接续：见第33节、ADR-016 与 `docs/rounds/large-folder-acceptance.md`。** 下方各 Round 历史验收保持原样；新的 Core/GUI 行为以第33节为准，不借用旧 Gate 签字或旧 CI。
+
 > 项目代号：**FolderWatch**
 > 文档用途：工程实施、多人接力开发、代码评审、测试与发布交接  
 > 目标平台：**macOS 优先**，架构保留 Windows / Linux 扩展能力  
@@ -2739,3 +2741,19 @@ R9 只继续 E2E 覆盖、发布打包、签名/公证和 Gate B，不应把编�
 后续复核发现 Monaco 只接收 hunk 内容时会把每段 diff 从第 1 行重新编号，导致文件中部修改的右侧行号错误。`gui/frontend/src/DiffEditor.svelte` 现在按 core 返回的 `oldLine/newLine` 为 original/modified editor 提供自定义 line-number renderer；`gui/frontend/src/diff-lines.ts` 集中处理两侧内容与行号映射。新增 Vitest 回归和真实 Wails E2E 断言，覆盖 hunk 从第 7 行开始、修改第 10 行的场景。
 
 本地复验：`npm test -- --run`（4 files/12 tests）、`npm run check`（0 diagnostics）、`npm run build`、`go test ./internal/diff ./gui/backend ./internal/app ./internal/changes`、`FW_GUI_START_SERVER=1 FW_BROWSER_CHANNEL=chrome make gui-e2e`（2/2）均 PASS。该修复只改 GUI 展示层，不改变 core 的 path-based rename fallback 语义；远端 CI 以新 PR head 的实际 Actions 结果为准。
+
+---
+
+## 33. 大目录可靠性修复（2026-10-04）
+
+本轮由 `origin/main` 的 `60e5f49` 创建 `fix/large-folder-reliable-monitoring`，保留并完善用户已有29项未提交的大目录改动。`8192` 是原 fsnotify 目录登记表的应用预算；`CORE_ERROR` 只是 GUI 对该错误的包装。
+
+当前实现：原生 macOS 使用 FSEvents；native 资源耗尽后先关闭/join再切换 metadata polling，并在首扫子路径瞬间消失/不可读时继续覆盖健康路径。默认快照/清单数量上限为0，可选正数限制仍有效；正文/diff/队列预算保留。元数据改为私有临时磁盘索引，流式扫描有界批次与磁盘目录队列，保留具体脏子树，单文件事件避免复制全量变更表。
+
+初始基线允许明确的未知 scope，GUI 显示 `?` / Baseline unknown，不能误报 Added/Deleted 或伪造 before。Terminal/TUI 与 watch 文本输出同样显示 `?`，并将未知条目与已确认变更分开计数；NDJSON 保留 core 的 `kind=unknown`。恢复可读后仍需完整 Reset 才能建立此前缺失的基线。Reset 仍原子、失败保留旧代。长操作有计数进度并由Stop/会话取消回收，不以固定30秒限制目录规模。GUI完整分页及全索引搜索已接入，列表与Diff请求均有并发/过期边界；每页至多500行。
+
+CLI 原生 macOS 发布切换CGO1并记录FSEvents后端；no-CGO编译与降级作为独立测试。新增依赖bbolt1.3.11仅作可重建的session metadata，原fsnotify vendor补丁逐字节保留。架构、迁移、磁盘/内存及语义边界见 [ADR-016](docs/adr/016-large-folder-coverage-and-disk-indexes.md)。
+
+补充真实原生测试发现：macOS 大小写/NFC-NFD 等价的 root 输入可能与 FSEvents 返回的磁盘拼写不同，导致后续事件被词法边界错误丢弃。共享 NormalizeRoot 现通过临时 no-follow 目录描述符、F_GETPATH 与身份复核，只规范明确选择的 root；不折叠后代文件键、不跟随后代 symlink。原生 RootChanged（包括仍指向同 inode 的仅拼写重命名）维持终止旧会话的约定。新增先失败后修复的真实文件编辑、实际 root 重命名和 Go1.23/no-CGO 回归。
+
+本轮测试命令、真实结果、测量和PR/CI证据统一记录在 [large-folder acceptance](docs/rounds/large-folder-acceptance.md)。原生手工QA、签名/公证、网络盘与任意无限规模不由自动化通过推断。旧§13的资源原则仍然成立：没有固定总条目上限不等于没有物理资源边界；兼容的全清单API/Terminal消费者、ignore缓存与OS页缓存不是常数内存。

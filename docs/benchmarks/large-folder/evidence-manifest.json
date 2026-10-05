@@ -1,0 +1,19 @@
+{
+  "base_commit": "60e5f492ca9a47457f2ce00dcb329f3b5fe89da2",
+  "source_state": "working tree before first fix commit; final frozen validations include final code, scale/performance are development measurements as described in acceptance",
+  "files": {
+    "native-large.log": "341d4690ac705e4aa80b0ee2a8e42ff933e8eaf5ad057b51fbedb50ebda67744",
+    "local-gui-validation.json": "60d134b1c8875adc470a434387b17f44e6d0dd814e48898de8e525d58b72e110",
+    "soak.json": "2b82214321ab9d0e91a8b2adea8435aced0fc9815744882e7118d4e299b6d9d2",
+    "nocgo-large.log": "1bd861f083ae16b96267d2f6a3f15660a27eff2912d5d75c983cadb2ec2da59b",
+    "fuzz-modules-validation.json": "8e61b2a21950f93d0efa0b7880ee0518aea9c5f03febcf9d49fa6251e9b54bfe",
+    "platform-rehearsal.json": "a26dd084df30ebd335a779aac01d36ed5eff92e4dfc418923a4b4dbfdab6d93f",
+    "scale-validation.json": "183f08571af35a40294953ff251a0f86d8c6407555624192da244bc876a11dc7",
+    "performance-summary.json": "4ca662ffa100b8ebd00f90e77193c223740a813fe29f89c089e10e2712c67a03",
+    "soak-execution.json": "a66306f80abd63281ac624522694a13b96acfc512a721d02480e4d84f1e2948e",
+    "local-go-validation.json": "fdd35be5e529ed28402b69e308807d75e64a1e491cb060f70a0a57d94adfb7b5",
+    "smoke-scripts-validation.json": "92f4acfb19c10c076e6fa577fa3db7cff82f3eec841c7bc19190814c4c8e2dfb",
+    "environment.json": "5b087888bdec64042bfaf07b9c86a9a64911c57ef972604b344efe52982ba638",
+    "low-fd.json": "08c6d75773805dabb6f2e1194f91f6d9a0c2031eaea522a08e42e1d1baa8e112"
+  }
+}

@@ -1,0 +1,324 @@
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases/MiXeDRoot
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases/Róót
+--- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases (0.03s)
+    --- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases/MiXeDRoot (0.02s)
+    --- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases/Róót (0.02s)
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases/MiXeDRoot
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases/Róót
+--- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases (0.02s)
+    --- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases/MiXeDRoot (0.01s)
+    --- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases/Róót (0.01s)
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases/MiXeDRoot
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases/Róót
+--- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases (0.03s)
+    --- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases/MiXeDRoot (0.01s)
+    --- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases/Róót (0.02s)
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases/MiXeDRoot
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases/Róót
+--- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases (0.04s)
+    --- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases/MiXeDRoot (0.02s)
+    --- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases/Róót (0.01s)
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases/MiXeDRoot
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases/Róót
+--- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases (0.03s)
+    --- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases/MiXeDRoot (0.02s)
+    --- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases/Róót (0.01s)
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases/MiXeDRoot
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases/Róót
+--- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases (0.02s)
+    --- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases/MiXeDRoot (0.01s)
+    --- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases/Róót (0.01s)
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases/MiXeDRoot
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases/Róót
+--- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases (0.02s)
+    --- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases/MiXeDRoot (0.01s)
+    --- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases/Róót (0.01s)
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases/MiXeDRoot
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases/Róót
+--- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases (0.02s)
+    --- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases/MiXeDRoot (0.01s)
+    --- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases/Róót (0.01s)
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases/MiXeDRoot
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases/Róót
+--- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases (0.02s)
+    --- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases/MiXeDRoot (0.01s)
+    --- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases/Róót (0.01s)
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases/MiXeDRoot
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases/Róót
+--- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases (0.02s)
+    --- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases/MiXeDRoot (0.01s)
+    --- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases/Róót (0.01s)
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases/MiXeDRoot
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases/Róót
+--- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases (0.02s)
+    --- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases/MiXeDRoot (0.01s)
+    --- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases/Róót (0.01s)
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases/MiXeDRoot
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases/Róót
+--- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases (0.01s)
+    --- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases/MiXeDRoot (0.01s)
+    --- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases/Róót (0.00s)
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases/MiXeDRoot
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases/Róót
+--- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases (0.02s)
+    --- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases/MiXeDRoot (0.02s)
+    --- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases/Róót (0.01s)
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases/MiXeDRoot
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases/Róót
+--- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases (0.02s)
+    --- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases/MiXeDRoot (0.01s)
+    --- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases/Róót (0.01s)
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases/MiXeDRoot
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases/Róót
+--- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases (0.03s)
+    --- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases/MiXeDRoot (0.01s)
+    --- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases/Róót (0.02s)
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases/MiXeDRoot
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases/Róót
+--- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases (0.02s)
+    --- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases/MiXeDRoot (0.01s)
+    --- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases/Róót (0.01s)
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases/MiXeDRoot
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases/Róót
+--- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases (0.02s)
+    --- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases/MiXeDRoot (0.01s)
+    --- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases/Róót (0.01s)
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases/MiXeDRoot
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases/Róót
+--- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases (0.03s)
+    --- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases/MiXeDRoot (0.02s)
+    --- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases/Róót (0.01s)
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases/MiXeDRoot
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases/Róót
+--- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases (0.03s)
+    --- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases/MiXeDRoot (0.01s)
+    --- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases/Róót (0.02s)
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases/MiXeDRoot
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases/Róót
+--- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases (0.02s)
+    --- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases/MiXeDRoot (0.01s)
+    --- PASS: TestNormalizeRootUsesFilesystemSpellingForAliases/Róót (0.01s)
+PASS
+ok  	github.com/StevenWinsir/FolderWatch/internal/pathutil	1.886s
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases/MiXeDRoot
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases/Róót
+--- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases (0.64s)
+    --- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases/MiXeDRoot (0.33s)
+    --- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases/Róót (0.31s)
+=== RUN   TestFSEventsRootChangedIsFatalEvenWhenOriginalSpellingStillResolves
+--- PASS: TestFSEventsRootChangedIsFatalEvenWhenOriginalSpellingStillResolves (0.01s)
+=== RUN   TestFSEventsRealSpellingOnlyRootRenameStops
+--- PASS: TestFSEventsRealSpellingOnlyRootRenameStops (0.01s)
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases/MiXeDRoot
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases/Róót
+--- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases (0.64s)
+    --- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases/MiXeDRoot (0.32s)
+    --- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases/Róót (0.32s)
+=== RUN   TestFSEventsRootChangedIsFatalEvenWhenOriginalSpellingStillResolves
+--- PASS: TestFSEventsRootChangedIsFatalEvenWhenOriginalSpellingStillResolves (0.01s)
+=== RUN   TestFSEventsRealSpellingOnlyRootRenameStops
+--- PASS: TestFSEventsRealSpellingOnlyRootRenameStops (0.01s)
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases/MiXeDRoot
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases/Róót
+--- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases (0.66s)
+    --- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases/MiXeDRoot (0.33s)
+    --- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases/Róót (0.33s)
+=== RUN   TestFSEventsRootChangedIsFatalEvenWhenOriginalSpellingStillResolves
+--- PASS: TestFSEventsRootChangedIsFatalEvenWhenOriginalSpellingStillResolves (0.01s)
+=== RUN   TestFSEventsRealSpellingOnlyRootRenameStops
+--- PASS: TestFSEventsRealSpellingOnlyRootRenameStops (0.03s)
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases/MiXeDRoot
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases/Róót
+--- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases (0.65s)
+    --- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases/MiXeDRoot (0.32s)
+    --- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases/Róót (0.33s)
+=== RUN   TestFSEventsRootChangedIsFatalEvenWhenOriginalSpellingStillResolves
+--- PASS: TestFSEventsRootChangedIsFatalEvenWhenOriginalSpellingStillResolves (0.00s)
+=== RUN   TestFSEventsRealSpellingOnlyRootRenameStops
+--- PASS: TestFSEventsRealSpellingOnlyRootRenameStops (0.01s)
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases/MiXeDRoot
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases/Róót
+--- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases (0.63s)
+    --- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases/MiXeDRoot (0.32s)
+    --- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases/Róót (0.31s)
+=== RUN   TestFSEventsRootChangedIsFatalEvenWhenOriginalSpellingStillResolves
+--- PASS: TestFSEventsRootChangedIsFatalEvenWhenOriginalSpellingStillResolves (0.01s)
+=== RUN   TestFSEventsRealSpellingOnlyRootRenameStops
+--- PASS: TestFSEventsRealSpellingOnlyRootRenameStops (0.00s)
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases/MiXeDRoot
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases/Róót
+--- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases (0.63s)
+    --- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases/MiXeDRoot (0.31s)
+    --- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases/Róót (0.32s)
+=== RUN   TestFSEventsRootChangedIsFatalEvenWhenOriginalSpellingStillResolves
+--- PASS: TestFSEventsRootChangedIsFatalEvenWhenOriginalSpellingStillResolves (0.01s)
+=== RUN   TestFSEventsRealSpellingOnlyRootRenameStops
+--- PASS: TestFSEventsRealSpellingOnlyRootRenameStops (0.02s)
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases/MiXeDRoot
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases/Róót
+--- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases (0.63s)
+    --- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases/MiXeDRoot (0.31s)
+    --- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases/Róót (0.32s)
+=== RUN   TestFSEventsRootChangedIsFatalEvenWhenOriginalSpellingStillResolves
+--- PASS: TestFSEventsRootChangedIsFatalEvenWhenOriginalSpellingStillResolves (0.01s)
+=== RUN   TestFSEventsRealSpellingOnlyRootRenameStops
+--- PASS: TestFSEventsRealSpellingOnlyRootRenameStops (0.01s)
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases/MiXeDRoot
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases/Róót
+--- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases (0.62s)
+    --- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases/MiXeDRoot (0.31s)
+    --- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases/Róót (0.31s)
+=== RUN   TestFSEventsRootChangedIsFatalEvenWhenOriginalSpellingStillResolves
+--- PASS: TestFSEventsRootChangedIsFatalEvenWhenOriginalSpellingStillResolves (0.00s)
+=== RUN   TestFSEventsRealSpellingOnlyRootRenameStops
+--- PASS: TestFSEventsRealSpellingOnlyRootRenameStops (0.01s)
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases/MiXeDRoot
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases/Róót
+--- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases (0.62s)
+    --- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases/MiXeDRoot (0.31s)
+    --- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases/Róót (0.31s)
+=== RUN   TestFSEventsRootChangedIsFatalEvenWhenOriginalSpellingStillResolves
+--- PASS: TestFSEventsRootChangedIsFatalEvenWhenOriginalSpellingStillResolves (0.01s)
+=== RUN   TestFSEventsRealSpellingOnlyRootRenameStops
+--- PASS: TestFSEventsRealSpellingOnlyRootRenameStops (0.01s)
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases/MiXeDRoot
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases/Róót
+--- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases (0.63s)
+    --- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases/MiXeDRoot (0.31s)
+    --- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases/Róót (0.32s)
+=== RUN   TestFSEventsRootChangedIsFatalEvenWhenOriginalSpellingStillResolves
+--- PASS: TestFSEventsRootChangedIsFatalEvenWhenOriginalSpellingStillResolves (0.00s)
+=== RUN   TestFSEventsRealSpellingOnlyRootRenameStops
+--- PASS: TestFSEventsRealSpellingOnlyRootRenameStops (0.01s)
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases/MiXeDRoot
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases/Róót
+--- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases (0.61s)
+    --- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases/MiXeDRoot (0.30s)
+    --- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases/Róót (0.31s)
+=== RUN   TestFSEventsRootChangedIsFatalEvenWhenOriginalSpellingStillResolves
+--- PASS: TestFSEventsRootChangedIsFatalEvenWhenOriginalSpellingStillResolves (0.00s)
+=== RUN   TestFSEventsRealSpellingOnlyRootRenameStops
+--- PASS: TestFSEventsRealSpellingOnlyRootRenameStops (0.01s)
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases/MiXeDRoot
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases/Róót
+--- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases (0.63s)
+    --- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases/MiXeDRoot (0.31s)
+    --- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases/Róót (0.32s)
+=== RUN   TestFSEventsRootChangedIsFatalEvenWhenOriginalSpellingStillResolves
+--- PASS: TestFSEventsRootChangedIsFatalEvenWhenOriginalSpellingStillResolves (0.00s)
+=== RUN   TestFSEventsRealSpellingOnlyRootRenameStops
+--- PASS: TestFSEventsRealSpellingOnlyRootRenameStops (0.02s)
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases/MiXeDRoot
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases/Róót
+--- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases (0.65s)
+    --- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases/MiXeDRoot (0.32s)
+    --- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases/Róót (0.33s)
+=== RUN   TestFSEventsRootChangedIsFatalEvenWhenOriginalSpellingStillResolves
+--- PASS: TestFSEventsRootChangedIsFatalEvenWhenOriginalSpellingStillResolves (0.03s)
+=== RUN   TestFSEventsRealSpellingOnlyRootRenameStops
+--- PASS: TestFSEventsRealSpellingOnlyRootRenameStops (0.02s)
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases/MiXeDRoot
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases/Róót
+--- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases (0.63s)
+    --- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases/MiXeDRoot (0.32s)
+    --- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases/Róót (0.31s)
+=== RUN   TestFSEventsRootChangedIsFatalEvenWhenOriginalSpellingStillResolves
+--- PASS: TestFSEventsRootChangedIsFatalEvenWhenOriginalSpellingStillResolves (0.01s)
+=== RUN   TestFSEventsRealSpellingOnlyRootRenameStops
+--- PASS: TestFSEventsRealSpellingOnlyRootRenameStops (0.00s)
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases/MiXeDRoot
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases/Róót
+--- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases (0.62s)
+    --- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases/MiXeDRoot (0.31s)
+    --- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases/Róót (0.31s)
+=== RUN   TestFSEventsRootChangedIsFatalEvenWhenOriginalSpellingStillResolves
+--- PASS: TestFSEventsRootChangedIsFatalEvenWhenOriginalSpellingStillResolves (0.01s)
+=== RUN   TestFSEventsRealSpellingOnlyRootRenameStops
+--- PASS: TestFSEventsRealSpellingOnlyRootRenameStops (0.01s)
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases/MiXeDRoot
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases/Róót
+--- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases (0.62s)
+    --- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases/MiXeDRoot (0.31s)
+    --- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases/Róót (0.31s)
+=== RUN   TestFSEventsRootChangedIsFatalEvenWhenOriginalSpellingStillResolves
+--- PASS: TestFSEventsRootChangedIsFatalEvenWhenOriginalSpellingStillResolves (0.00s)
+=== RUN   TestFSEventsRealSpellingOnlyRootRenameStops
+--- PASS: TestFSEventsRealSpellingOnlyRootRenameStops (0.01s)
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases/MiXeDRoot
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases/Róót
+--- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases (0.64s)
+    --- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases/MiXeDRoot (0.32s)
+    --- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases/Róót (0.32s)
+=== RUN   TestFSEventsRootChangedIsFatalEvenWhenOriginalSpellingStillResolves
+--- PASS: TestFSEventsRootChangedIsFatalEvenWhenOriginalSpellingStillResolves (0.01s)
+=== RUN   TestFSEventsRealSpellingOnlyRootRenameStops
+--- PASS: TestFSEventsRealSpellingOnlyRootRenameStops (0.01s)
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases/MiXeDRoot
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases/Róót
+--- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases (0.62s)
+    --- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases/MiXeDRoot (0.31s)
+    --- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases/Róót (0.31s)
+=== RUN   TestFSEventsRootChangedIsFatalEvenWhenOriginalSpellingStillResolves
+--- PASS: TestFSEventsRootChangedIsFatalEvenWhenOriginalSpellingStillResolves (0.00s)
+=== RUN   TestFSEventsRealSpellingOnlyRootRenameStops
+--- PASS: TestFSEventsRealSpellingOnlyRootRenameStops (0.00s)
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases/MiXeDRoot
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases/Róót
+--- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases (0.62s)
+    --- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases/MiXeDRoot (0.31s)
+    --- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases/Róót (0.31s)
+=== RUN   TestFSEventsRootChangedIsFatalEvenWhenOriginalSpellingStillResolves
+--- PASS: TestFSEventsRootChangedIsFatalEvenWhenOriginalSpellingStillResolves (0.01s)
+=== RUN   TestFSEventsRealSpellingOnlyRootRenameStops
+--- PASS: TestFSEventsRealSpellingOnlyRootRenameStops (0.00s)
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases/MiXeDRoot
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases/Róót
+--- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases (0.66s)
+    --- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases/MiXeDRoot (0.35s)
+    --- PASS: TestFSEventsObservesIndependentEditsThroughRootAliases/Róót (0.31s)
+=== RUN   TestFSEventsRootChangedIsFatalEvenWhenOriginalSpellingStillResolves
+--- PASS: TestFSEventsRootChangedIsFatalEvenWhenOriginalSpellingStillResolves (0.01s)
+=== RUN   TestFSEventsRealSpellingOnlyRootRenameStops
+--- PASS: TestFSEventsRealSpellingOnlyRootRenameStops (0.00s)
+PASS
+ok  	github.com/StevenWinsir/FolderWatch/internal/watcher	14.459s

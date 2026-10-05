@@ -5,6 +5,7 @@ export interface Problem { code: string; message: string }
 export interface SessionInfo {
   sessionId: string; root: string; state: string; sequence: string;
   generation: string; version: string; warning: string; problem?: Problem;
+  operation?: string; processed?: string;
 }
 export interface AppInfo {
   name: string; version: string; commit: string; buildDate: string;
@@ -34,10 +35,10 @@ export interface ChangeSummary {
   path: string; oldPath: string; kind: string; version: string;
   before?: FileInfo; after?: FileInfo; firstSeen: string; lastSeen: string;
 }
-export interface ChangesRequest extends SessionRequest { offset: number; limit: number; generation: string; version: string }
+export interface ChangesRequest extends SessionRequest { offset: number; limit: number; generation: string; version: string; filter?: string }
 export interface ChangesReply {
   sessionId: string; generation: string; version: string; changes: ChangeSummary[];
-  total: number; nextOffset: number; error?: Problem;
+  total: number; matched?: number; nextOffset: number; error?: Problem;
 }
 export interface DiffRequest extends SessionRequest { path: string; generation: string; version: string }
 export interface DiffLine { kind: string; oldLine: number; newLine: number; text: string; noNewline: boolean }

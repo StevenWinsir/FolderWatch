@@ -64,7 +64,7 @@ type LoadOptions struct {
 }
 
 func Defaults() Config {
-	return Config{Debounce: 150 * time.Millisecond, MaxDiffBytes: 5 << 20, MaxSnapshotBytes: 8 << 20, MaxDiffLines: 20000, Ignore: []string{}, MaxPendingEvents: 4096, MaxWatchDirs: 8192, MaxSnapshotFiles: 100000, SnapshotMemoryBytes: 32 << 20, SnapshotCacheBytes: 256 << 20}
+	return Config{Debounce: 150 * time.Millisecond, MaxDiffBytes: 5 << 20, MaxSnapshotBytes: 8 << 20, MaxDiffLines: 20000, Ignore: []string{}, MaxPendingEvents: 4096, MaxWatchDirs: 8192, MaxSnapshotFiles: 0, SnapshotMemoryBytes: 32 << 20, SnapshotCacheBytes: 256 << 20}
 }
 
 func (c Config) Validate() error {
@@ -74,8 +74,8 @@ func (c Config) Validate() error {
 	if c.Debounce <= 0 || c.Debounce > time.Duration(1<<63-1)/4 {
 		return fmt.Errorf("debounce must be positive and allow a 4x settling window without overflow")
 	}
-	if c.MaxPendingEvents < 1 || c.MaxPendingEvents > 1<<20 || c.MaxWatchDirs < 1 || c.MaxSnapshotFiles < 1 {
-		return fmt.Errorf("pending events must be 1..1048576; directory and snapshot entry limits must be positive")
+	if c.MaxPendingEvents < 1 || c.MaxPendingEvents > 1<<20 || c.MaxWatchDirs < 1 || c.MaxSnapshotFiles < 0 {
+		return fmt.Errorf("pending events must be 1..1048576; native directory budget must be positive; snapshot entry limit must be non-negative (0 = no count cap)")
 	}
 	if c.SnapshotMemoryBytes <= 0 || c.SnapshotCacheBytes <= 0 {
 		return fmt.Errorf("snapshot memory/cache budgets must be positive")

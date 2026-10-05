@@ -37,7 +37,11 @@ func Run(ctx context.Context, args []string, stdout, stderr io.Writer, build Bui
 		}
 		return 0
 	}
-	prepared, err := app.Prepare(ctx, request.Root, request.Overlay, opts)
+	prepare := app.Prepare
+	if request.Watch || request.TUI || (!request.Scan && !request.JSON && terminalAvailable(stdout)) {
+		prepare = app.PrepareSession
+	}
+	prepared, err := prepare(ctx, request.Root, request.Overlay, opts)
 	if err != nil {
 		diagnostic(stderr, err)
 		if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {

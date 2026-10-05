@@ -179,6 +179,9 @@ github.com/wailsapp/wails/v2/pkg/options/linux
 github.com/wailsapp/wails/v2/pkg/options/mac
 github.com/wailsapp/wails/v2/pkg/options/windows
 github.com/wailsapp/wails/v2/pkg/runtime
+# go.etcd.io/bbolt v1.3.11
+## explicit; go 1.22
+go.etcd.io/bbolt
 # golang.org/x/crypto v0.33.0
 ## explicit; go 1.20
 golang.org/x/crypto/acme

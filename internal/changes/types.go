@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/StevenWinsir/FolderWatch/internal/diff"
+	"github.com/StevenWinsir/FolderWatch/internal/filemeta"
 	"github.com/StevenWinsir/FolderWatch/internal/filetype"
 	"github.com/StevenWinsir/FolderWatch/internal/model"
 	"github.com/StevenWinsir/FolderWatch/internal/snapshot"
@@ -18,6 +19,7 @@ const (
 	Modified Kind = "modified"
 	Deleted  Kind = "deleted"
 	Renamed  Kind = "renamed"
+	Unknown  Kind = "unknown" // startup baseline unavailable; never guessed as Added
 )
 
 var (
@@ -25,12 +27,14 @@ var (
 	ErrStale      = errors.New("change or baseline changed during diff; retry with current state")
 	ErrNotChanged = errors.New("path has no current semantic change")
 	ErrCapacity   = errors.New("change inventory exceeds configured entry limit")
+	ErrPage       = errors.New("invalid change page")
 )
 
 type FileState struct {
-	Meta  model.FileMeta  `json:"meta"`
-	Hash  string          `json:"hash,omitempty"`
-	Class filetype.Result `json:"classification"`
+	Meta      model.FileMeta     `json:"meta"`
+	Hash      string             `json:"hash,omitempty"`
+	Class     filetype.Result    `json:"classification"`
+	Signature filemeta.Signature `json:"-"`
 }
 type Summary struct {
 	Path      string     `json:"path"`
@@ -46,6 +50,16 @@ type View struct {
 	Generation uint64    `json:"generation"`
 	Version    uint64    `json:"version"`
 	Changes    []Summary `json:"changes"`
+	Error      string    `json:"error,omitempty"`
+}
+
+type Page struct {
+	Generation uint64
+	Version    uint64
+	Changes    []Summary
+	Total      int
+	Matched    int
+	NextOffset int
 }
 
 // Batch is a versioned delta. Reload requires fetching View; it never means
@@ -67,11 +81,11 @@ type Warning struct {
 type Options struct {
 	Snapshot   snapshot.Options
 	Diff       diff.Options
-	MaxEntries int
+	MaxEntries int // 0 = no inventory-count cap; content and diff remain bounded.
 }
 
 func state(ref snapshot.Ref) *FileState {
-	return &FileState{Meta: ref.Meta, Hash: ref.Hash, Class: ref.Class}
+	return &FileState{Meta: ref.Meta, Hash: ref.Hash, Class: ref.Class, Signature: ref.Signature}
 }
 func copySummary(s Summary) Summary {
 	if s.Before != nil {

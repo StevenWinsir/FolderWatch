@@ -1,0 +1,352 @@
+{
+  "schema": 1,
+  "recorded_utc": "2026-10-05T01:05:54.571677+00:00",
+  "base_commit": "a7859c8f37e9759fa618fcea1820ebc7905ac969",
+  "scope": "Frozen root-alias correction on top of a7859c8; source checksums identify tested bytes. All earlier large-folder changes are preserved. Ordinary opt-in skip was independently covered with both CGO modes. Browser IPC is real but not native manual UI/signing/network-volume acceptance.",
+  "validation": {
+    "go": [
+      {
+        "name": "lint",
+        "command": [
+          "make",
+          "lint"
+        ],
+        "start": "2026-10-05T00:57:30.448041+00:00",
+        "end": "2026-10-05T00:57:31.206975+00:00",
+        "exit_code": 0
+      },
+      {
+        "name": "go-tests",
+        "command": [
+          "go",
+          "test",
+          "-count=1",
+          "-json",
+          "./..."
+        ],
+        "start": "2026-10-05T00:57:31.207352+00:00",
+        "end": "2026-10-05T00:57:58.560579+00:00",
+        "exit_code": 0,
+        "test_events": {
+          "pass": 361,
+          "fail": 0,
+          "skip": 1
+        }
+      },
+      {
+        "name": "go-race",
+        "command": [
+          "go",
+          "test",
+          "-race",
+          "-shuffle=on",
+          "-count=10",
+          "./..."
+        ],
+        "start": "2026-10-05T00:57:58.563668+00:00",
+        "end": "2026-10-05T01:01:19.388521+00:00",
+        "exit_code": 0
+      },
+      {
+        "name": "smoke",
+        "command": [
+          "make",
+          "smoke",
+          "scripts-test"
+        ],
+        "start": "2026-10-05T01:01:19.388956+00:00",
+        "end": "2026-10-05T01:01:34.186867+00:00",
+        "exit_code": 0
+      }
+    ],
+    "gui": [
+      {
+        "name": "gui-build",
+        "command": [
+          "make",
+          "gui-build",
+          "VERSION=0.2.0-dev"
+        ],
+        "start": "2026-10-05T00:57:53.801709+00:00",
+        "end": "2026-10-05T00:58:13.483695+00:00",
+        "exit_code": 0
+      },
+      {
+        "name": "gui-e2e-1",
+        "command": [
+          "make",
+          "gui-e2e"
+        ],
+        "start": "2026-10-05T00:58:13.484295+00:00",
+        "end": "2026-10-05T00:58:58.813170+00:00",
+        "exit_code": 0,
+        "pass_summary": [
+          "44.8s"
+        ]
+      },
+      {
+        "name": "gui-e2e-2",
+        "command": [
+          "make",
+          "gui-e2e"
+        ],
+        "start": "2026-10-05T00:58:58.825984+00:00",
+        "end": "2026-10-05T00:59:36.128887+00:00",
+        "exit_code": 0,
+        "pass_summary": [
+          "36.8s"
+        ]
+      },
+      {
+        "name": "gui-e2e-3",
+        "command": [
+          "make",
+          "gui-e2e"
+        ],
+        "start": "2026-10-05T00:59:36.141121+00:00",
+        "end": "2026-10-05T01:00:07.755788+00:00",
+        "exit_code": 0,
+        "pass_summary": [
+          "31.2s"
+        ]
+      }
+    ],
+    "scale": [
+      {
+        "name": "native-large",
+        "command": [
+          "go",
+          "test",
+          "./internal/app",
+          "-run",
+          "^TestLargeTreePastBothFormerLimits$",
+          "-count=1",
+          "-v",
+          "-timeout=10m"
+        ],
+        "cgo": "1",
+        "start": "2026-10-05T00:57:43.809241+00:00",
+        "end": "2026-10-05T01:01:25.740502+00:00",
+        "exit_code": 0
+      },
+      {
+        "name": "native-build",
+        "command": [
+          "go",
+          "build",
+          "-trimpath",
+          "-o",
+          "/Users/stevenlee/Desktop/diffList/artifacts/large-folder-final-20261004/alias-final/native",
+          "./cmd/folderwatch"
+        ],
+        "cgo": "1",
+        "start": "2026-10-05T01:01:25.740856+00:00",
+        "end": "2026-10-05T01:01:26.453287+00:00",
+        "exit_code": 0
+      },
+      {
+        "name": "nocgo-large",
+        "command": [
+          "go",
+          "test",
+          "./internal/app",
+          "-run",
+          "^TestLargeTreePastBothFormerLimits$",
+          "-count=1",
+          "-v",
+          "-timeout=10m"
+        ],
+        "cgo": "0",
+        "start": "2026-10-05T01:01:26.453865+00:00",
+        "end": "2026-10-05T01:03:30.538251+00:00",
+        "exit_code": 0
+      },
+      {
+        "name": "nocgo-build",
+        "command": [
+          "go",
+          "build",
+          "-trimpath",
+          "-o",
+          "/Users/stevenlee/Desktop/diffList/artifacts/large-folder-final-20261004/alias-final/nocgo",
+          "./cmd/folderwatch"
+        ],
+        "cgo": "0",
+        "start": "2026-10-05T01:03:30.538836+00:00",
+        "end": "2026-10-05T01:03:31.725091+00:00",
+        "exit_code": 0
+      },
+      {
+        "name": "low-fd",
+        "command": [
+          "python3",
+          "scripts/large_tree_smoke.py",
+          "/Users/stevenlee/Desktop/diffList/artifacts/large-folder-final-20261004/alias-final/native",
+          "/Users/stevenlee/Desktop/diffList/artifacts/large-folder-final-20261004/alias-final/nocgo"
+        ],
+        "cgo": "default",
+        "start": "2026-10-05T01:03:31.725524+00:00",
+        "end": "2026-10-05T01:03:39.805529+00:00",
+        "exit_code": 0
+      }
+    ]
+  },
+  "native_isolated": {
+    "command": [
+      "/opt/homebrew/bin/go",
+      "test",
+      "-mod=vendor",
+      "./internal/app",
+      "-run",
+      "^TestLargeTreePastBothFormerLimits$",
+      "-count=1",
+      "-v",
+      "-timeout=10m"
+    ],
+    "start": "2026-10-05T01:04:00.338444+00:00",
+    "end": "2026-10-05T01:05:22.288506+00:00",
+    "exit_code": 0,
+    "note": "No concurrent race/GUI or other large filesystem workload; lightweight source/dependency checks overlapped near completion. The slower concurrent run is retained too."
+  },
+  "focused_compatibility": "Go1.26 native race aliases/root flag x20, real spelling-only rename race x20, no-CGO aliases x20, cached Go1.23.12 native race aliases/root flag/actual rename x20: PASS.",
+  "retained_logs_sha256": {
+    "alias-before.log": "04f64202993b3deb1316549ae653cd2354c40d866939f07a41a1d5eb416f73cd",
+    "alias-go123-focused.log": "5da5e9f9d9b861a7f8c1463ff408f3fb2b3b07dfde6c39df62f55211515c6802",
+    "alias-go-race.log": "707be883de66f31f44fad65a4a3e75c08e38a6e469fdd5a5e1c01371556567b6",
+    "alias-native-large.log": "26df41f682d0ea9c8b5d7c5aa56c578c1cad4193a8d0b59e8dc53b8c0bc1a76b",
+    "alias-nocgo-large.log": "ca80eef902f3a684a15761a7a38df924ba2c0d64f2bf5499a79dc052b94b546d",
+    "alias-native-isolated.log": "bedd1df065a5151fc4e4df4f00fd2b649d19e33bba195e9cd0fbcc6fccf30fbc",
+    "original-review-recovery-now.log": "c274cb59a74f2fca5db931630eb523bdaf599495183a9153c3a0f65ebde13a32"
+  },
+  "source_sha256": {
+    ".github/workflows/ci.yml": "8ef1b0a798ac761b78b8d5bda808b3bc7e9d63680bcfc526b0ae305dbcc5e211",
+    "Makefile": "509b5d1b06cf4fc94fc1ecabae76c9a3baed62070ec4a0f87afddac96d36e1da",
+    "go.mod": "d3a2f3c16dc07a77aff99352faee30ded834ff85a3cce0570a970fff027bfdbc",
+    "go.sum": "fa3cd9812ae4a7c14140c58000b2a86f9f0fb6d01bcf379822ace2302553c0ed",
+    "gui/backend/api.go": "66e09bc011f997e1db94476c0033f7caf5a3591645345ac49f5fed218c8ec85c",
+    "gui/backend/dto.go": "f183f7a03eb390bbc9a2e4cf2c2c31e9d1526e0e3607050fc33dba479a274149",
+    "gui/backend/facade.go": "ca51a34ad11bfa1c2e025f23251c7d3587e65b180043db894e7dc796ab724f59",
+    "gui/backend/large_page_test.go": "e7ee610c10b36ef4c567bdf10c283945a477a1d3377848f587f052af584a18f5",
+    "gui/backend/queries.go": "244ce151deec08a44722b416b88e86a0f08079eb4affec470b00f9d780dfd027",
+    "gui/frontend/playwright.config.ts": "71141d3900102550ef8c7f6f50b6286efbbb5324bdd1274dbc4b1ecd66583902",
+    "gui/frontend/src/App.svelte": "940822d4ac1c2daf5da0a72b30181ac0897c27083ed0ec7b5a74529d01488dd9",
+    "gui/frontend/src/frontend-mode.ts": "eb3627f8a49dba3e18947f9e67afc1b07d1cbb6b60b6b5d7439c88e00e7b5130",
+    "gui/frontend/src/ipc.ts": "35437794f5041276fa2ec8bac3ce8623960632b019710c25c7648e5b3d8322b6",
+    "gui/frontend/src/main.ts": "bbfe30a0960c9c60040d85aae2a6d7d538ae1d24506a69f3e2213a4c196c344c",
+    "gui/frontend/src/style.css": "25e1c8eeefbdad0cb3ac5e5def981dcb9c372c86549fee6f6dd2d812c0e7faea",
+    "gui/frontend/src/workspace.ts": "35c6f88ec11e589a3ef6c119c67f98c76b148971d83881ee5a261fd46b2ad54d",
+    "gui/frontend/tests/e2e/large-folder.spec.ts": "a8fdd978040a877bc6c3150e55c58848c654cfc230afb10d21b060b248ab5507",
+    "gui/frontend/tests/e2e/pagination.spec.ts": "ca72439df60c95b2f986b1d44162d19ad0522799517975d223eec27638fae428",
+    "gui/frontend/tests/frontend-mode.test.ts": "9f214ea0f2bafc95b3bfd4f6da345127fd64724ee3868bc288055fb9636f533d",
+    "gui/frontend/tests/workspace.test.ts": "ba09142fa6e463df662b8d80a13ec5c194f63271ea180320332ff0752b61c529",
+    "gui/frontend/wailsjs/go/models.ts": "e3b80f934d3741d3495e66432ca7aff8532e63bb6746e267679e31e1eaf9fbea",
+    "internal/app/large_tree_test.go": "ad6c95e3a3cd8755ab65bceb671492fa0f8257f09cbb24a25dedb4a1540f7875",
+    "internal/app/migration_test.go": "2343aa701e15cb599c7389918e33338d505ba6726de790a399a36c3d97fa47d7",
+    "internal/app/partial_baseline_test.go": "658d83a18253b5de84cb729b92c86919c597943dcd1918339ee2382eb64635bf",
+    "internal/app/prepare.go": "81a539b1c852aead0c5db71f227684898f33700d883f7b2cff9e6b9859048b53",
+    "internal/app/semantic.go": "2f87ecd75767162db38f4c7ad5ef29fc5d8e8282c1177a05ae7f8c9901794f87",
+    "internal/app/session.go": "01af6b56ad0767208292eb96f8be99cdd0cc483c653991511ae17114166dba96",
+    "internal/catalog/catalog.go": "e75d84b713898be43c0dbed907bcb1942eebc9364b970766cc9dc9a8fd422918",
+    "internal/catalog/catalog_test.go": "e2847ad44c5b7d390b178029e5e4d91817fa9a5f2eeb7a4dc181d23af1e806b3",
+    "internal/changes/diff.go": "9bb9a6d9a1f7b500506a795b3c3e0cadd47717eea57078c033019232c0ad38c4",
+    "internal/changes/read_current.go": "83d0f7b4ceffa17e6d0ffe32cb75af42318e3b2fad32b861a96d266933f5fd81",
+    "internal/changes/resolve.go": "8478eddda80a63396174a7bb17380e1580b286acba3bd7039dd10c4c4d8d1e54",
+    "internal/changes/resolve_pass.go": "83507816045fa2d7da97efcf3ec170cc04270fdb6503dd6cb94328158042259f",
+    "internal/changes/scalability_test.go": "513721c1366b15a1b0c507d75aee35b1acae41019cb8e70b238166c2cd497f9a",
+    "internal/changes/store.go": "37b10723438e71f9022e239a95804ab8b5a9b45fe46652eead3b3262fc30546d",
+    "internal/changes/types.go": "0009957da38fa6443db2ca47ce79627909020afa440de0b4fe2785d13fafc56f",
+    "internal/changes/uncapped_test.go": "13e5549ede8a97e33cb247ae06f802186b2901bb216e0cc23f420ce6013e1293",
+    "internal/cli/flags.go": "5d82a38163133c707a111c3d5af20a017c700b16a32f8f477ba26989a2e853b9",
+    "internal/cli/render_watch.go": "95f527c80eedc3edb1ed7cc061cc980e7fe43238f8887713adbd8eeb35ca04ba",
+    "internal/cli/run.go": "f76eb1a4f3f93486c9b95f34befed3e567e7cd3caa1ac0f3ec91002f3f3b11ee",
+    "internal/cli/unknown_test.go": "7f9d39bd02d5b9d5a0a0420f4302bf3e2f2eca4018237e52339fe31ad2180cd5",
+    "internal/cli/watch_test.go": "a81ec288c7aedbff3d4bf843f4d3f9af0e938ebceaa3878c2c3c7675a6232075",
+    "internal/config/config.go": "1f6110c565d7c86d6f542e37c4f8582d42b1c1c976172b7de2f818bd632752e4",
+    "internal/config/uncapped_test.go": "a2c085518486a6963d3a6ae93168feab0551996041385745a4fef55ce063d7b5",
+    "internal/debounce/coalescer.go": "b784a94d81dc0f30b8a37a6cb3f78127b5df49aee39872b37693a621b8996d7f",
+    "internal/eventnorm/normalize.go": "76e04e86f8974075d254edfe4927094b63cbc6d470b4d50fe90378401601fe3c",
+    "internal/filemeta/policy.go": "a987e29b3e1bc19386c9fc8abea418befda883ad39233777844482d79b7ecfb7",
+    "internal/filemeta/policy_darwin.go": "1cd7b58c4be2da957da3d03c14a5c4ab68113ed17fa9bcd4ee62c4f253eaad7b",
+    "internal/filemeta/policy_linux.go": "e0273cd94157999e986eb8e335050f3fe04c70888543bc8425ba909b2dc02c39",
+    "internal/filemeta/policy_other.go": "367f826ce6055dbae46ea0562d0fc1d44a1798c605c6bf4c7d5c12c84cc71b0e",
+    "internal/filemeta/policy_test.go": "e5e4e314b75474a3cc545367d4f297dffa70e366d5b92e498a27babbd6db4e14",
+    "internal/filemeta/signature.go": "b85d1b61a3235616f76d72825aac5547da56f79963c7cb001de1ba2f73c38fe6",
+    "internal/filemeta/signature_darwin.go": "c900fdeba209e09d827a09853980487ff291c59dfe7de7f42ca222f9eaf57547",
+    "internal/filemeta/signature_linux.go": "5695be3d6167dd018d972e27aa2b51afbc5f8b04794e0b0aac85e2401e0f673f",
+    "internal/filemeta/signature_other.go": "0c2457b4562f77298937d7488eaa9285b5285b302a63bebd1168adc003b17dcb",
+    "internal/ignore/matcher.go": "9a802d3c1e7dea5c368f16212d3b9d96be2e55ec3afa97c81a4a82648d305fe2",
+    "internal/ignore/prune_test.go": "704b37f09ef5b7ccba85f379ea44654e4932bbab2d14b62f4ca2e6bff54ed2d2",
+    "internal/pathutil/canonical_root_darwin.go": "227f9732c7b4ef940eb079dd332584427cabcb8774ad825e069339b7ae025aeb",
+    "internal/pathutil/canonical_root_darwin_test.go": "1de5ed02a65d12d99ddd363f58d1ba9e70b989156736fe36df7ccd9abb4b3a82",
+    "internal/pathutil/canonical_root_other.go": "813f42e3b7162199ee2f4e8ed12f2fbdb4a6467a33cc89b7bb1d11521ea16da6",
+    "internal/pathutil/path.go": "fe107200953e30e54f833db8876b596f91dce0436150dbac9ea20758dd0ecee9",
+    "internal/progress/progress.go": "7c6785359bb4c847f6ebce649099c4afb88d467937259a93595750d8417159bf",
+    "internal/scan/stream.go": "1c02a7c7977dd467aa9130462e156fd4987564588975f851fb98f0ea81e67d94",
+    "internal/scan/stream_test.go": "41541f69031f000b5494ac2643090764a89cb6468726ecc00158d3443b0266fe",
+    "internal/snapshot/capture.go": "f2478380d10f743d92b164bc44c531c628ea4741cf2c0c69385f68865a73f7bb",
+    "internal/snapshot/store.go": "e5aaa0443092d9a1c984e627f431ad9fcbadaab710e227c3c00fbcc52baf4e2c",
+    "internal/snapshot/store_test.go": "60ecfbd988dce78fbd3eddd67813c7966d08124aa9b341e191de63cc7c97b7ab",
+    "internal/snapshot/types.go": "be4405e3d8fe59ccfa7b29dfb9834b3eeda7ec5a43c1f83a91e79be677f911af",
+    "internal/snapshot/uncapped_test.go": "69821a9b8e3476fa807ebfcdaf0ccbfd426a30679e67e261257f0ca0689404af",
+    "internal/tui/unknown_test.go": "fdcc6d1240e5d894f42ddb4189054336cb5c25737a288d027510c8c25e96d6a8",
+    "internal/tui/view.go": "634a31905741e0753f2d39d70e0fded82714b758c37b3c9992fc42c33d929017",
+    "internal/watcher/adaptive.go": "fe960019ed4b70d3e57d09575f4f8895b7f08e1b0f81e44a31328e1078e78c54",
+    "internal/watcher/adaptive_test.go": "66d6421c34c0548b140b08a9d2cfca35c9b1f452ca9a24dc728622028b36f934",
+    "internal/watcher/fsevents_alias_darwin_test.go": "cbedc70b755dbc160338d1990d7a76f470e6fbcca118dcc3c915349e658d6d35",
+    "internal/watcher/fsevents_darwin.c": "54de51782ded5348319614e6e8dddfc73026daa052e045ee6257dcaa1eff4fbe",
+    "internal/watcher/fsevents_darwin.go": "a4ded1ed867c7f75bd0da876f7c0556a6d6a9b494755567fe37abb02bf1dbfb6",
+    "internal/watcher/fsevents_darwin.h": "5e14c4845e50dd37562ea78e743de6974bab47e402f732d21415ecf773dd963b",
+    "internal/watcher/fsevents_darwin_test.go": "3e54b4895b99fd8785c102ae8d4e3b8f12b5aa4507d463413c4f3b17d08904e0",
+    "internal/watcher/metadata_darwin.go": "13b3c00fee57327175b4ecf6216cc0bf4c2a58c1aced7e80d100bd2b0fe360b1",
+    "internal/watcher/metadata_linux.go": "7596ae2bd44f5a3110bf22bb5e9f5379f88ebb7a6efa78b14cad3e84456683c9",
+    "internal/watcher/metadata_other.go": "ad51122e482648667de8c3c3fa4935b607953fdf1f9daf4eef46ee754462d692",
+    "internal/watcher/polling.go": "86ac0efd2ffc0e2dbe102a1e172ea0c3743accd52826b2d91f712c16ddd7a86c",
+    "internal/watcher/preferred_other.go": "bd08d2059657ecc512e81ee771b68636790f20e70ad9fc6a781e12242dd72377",
+    "internal/watcher/recovery_test.go": "b482c8006688fd04606607814e044823a9386bb381a18476a6e3dfd49a6ecef0",
+    "scripts/large_tree_smoke.py": "89c575bacd24b1d28b41ef664dd9daab8ab1010ce5a5a0e05bb9bfadc8986034",
+    "scripts/performance.py": "73b81948520a0eb25192ceb6b72a37e459ae1dd9153e7b880862bfd736092107",
+    "scripts/release.py": "8477d20f3eb0ae4dc9cf5f50946dd823214c63cc7a6c157c177fc00c0b7a8983",
+    "scripts/release_smoke.py": "596bbf46e3e0a79c76c32da1242940957673e0a2fb3e91173a9d54feef7c656f",
+    "scripts/test_release.py": "d12389ada4d1a1dd1e91df73e5a86a39ac8e83a82f814dddef7a9687edd8fc41",
+    "testdata/config.example.toml": "9ef182dc3461a67c782305540e28a6d2ba657c705a9933b64db040aa4210ad35",
+    "vendor/go.etcd.io/bbolt/.gitignore": "bb635f5836e4d559ba64ae284f44d008ddb1dd1fa7b21e8855540ca1fb10398a",
+    "vendor/go.etcd.io/bbolt/.go-version": "dc7d158217c7b028788d0fa5dbeff7e9fe6cc11f074b5900e213206d2f59aa30",
+    "vendor/go.etcd.io/bbolt/LICENSE": "c15d721c37e277a11584547de6d618541501f7aa10c4e32a945a4f9ff36cb0f6",
+    "vendor/go.etcd.io/bbolt/Makefile": "dcbed99684ee9e1d4e0350ee035e9a7ad5b0fd52195d3a74d476f48c2987eaf4",
+    "vendor/go.etcd.io/bbolt/bolt_386.go": "8cf74885df1db55bfdf93a6fe95cfad231a7aa6ccde46afc3eac4378c409a70c",
+    "vendor/go.etcd.io/bbolt/bolt_amd64.go": "4a367f09e38e7b50d1ed76926ead89dc4d1ed2a4923138986cce059630c66016",
+    "vendor/go.etcd.io/bbolt/bolt_arm.go": "8cf74885df1db55bfdf93a6fe95cfad231a7aa6ccde46afc3eac4378c409a70c",
+    "vendor/go.etcd.io/bbolt/bolt_arm64.go": "5bfb5d74b58f4308112081f858513fab19e2e442069ca3df61d3d91c96fb639f",
+    "vendor/go.etcd.io/bbolt/bolt_linux.go": "45d698a86a4ee7d216430f85cca76cf54753c8713c45bb3b28b92c3a8ef3a464",
+    "vendor/go.etcd.io/bbolt/bolt_loong64.go": "2d6e626de56bf15ebb5bc60e004f274d719a67a5f8d47bae2de9c4e60498282e",
+    "vendor/go.etcd.io/bbolt/bolt_mips64x.go": "fd7f231207772743da8e469b373411c962a3c44cde81a1db690deea42ec39e6a",
+    "vendor/go.etcd.io/bbolt/bolt_mipsx.go": "f1647dcb61f7eea378f22b3790403e9cb9e4bea458ecd71d3854bd5df88336fa",
+    "vendor/go.etcd.io/bbolt/bolt_openbsd.go": "743f477b3b9f4495240ac9d35859f063bc04a9b46c35b69e1e87c4f1249e4a03",
+    "vendor/go.etcd.io/bbolt/bolt_ppc.go": "33ad233ed2cec56a6efc7cf3004aa0655084843391cd674506313901202a7619",
+    "vendor/go.etcd.io/bbolt/bolt_ppc64.go": "af1283397680827d4a661e31f62d401c189b6f3383ff71ee47f1a64403f59fcf",
+    "vendor/go.etcd.io/bbolt/bolt_ppc64le.go": "22724b7a0c93121687d7cce65f53a9674a4e9f1c27083422432971b485bb95ea",
+    "vendor/go.etcd.io/bbolt/bolt_riscv64.go": "f9769e239de2749da7b75d350a145e96ffdb392b055ed16457b66b5a7c6d5ce9",
+    "vendor/go.etcd.io/bbolt/bolt_s390x.go": "6e7546099b839c742d2b64e38bfce0c52ebbb2eb3fd2f5e5cf2380e3e50b81db",
+    "vendor/go.etcd.io/bbolt/bolt_unix.go": "afd70596af6f1d37b68e02eecabda77dfc160c023dc7bf07123b3d60340009c7",
+    "vendor/go.etcd.io/bbolt/bolt_unix_aix.go": "96adfb32ee98f7e398dd8d3104d292d5acb22c0898dba671eaa8047f71dc3ca9",
+    "vendor/go.etcd.io/bbolt/bolt_unix_solaris.go": "090acfa7e39879846ee192cc2498762395451a4ac98b4b8a16f6d53dc140e471",
+    "vendor/go.etcd.io/bbolt/bolt_windows.go": "99e1c2b27ecb9dcddf490879150b8abab67eec0893a9692ab97a0f91d6403017",
+    "vendor/go.etcd.io/bbolt/boltsync_unix.go": "e1f9635a19e3f808f6acabc274241d940ce0d5163fde8d5509a8b7bf2f4ae736",
+    "vendor/go.etcd.io/bbolt/bucket.go": "7657e0e018c184abfe722789c9932c50ca7b7ee368885e3a815ef9c5905011c3",
+    "vendor/go.etcd.io/bbolt/compact.go": "b6f91d8c1b731f48507c25cd7cbe6d72b928c1f15c2bc68cc5084386d7324e20",
+    "vendor/go.etcd.io/bbolt/cursor.go": "ae48f3b6f43d3fc7b05ab740dc9f0d535cd0168d75ed61691446db475abaea80",
+    "vendor/go.etcd.io/bbolt/db.go": "d73cc8c797be29cdad34bc8e3bc76b921f7f8561448e9b3d2cc68be08b6db563",
+    "vendor/go.etcd.io/bbolt/doc.go": "7981a75a3e3786eb91923afb7fedf378743a68946d7857ba4fdf7f5131057a3c",
+    "vendor/go.etcd.io/bbolt/errors.go": "b1268c684a8f88ba8bced2eda63d5894f650f1112028f8c2238f977ce1caabdc",
+    "vendor/go.etcd.io/bbolt/freelist.go": "0bc8f05c7c8430fb5e2942d338eabf7751012d021de3c59552e3ba670fd97b93",
+    "vendor/go.etcd.io/bbolt/freelist_hmap.go": "9922c6377dd098cccf30e3b2cd166248f93277ad911fca06ebd448f407b75200",
+    "vendor/go.etcd.io/bbolt/mlock_unix.go": "5323153b5536a1e2cbc206c1d78961c21fee047cc1ce8424dfe7b0274554471c",
+    "vendor/go.etcd.io/bbolt/mlock_windows.go": "6428175ee603fc184dddc3ce548d6ac3d63752ad6e9818173b88d141f0cbfc8a",
+    "vendor/go.etcd.io/bbolt/node.go": "36c7c757be7089c3d3f1446d3d9ea9e5fbe082585d2b15801a51a3750d5a6008",
+    "vendor/go.etcd.io/bbolt/page.go": "18a56332b5ec561fcb68b21e2b249e0cefa9946af6459b6902acfd8b66dd3870",
+    "vendor/go.etcd.io/bbolt/tx.go": "eddbb167436af4ab2c020858689e6fb5a1cd73361c68e4407c4d696e3614f48b",
+    "vendor/go.etcd.io/bbolt/tx_check.go": "6bbd9c520d96a8ed3eec7dd81432b4e657f6313f8913dba6e286a0a52c129ff6",
+    "vendor/go.etcd.io/bbolt/unsafe.go": "1d1752a09c972b14cf49b89e616626d65ecd5ca7f04144058682aca9d4fa80e6",
+    "vendor/modules.txt": "ed9998fd74212d13a59254d500ce5652e62df5ed23815d6994f65de12bce58be"
+  }
+}

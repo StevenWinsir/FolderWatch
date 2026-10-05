@@ -88,13 +88,16 @@ func TestCaptureStorageBudgetsAndHashes(t *testing.T) {
 	if err != nil || info.Mode().Perm() != 0700 {
 		t.Fatalf("cache permissions %v %v", info, err)
 	}
-	for _, item := range s.items {
-		if item.file != "" {
-			info, err := os.Stat(item.file)
+	if err := s.records.Walk(context.Background(), "", func(_ string, item Record) error {
+		if item.File != "" {
+			info, err := os.Stat(item.File)
 			if err != nil || info.Mode().Perm() != 0600 {
 				t.Fatalf("file permissions %v %v", info, err)
 			}
 		}
+		return nil
+	}); err != nil {
+		t.Fatal(err)
 	}
 }
 

@@ -2,14 +2,13 @@ package app
 
 import (
 	"context"
-	"errors"
 	"os"
 	"path/filepath"
 	"testing"
 	"time"
 
+	"github.com/StevenWinsir/FolderWatch/internal/changes"
 	"github.com/StevenWinsir/FolderWatch/internal/config"
-	"github.com/StevenWinsir/FolderWatch/internal/watcher"
 )
 
 func TestMovedTreeImmediateAndLaterContentsRemainObservable(t *testing.T) {
@@ -45,7 +44,7 @@ func TestMovedTreeImmediateAndLaterContentsRemainObservable(t *testing.T) {
 	}
 }
 
-func TestDirectoryLimitStopsInsteadOfPretendingFullCoverage(t *testing.T) {
+func TestDirectoryBudgetDoesNotStopOrLoseCoverage(t *testing.T) {
 	root := t.TempDir()
 	limit := 1
 	prepared, err := Prepare(context.Background(), root, config.Overlay{MaxWatchDirs: &limit}, config.LoadOptions{SkipUserConfig: true})
@@ -60,16 +59,14 @@ func TestDirectoryLimitStopsInsteadOfPretendingFullCoverage(t *testing.T) {
 	if err := os.Mkdir(filepath.Join(root, "over-limit"), 0700); err != nil {
 		t.Fatal(err)
 	}
-	select {
-	case <-s.Done():
-		if s.Err() == nil {
-			t.Fatal("limit failure was hidden")
-		}
-	case <-time.After(5 * time.Second):
-		t.Fatal("incomplete monitoring remained active")
+	putSession(t, root, "over-limit/a", "first")
+	waitExactChange(t, s, "over-limit/a", changes.Added, "first", 10*time.Second)
+	if err := s.ResetBaseline(context.Background()); err != nil {
+		t.Fatal(err)
 	}
-	// The exact native error may race stream closure; either must be fatal.
-	if !errors.Is(s.Err(), watcher.ErrDirectoryLimit) {
-		t.Logf("pipeline also observed closure: %v", s.Err())
+	putSession(t, root, "over-limit/a", "independent later edit")
+	waitExactChange(t, s, "over-limit/a", changes.Modified, "independent later edit", 10*time.Second)
+	if s.Err() != nil || s.Status() != Monitoring {
+		t.Fatalf("watching stopped: %v %v", s.Status(), s.Err())
 	}
 }

@@ -31,11 +31,19 @@ func (s *Store) GetDiff(ctx context.Context, path string) (out diff.Result, outE
 		return diff.Result{}, err
 	}
 	s.mu.RLock()
-	summary, exists := s.items[key]
-	summary = copySummary(summary)
-	generation := s.baseline.Generation
-	beforeRef := s.baseline.Files[key]
+	summary, exists, lookupErr := s.items.Get(key)
+	generation := s.generation
+	beforeRef, _, baselineGeneration, baselineErr := s.snapshots.LookupVersioned(key)
 	s.mu.RUnlock()
+	if lookupErr != nil {
+		return diff.Result{}, lookupErr
+	}
+	if baselineErr != nil {
+		return diff.Result{}, baselineErr
+	}
+	if baselineGeneration != generation {
+		return diff.Result{}, ErrStale
+	}
 	if !exists {
 		return diff.Result{}, ErrNotChanged
 	}
@@ -52,11 +60,19 @@ func (s *Store) GetDiff(ctx context.Context, path string) (out diff.Result, outE
 		}
 		s.mu.RLock()
 		defer s.mu.RUnlock()
-		current, ok := s.items[key]
-		if !ok || s.baseline.Generation != generation || current.Version != summary.Version {
+		current, ok, err := s.items.Get(key)
+		if err != nil {
+			return diff.Result{}, err
+		}
+		if !ok || s.generation != generation || current.Version != summary.Version {
 			return diff.Result{}, ErrStale
 		}
 		return r, nil
+	}
+	if summary.Kind == Unknown {
+		result.Status = diff.Unavailable
+		result.Reason = "Startup baseline unavailable for this path. Restore access and reset the baseline to compare future changes."
+		return finish(result)
 	}
 	for _, st := range []*FileState{summary.Before, summary.After} {
 		if st == nil {

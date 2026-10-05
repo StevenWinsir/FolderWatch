@@ -1,0 +1,8 @@
+=== RUN   TestLargeTreePastBothFormerLimits
+    large_tree_test.go:61: fixture: directories=9000 files=100005 creation=5.638176291s
+    large_tree_test.go:80: ready: entries=109006 elapsed=33.44384625s descriptors=6->18 heap_alloc=27496328
+    large_tree_test.go:86: last-file edit observed in 7.428615791s
+    large_tree_test.go:113: closed: descriptors=6; pause/resume/reset/new subtree/delete all passed
+--- PASS: TestLargeTreePastBothFormerLimits (158.82s)
+PASS
+ok  	github.com/StevenWinsir/FolderWatch/internal/app	159.370s

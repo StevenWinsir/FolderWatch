@@ -1,0 +1,37 @@
+{
+  "status": "PASS",
+  "results": [
+    {
+      "binary": "native",
+      "hard_fd_limit": 64,
+      "baseline_files": 513,
+      "fallback": false,
+      "checks": [
+        "ready",
+        "modify",
+        "atomic-save",
+        "new-subtree",
+        "delete",
+        "cleanup"
+      ],
+      "warnings": []
+    },
+    {
+      "binary": "nocgo",
+      "hard_fd_limit": 64,
+      "baseline_files": 513,
+      "fallback": true,
+      "checks": [
+        "ready",
+        "modify",
+        "atomic-save",
+        "new-subtree",
+        "delete",
+        "cleanup"
+      ],
+      "warnings": [
+        "native watching unavailable (register \"/private/var/folders/l7/ysm1mwtj0jv15yyb0srx692h0000gn/T/folderwatch-low-fd-3zaww85r/root\": \"/private/var/folders/l7/ysm1mwtj0jv15yyb0srx692h0000gn/T/folderwatch-low-fd-3zaww85r/root/f-0052.txt\": too many open files); monitoring continues using periodic metadata scans (at least 2s between scans; large trees take longer)"
+      ]
+    }
+  ]
+}

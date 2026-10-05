@@ -23,6 +23,9 @@ export default defineConfig({
   outputDir: process.env.FW_GUI_QA_DIR ?? path.join(os.tmpdir(), 'folderwatch-r6-gui-qa'),
   webServer: process.env.FW_GUI_START_SERVER === '1' ? {
     command: `../bin/wails dev -m -nosyncgomod -tags desktop -devserver ${address.host} -nogorebuild -noreload`,
+    // Keep the actual Wails bindings/Core, but do not let the simultaneously
+    // launched native WebView steal the single frontend lease on a cold build.
+    env: { VITE_FW_E2E_BROWSER_ONLY: '1' },
     cwd: fileURLToPath(new URL('..', import.meta.url)),
     url: baseURL,
     timeout: 180000,

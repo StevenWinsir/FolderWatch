@@ -1,0 +1,24 @@
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases/MiXeDRoot
+    canonical_root_darwin_test.go:34: aliases must share one namespace: "/private/var/folders/l7/ysm1mwtj0jv15yyb0srx692h0000gn/T/TestNormalizeRootUsesFilesystemSpellingForAliasesMiXeDRoot1097456561/001/mixedroot" != "/private/var/folders/l7/ysm1mwtj0jv15yyb0srx692h0000gn/T/TestNormalizeRootUsesFilesystemSpellingForAliasesMiXeDRoot1097456561/001/MiXeDRoot" (<nil>)
+=== RUN   TestNormalizeRootUsesFilesystemSpellingForAliases/Róót
+    canonical_root_darwin_test.go:34: aliases must share one namespace: "/private/var/folders/l7/ysm1mwtj0jv15yyb0srx692h0000gn/T/TestNormalizeRootUsesFilesystemSpellingForAliasesRóót331041663/001/Róót" != "/private/var/folders/l7/ysm1mwtj0jv15yyb0srx692h0000gn/T/TestNormalizeRootUsesFilesystemSpellingForAliasesRóót331041663/001/Róót" (<nil>)
+--- FAIL: TestNormalizeRootUsesFilesystemSpellingForAliases (0.00s)
+    --- FAIL: TestNormalizeRootUsesFilesystemSpellingForAliases/MiXeDRoot (0.00s)
+    --- FAIL: TestNormalizeRootUsesFilesystemSpellingForAliases/Róót (0.00s)
+FAIL
+FAIL	github.com/StevenWinsir/FolderWatch/internal/pathutil	0.694s
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases/MiXeDRoot
+    fsevents_alias_darwin_test.go:63: native stream missed the edit through "/var/folders/l7/ysm1mwtj0jv15yyb0srx692h0000gn/T/TestFSEventsObservesIndependentEditsThroughRootAliasesMiXeDRoot523247477/001/mixedroot"
+=== RUN   TestFSEventsObservesIndependentEditsThroughRootAliases/Róót
+    fsevents_alias_darwin_test.go:63: native stream missed the edit through "/var/folders/l7/ysm1mwtj0jv15yyb0srx692h0000gn/T/TestFSEventsObservesIndependentEditsThroughRootAliasesRóót4057908315/001/Róót"
+--- FAIL: TestFSEventsObservesIndependentEditsThroughRootAliases (10.62s)
+    --- FAIL: TestFSEventsObservesIndependentEditsThroughRootAliases/MiXeDRoot (5.31s)
+    --- FAIL: TestFSEventsObservesIndependentEditsThroughRootAliases/Róót (5.31s)
+=== RUN   TestFSEventsRootChangedIsFatalEvenWhenOriginalSpellingStillResolves
+    fsevents_alias_darwin_test.go:88: root move was not surfaced
+--- FAIL: TestFSEventsRootChangedIsFatalEvenWhenOriginalSpellingStillResolves (5.00s)
+FAIL
+FAIL	github.com/StevenWinsir/FolderWatch/internal/watcher	16.265s
+FAIL

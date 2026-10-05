@@ -20,9 +20,10 @@
   let settingsRoot = '';
   let settingsDirty = false;
   $: active = ['Scanning', 'Monitoring', 'Paused', 'Stopping'].includes($state.status.state);
+  $: if (!active) filter = '';
   $: canStart = $state.connected && !active && !$state.pendingStart && root.trim().length > 0;
   $: canStop = $state.connected && ['Scanning', 'Monitoring', 'Paused'].includes($state.status.state);
-  $: visibleChanges = $files.changes.filter(change => change.path.toLowerCase().includes(filter.trim().toLowerCase()));
+  $: visibleChanges = $files.changes;
   $: selected = $files.selected;
 
   onMount(() => {
@@ -91,7 +92,7 @@
     select(visibleChanges[next]);
     requestAnimationFrame(() => document.querySelector<HTMLElement>(`[data-path="${CSS.escape(visibleChanges[next].path)}"]`)?.focus());
   }
-  function kindLabel(kind: string) { return kind === 'modified' ? 'Modified' : kind === 'added' ? 'Added' : kind === 'deleted' ? 'Deleted' : kind; }
+  function kindLabel(kind: string) { return kind === 'modified' ? 'Modified' : kind === 'added' ? 'Added' : kind === 'deleted' ? 'Deleted' : kind === 'unknown' ? 'Baseline unknown' : kind; }
   function kindClass(kind: string) { return kind === 'modified' ? 'is-modified' : kind === 'added' ? 'is-added' : kind === 'deleted' ? 'is-deleted' : 'is-other'; }
   function fileSize(change: ChangeSummary) {
     const bytes = change.after?.sizeBytes ?? change.before?.sizeBytes;
@@ -113,7 +114,7 @@
   <section class="workspace" aria-labelledby="heading">
     <div class="hero-row">
       <div class="intro"><p class="eyebrow">FOLDER / CHANGE INTELLIGENCE</p><h1 id="heading">Keep an eye on your folder.<br /><em>Understand why.</em></h1><p class="lede">A quiet, local watch over the files that matter. Choose a folder and FolderWatch will surface each change with a readable, review-ready diff.</p></div>
-      <div class="hero-note"><span class="note-index">01</span><span>LOCAL FIRST</span><p>Your files stay on this Mac. Content is read only when you open a diff.</p></div>
+      <div class="hero-note"><span class="note-index">01</span><span>LOCAL FIRST</span><p>Your files stay on this Mac. Baselines and change checks run locally; diffs load on demand.</p></div>
     </div>
 
     <section class="folder-bar" aria-label="Folder selection">
@@ -150,21 +151,28 @@
       <section class:hidden={!active} class="workspace-grid" aria-label="Changed files and diff">
         <aside class="changes-panel">
           <div class="panel-heading"><div><p class="eyebrow">ACTIVITY</p><h2>Changed files</h2></div><span class="count-badge">{$files.total}</span></div>
-          <div class="filter-wrap"><span aria-hidden="true">⌕</span><input aria-label="Filter changed files" bind:value={filter} placeholder="Filter by filename" /></div>
+          <div class="filter-wrap"><span aria-hidden="true">⌕</span><input aria-label="Filter changed files" bind:value={filter} on:input={() => workspace.setFilter(filter)} maxlength="1024" placeholder="Search all changed files" /></div>
+          <nav class="change-pagination" aria-label="Change list pages">
+            <button class="secondary" type="button" aria-label="Previous change page" on:click={() => workspace.previousPage()} disabled={$files.loading || $files.offset === 0}>Previous</button>
+            <span aria-live="polite">{$files.matched === 0 ? 0 : $files.offset + 1}–{$files.offset + $files.changes.length} of {$files.matched}</span>
+            <button class="secondary" type="button" aria-label="Next change page" on:click={() => workspace.nextPage()} disabled={$files.loading || $files.nextOffset < 0}>Next</button>
+          </nav>
           {#if $files.loading && !$files.changes.length}<div class="list-state"><span class="spinner small"></span><span>Refreshing changes…</span></div>
-          {:else if !$files.changes.length}<div class="list-state empty-list"><div class="empty-glyph">◌</div><strong>No changes yet</strong><span>Save a file in this folder and it will appear here.</span></div>
+          {:else if !$files.changes.length}<div class="list-state empty-list"><div class="empty-glyph">◌</div><strong>{filter ? 'No matching files' : 'No changes yet'}</strong><span>{filter ? 'Search covers every page in the monitored change list.' : 'Save a file in this folder and it will appear here.'}</span></div>
           {:else if !visibleChanges.length}<div class="list-state"><span>No matching files</span></div>
-          {:else}<div class="file-list" role="listbox" tabindex="-1" aria-label="Changed files" on:keydown={navigateChanges}>{#each visibleChanges as change (change.path)}<button data-path={change.path} class:selected={$files.selectedPath === change.path} class="file-row" role="option" aria-selected={$files.selectedPath === change.path} on:click={() => select(change)}><span class="file-kind {kindClass(change.kind)}">{change.kind === 'modified' ? 'M' : change.kind === 'added' ? 'A' : change.kind === 'deleted' ? 'D' : '•'}</span><span class="file-name" title={change.path}>{change.path}</span><span class="file-meta"><span>{kindLabel(change.kind)}</span><span>{fileSize(change)}</span></span></button>{/each}</div>{/if}
+          {:else}<div class="file-list" role="listbox" tabindex="-1" aria-label="Changed files" on:keydown={navigateChanges}>{#each visibleChanges as change (change.path)}<button data-path={change.path} class:selected={$files.selectedPath === change.path} class="file-row" role="option" aria-selected={$files.selectedPath === change.path} on:click={() => select(change)}><span class="file-kind {kindClass(change.kind)}">{change.kind === 'modified' ? 'M' : change.kind === 'added' ? 'A' : change.kind === 'deleted' ? 'D' : '?'}</span><span class="file-name" title={change.path}>{change.path}</span><span class="file-meta"><span>{kindLabel(change.kind)}</span><span>{fileSize(change)}</span></span></button>{/each}</div>{/if}
         </aside>
-        <section class="diff-panel" aria-label="Diff viewer"><div class="diff-heading"><div class="selected-file">{#if selected}<span class="file-kind {kindClass(selected.kind)}">{selected.kind === 'modified' ? 'M' : selected.kind === 'added' ? 'A' : 'D'}</span><div><h2 title={selected.path}>{selected.path}</h2><span>{kindLabel(selected.kind)} · version {selected.version}</span></div>{:else}<div><p class="eyebrow">DIFF VIEWER</p><h2>Nothing selected</h2></div>{/if}</div><div class="file-actions">{#if selected}<button class="icon-action" type="button" on:click={openEditor} title="Open in editor">Edit</button><button class="icon-action" type="button" on:click={reveal} title="Reveal in Finder">Finder</button><button class="icon-action" type="button" on:click={() => copyPath(true)} title="Copy relative path">Copy</button>{/if}{#if selected && $files.diff?.status === 'text'}<span class="readonly-badge">READ ONLY</span>{/if}</div></div><DiffEditor diff={$files.diff} loading={$files.loadingDiff} /></section>
+        <section class="diff-panel" aria-label="Diff viewer"><div class="diff-heading"><div class="selected-file">{#if selected}<span class="file-kind {kindClass(selected.kind)}">{selected.kind === 'modified' ? 'M' : selected.kind === 'added' ? 'A' : selected.kind === 'deleted' ? 'D' : '?'}</span><div><h2 title={selected.path}>{selected.path}</h2><span>{kindLabel(selected.kind)} · version {selected.version}</span></div>{:else}<div><p class="eyebrow">DIFF VIEWER</p><h2>Nothing selected</h2></div>{/if}</div><div class="file-actions">{#if selected}<button class="icon-action" type="button" on:click={openEditor} title="Open in editor">Edit</button><button class="icon-action" type="button" on:click={reveal} title="Reveal in Finder">Finder</button><button class="icon-action" type="button" on:click={() => copyPath(true)} title="Copy relative path">Copy</button>{/if}{#if selected && $files.diff?.status === 'text'}<span class="readonly-badge">READ ONLY</span>{/if}</div></div><DiffEditor diff={$files.diff} loading={$files.loadingDiff} /></section>
       </section>
     {#if !active}
       <section class="idle-card"><div class="idle-illustration" aria-hidden="true"><span></span><span></span><span></span><i></i></div><div><p class="eyebrow">A SMALL WINDOW INTO YOUR PROJECT</p><h2>Start with a folder.</h2><p>FolderWatch creates a baseline, then keeps a running list of additions, edits, and removals. Select a file to open a focused, read-only diff.</p></div><div class="idle-facts"><div><strong>01</strong><span>Choose a folder</span></div><div><strong>02</strong><span>Make a change</span></div><div><strong>03</strong><span>Review the diff</span></div></div></section>
     {/if}
 
+    {#if $state.status.operation}<p class="notice" aria-live="polite">{$state.status.operation} · {$state.status.processed ?? '0'} entries processed. Stop cancels safely.</p>{/if}
     {#if $state.status.warning}<p class="notice" role="status">{$state.status.warning}</p>{/if}
     {#if $state.status.problem}<p class="error" role="alert">{$state.status.problem.message}</p>{/if}
     {#if $state.error}<p class="error" role="alert">{$state.error}</p>{/if}
+    {#if $files.error}<p class="error" role="alert">{$files.error}<button type="button" class="secondary" on:click={() => workspace.refresh()}>Retry changes</button></p>{/if}
     <span class="sr-only">The file list and diff workspace were intentionally reserved for R7 and are now fully available; FolderWatch reports file status with both a letter marker and text label, so color is supplementary.</span>
   </section>
   <footer><span>FolderWatch {$state.app?.version ?? 'dev'} · Local processing only</span><span>Baseline {$state.status.generation} · Changes {$files.version}</span></footer>

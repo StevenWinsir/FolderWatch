@@ -1,0 +1,40 @@
+=== RUN   TestUnknownBaselineIsExplicitInTerminalListAndHelp
+    unknown_test.go:15: unknown baseline must have a visible marker and count: FolderWatch | Monitoring | /project
+        1 files changed · 1 shown · baseline 1 · /
+        Changed files  [Enter expand/collapse]
+        > [+]  file-000.txt
+        
+        
+        
+        
+        
+        
+        Diff — Enter to expand selected file
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        
+        Monitoring changes relative to the startup baseline.
+        ↑↓ j/k select · Enter diff · / filter · p pause · r reset · ? help · e details · q quit
+--- FAIL: TestUnknownBaselineIsExplicitInTerminalListAndHelp (0.00s)
+FAIL
+FAIL	github.com/StevenWinsir/FolderWatch/internal/tui	1.308s
+=== RUN   TestUnknownBaselineIsExplicitInWatchText
+    unknown_test.go:22: missing "0 changed file(s), 1 baseline unknown" in "ready generation=1 sequence=0\n1 changed file(s), state version=1\n   \"restricted\" []\n"
+--- FAIL: TestUnknownBaselineIsExplicitInWatchText (0.00s)
+FAIL
+FAIL	github.com/StevenWinsir/FolderWatch/internal/cli	1.658s
+FAIL

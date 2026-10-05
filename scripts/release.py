@@ -114,7 +114,10 @@ def build(version, output, allow_dirty=False, url_root=None):
         assets = []
         for arch in ARCHES:
             binary = stage / ("folderwatch-" + arch)
-            env = dict(os.environ, GOOS="darwin", GOARCH=arch, CGO_ENABLED="0", GOWORK="off", GOFLAGS="-mod=vendor", GOTOOLCHAIN="local")
+            # Release the same recursive macOS backend tested by the GUI.
+            # Cross-compilation without the macOS SDK remains a separate,
+            # explicitly no-CGO fallback build, not the default Mac artifact.
+            env = dict(os.environ, GOOS="darwin", GOARCH=arch, CGO_ENABLED="1", GOWORK="off", GOFLAGS="-mod=vendor", GOTOOLCHAIN="local")
             ldflags = "-s -w -X main.version=" + version + " -X main.commit=" + build_commit + " -X main.buildDate=" + build_date
             subprocess.run(["go", "build", "-mod=vendor", "-trimpath", "-buildvcs=false", "-ldflags", ldflags, "-o", str(binary), "./cmd/folderwatch"], cwd=ROOT, env=env, check=True)
             name = "folderwatch-" + version + "-darwin-" + arch + ".tar.gz"
@@ -123,7 +126,7 @@ def build(version, output, allow_dirty=False, url_root=None):
             assets.append({"name": name, "os": "darwin", "arch": arch, "sha256": sha256(stage / name), "bytes": (stage / name).stat().st_size})
         manifest = {"schema": 1, "version": version, "commit": commit, "build_commit": build_commit,
                     "build_date": build_date, "dirty": dirty, "toolchain": toolchain,
-                    "dependency_mode": "vendor", "cgo_enabled": False,
+                    "dependency_mode": "vendor", "cgo_enabled": True, "watch_backend": "fsevents-with-polling-fallback",
                     "distribution": "private-evaluation; Gate A and project-license approval required before public distribution",
                     "assets": assets}
         (stage / "manifest.json").write_text(json.dumps(manifest, indent=2) + "\n")

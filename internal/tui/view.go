@@ -106,6 +106,7 @@ var helpLines = []string{
 	"q / Ctrl+C    Quit (0) / cancel (130), restoring the terminal",
 	"",
 	"A Added · M Modified · D Deleted · R Renamed",
+	"? Baseline unknown — unreadable at startup; complete Reset establishes a baseline.",
 	"[+] collapsed / [-] expanded are not change-kind markers.",
 	"Pause freezes the list, not the watcher. Resume compares to the same baseline.",
 	"Only one selected diff is retained. File/version changes cancel old requests.",
@@ -127,7 +128,17 @@ func (m *Model) View() string {
 		return strings.Join(rows[:min(len(rows), m.height)], "\n")
 	}
 	add("FolderWatch | "+string(m.status)+" | "+safeText(m.root), "title")
-	add(fmt.Sprintf("%d files changed · %d shown · baseline %d · /%s", len(m.state.Changes), len(m.visible), m.state.Generation, safeText(m.filter)), "accent")
+	unknown := 0
+	for _, item := range m.state.Changes {
+		if item.Kind == changes.Unknown {
+			unknown++
+		}
+	}
+	if unknown > 0 {
+		add(fmt.Sprintf("%d files changed · %d baseline unknown · %d shown · baseline %d · /%s", len(m.state.Changes)-unknown, unknown, len(m.visible), m.state.Generation, safeText(m.filter)), "accent")
+	} else {
+		add(fmt.Sprintf("%d files changed · %d shown · baseline %d · /%s", len(m.state.Changes), len(m.visible), m.state.Generation, safeText(m.filter)), "accent")
+	}
 	if m.help || m.diagnostics {
 		lines, title := helpLines, "Help — ↑/↓ scroll · Esc close"
 		if m.diagnostics {
@@ -160,7 +171,7 @@ func (m *Model) View() string {
 					marker = "[-]"
 				}
 			}
-			kind := map[changes.Kind]string{changes.Added: "A", changes.Modified: "M", changes.Deleted: "D", changes.Renamed: "R"}[item.Kind]
+			kind := map[changes.Kind]string{changes.Added: "A", changes.Modified: "M", changes.Deleted: "D", changes.Renamed: "R", changes.Unknown: "?"}[item.Kind]
 			text = fmt.Sprintf("%s %s %s %s", cursor, marker, kind, safeText(item.Path))
 		} else if i == 0 {
 			text = "No changes. Edit a file in the monitored folder."

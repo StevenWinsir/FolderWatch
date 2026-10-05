@@ -1,0 +1,33 @@
+[
+  {
+    "name": "gui",
+    "command": [
+      "make",
+      "gui-build",
+      "VERSION=0.2.0-dev"
+    ],
+    "exit_code": 0,
+    "seconds": 14.32
+  },
+  {
+    "name": "e2e",
+    "command": [
+      "make",
+      "gui-e2e"
+    ],
+    "exit_code": 0,
+    "seconds": 30.4
+  },
+  {
+    "name": "workflow",
+    "command": [
+      "ruby",
+      "-ryaml",
+      "-e",
+      "YAML.load_file(ARGV[0]); puts \"PASS: workflow YAML parses\"",
+      ".github/workflows/ci.yml"
+    ],
+    "exit_code": 0,
+    "seconds": 0.085
+  }
+]

@@ -2,9 +2,9 @@
 
 本地文件夹变更检查工具，macOS 优先。长期目标是用同一 Go core 驱动 Terminal/TUI 与 GUI，比较当前文件和 session 启动基线，而不是只比较上一次保存。
 
-**当前交付：R6 / P15–P16 的 Wails/Svelte 壳层与 IPC/Core Facade，实现及本地自动化验收完成，集成 IN_REVIEW。** P0–P14 和 [Gate A](docs/gates/Gate-A.md) 已验收 PASS；原 Terminal/TUI 功能及 vendor 修复保持。GUI 现可输入目录并 Start/Stop，复用同一 Go core；分页 changes、按需 Diff、Pause/Resume/Reset API 已为 R7 准备。原生 Folder Picker、完整列表/Monaco、设置和签名/公证仍属后续轮次，**Gate B 未通过，当前不是正式 GUI v1**。
+**当前范围：P0–P21 的 Terminal/Core 与 GUI 功能，加上大目录可靠性修复。** macOS 原生构建使用 FSEvents；原生注册资源不足时可见地降级为轮询，而不是因 8192 个目录退出。基线/变更元数据使用私有磁盘索引，GUI 支持完整分页和跨页搜索。实现、自动化与集成状态分别见 [大目录验收](docs/rounds/large-folder-acceptance.md)、[ADR-016](docs/adr/016-large-folder-coverage-and-disk-indexes.md) 和 [Handoff §33](Handoff_Rounds.md)。
 
-R6 分支为 `feat/r6-gui-shell-ipc`，从 PR #6 合并 `88b3541` 开始；R4 补充 PR #4 和 R5 PR #5 均已合并。当前范围、PR/CI 和验收限制见 [Handoff §30](Handoff_Rounds.md)、[R6 acceptance](docs/rounds/R6-acceptance.md)、[IPC v1](docs/gui-ipc-v1.md)。原生 WKWebView 人工交互未在本次复验：机器未授予辅助功能/录屏权限，真实 Wails 浏览器 IPC E2E 不等于原生 UI 验收。
+P0–P14 的历史 Gate A、各轮验收证据保持原样；本次核心变更有独立回归，不借用旧签字。GUI 仍不是 Developer ID 签名/公证的正式发行版，Gate B 与原生 WKWebView 人工 QA 不由浏览器 IPC 测试代替。
 
 R1–R5 的历史源码、性能与候选证据保留在各轮 acceptance、[性能报告](docs/performance-v1.md)和 Gate A 记录中；不将旧 CI 或旧候选签字套用到新的 GUI 二进制。
 
@@ -13,7 +13,7 @@ R1–R5 的历史源码、性能与候选证据保留在各轮 acceptance、[性
 需要 Go 1.23+；lint/CLI 冒烟测试另外需要 Python 3。Git 仅供开发和 Ignore 对照测试使用；被扫描的目录不需要是 Git 仓库。
 
 ```sh
-git clone https://github.com/StevenWinsir/FolderWatch.git --branch feat/r6-gui-shell-ipc
+git clone https://github.com/StevenWinsir/FolderWatch.git
 cd FolderWatch
 go mod download
 make build
@@ -31,7 +31,7 @@ make build
 
 文本输出会转义文件名中的控制字符。JSON 包含 `root`、`entries`、`warnings`；每项有 `path`、`kind`、`size`、`mode`、`mod_time`，不包含文件内容。根目录键为 `.`，其他键为根目录相对、`/` 分隔、保留大小写和 Unicode 的路径。目录、普通文件、symlink、其他特殊文件分别标记为 `directory`、`file`、`symlink`、`other`。遍历顺序确定，遵循 `filepath.WalkDir` 的词法遍历顺序。
 
-## GUI 开发壳层（R6）
+## GUI
 
 本机目标为 macOS；还需要 Node 22 或 24、npm、Xcode Command Line Tools。Wails CLI 固定 v2.10.1；应用继续使用根 Go module 和已审查 vendor，不要另建 GUI module 或绕过补丁。
 
@@ -45,9 +45,9 @@ make gui-dev
 FW_GUI_START_SERVER=1 FW_BROWSER_CHANNEL=chrome make gui-e2e
 ```
 
-输入绝对目录或 `~/path` 后 Start monitoring，Stop session 可取消初始扫描。页面重载会结束旧会话；丢失页面通过 2 秒 heartbeat / 15 秒租约回收，不会悄悄恢复监控。暂停、重置和 changes/Diff 查询已在 Facade 提供，但 R6 页面没有冒充完整 R7 工作区。休眠可能使租约过期，后台体验由 R8 改进。
+输入绝对目录或 `~/path` 后 Start monitoring，Stop 可取消扫描、恢复或重置。界面提供 Folder Picker、Monaco Diff、Settings、Pause/Resume/Reset、编辑器/Finder/复制路径。每页最多 500 条变更，Previous/Next 可访问全部结果，搜索覆盖整个索引，不限于当前页。页面重载会结束旧会话；2 秒 heartbeat / 15 秒租约回收断开的页面，不会悄悄恢复旧监控。
 
-`make gui-check` 执行类型检查、11 项单元/组件/契约测试及 Vite 构建；`make gui-bindings` 重新生成已入库的绑定。浏览器 E2E 是真实 Wails 开发传输，不是 mock，也不是生产 WKWebView 渲染证明。打包输出为本地开发 `.app`，不代表 Developer ID 签名、公证或 Gate B。详见 [GUI README](gui/README.md) 和 [ADR-015](docs/adr/015-gui-shell-and-ipc-facade.md)。
+`make gui-check` 执行 Svelte/TypeScript、Vitest 与 Vite 构建；`make gui-bindings` 重生成已入库绑定。真实 Wails IPC E2E 包含 9000 目录和 1001 条变更分页/搜索/Diff，不是 mock，也不代替生产 WKWebView 人工 QA。构建产物在 `gui/build/bin/FolderWatch.app`。
 
 ## Terminal 使用
 
@@ -96,7 +96,7 @@ max_snapshot_bytes = "8MiB"
 max_diff_lines = 20000
 max_pending_events = 4096
 max_watch_dirs = 8192
-max_snapshot_files = 100000
+max_snapshot_files = 0
 snapshot_memory_bytes = "32MiB"
 snapshot_cache_bytes = "256MiB"
 no_mouse = false
@@ -123,8 +123,8 @@ debug = false
 | `--max-snapshot-bytes <size>` | 独立分类/保留上限，默认 8MiB；有效范围 1B..64MiB，不过滤扫描/哈希 |
 | `--max-diff-lines <n>` | Diff 每侧行数，默认 20000；有效范围 1..200000 |
 | `--max-pending-events <n>` | raw queue / pending map 容量，默认 4096；有效范围 1..1048576 |
-| `--max-watch-dirs <n>` | 默认 8192 个目录；超过时明确停止，不伪装覆盖完整 |
-| `--max-snapshot-files <n>` | 默认 100000 个快照/清单条目，亦限制 ChangeStore 大小；超出明确报错 |
+| `--max-watch-dirs <n>` | 默认 8192，非递归原生后端的注册预算；耗尽后降级轮询，不限制监控树总目录数 |
+| `--max-snapshot-files <n>` | 默认 0，不设条目数量上限；显式正数仍作为可选限制，负数非法 |
 | `--snapshot-memory-bytes <size>` | 默认每一代保留内存内容总额 32MiB |
 | `--snapshot-cache-bytes <size>` | 默认每一代保留磁盘内容总额 256MiB |
 | `--tui`、`--no-mouse` | 强制终端交互；禁用鼠标报告及鼠标操作 |
@@ -155,13 +155,13 @@ Duration 使用正的 Go duration，如 `75ms`、`1s`。Size 支持正整数 byt
 
 单个文件消失、子目录权限不足等会产生 warning 并继续处理其他项；无法读取 root 是致命错误。嵌套规则文件不可读或无效时跳过对应子树，而不是忽略错误后扩大扫描范围。带 warning 的清单可能不完整，不能把它作为“所有项均已成功读取”的证明。
 
-单次扫描（`--scan` / `--json` / 非终端默认）不读取普通文件正文，也不打开 FIFO/device 内容或因扩展名/大小过滤文件；原 5 GiB 稀疏文件 smoke 仍只查元数据。TUI / `--watch` 启动及 Reset 则要求完整可读的基线：扫描 warning 或快照读取失败会明确报错，Reset 不会因此抹掉旧路径。
+单次扫描（`--scan` / `--json` / 非终端默认）只读元数据，保留确定性清单。持续监控启动可保留部分基线：不可读/不稳定路径明确显示 `unknown` / Baseline unknown，并给出覆盖告警；其他路径继续监控。恢复权限不会把当前内容伪造成启动时内容。**Reset 仍要求完整成功**，失败保留旧基线和变化列表；完整 Reset 才消除未知基线。
 
-快照按 32KiB 块读取/计算 SHA-256，检查取消和 identity/size/mtime/mode；分类结果与这些确切字节一起保存在 Ref 中，R2 私有探针已替换为共享 Classifier。64KiB 内的小文本优先内存，较大文本保存在 root 外 0700 私有目录的 0600 文件。二进制/未支持编码、超限或预算不足仅保留 metadata/hash。已知超限的 Classifier 不读内容，snapshot 为哈希仍会流式读取但跳过文本探测。Current resolver 只保留元数据，不积累全文。
+基线按 32KiB 块计算 SHA-256，保留原有分类/内容/diff 字节预算。64KiB 内文本优先内存，但最多保留 4096 个非空内存内容对象；其余按磁盘内容预算落盘或只保留 metadata/hash。元数据索引、扫描队列和轮询清单使用 root 外 0700 私有目录中的 0600 文件，读写分页有界。目录事件优先核对具体子树；可靠本地文件系统恢复扫描使用 identity/mtime/ctime 等完整签名避免无变化正文反复读取，原生文件事件仍强制验证内容。
 
-正常 session 有基线、metadata-only resolver、按需 Diff 三个私有缓存目录。Reset 峰值可持有两代有界基线及一个有界 Diff 当前快照，另有扫描清单、矩阵、I/O 和调用方副本；32MiB/256MiB 是每代保留预算，不是整个进程 RAM 上限。扫描清单分配仍随条目数增长；kqueue 描述符也随文件数增加。R5 修复了 native Close 标记关闭后 Remove 不执行、导致 fd 未释放的问题：现在关闭屏障后等待 reader 并回收全部 owned fd；并发注册/关闭有回归。Close 清理缓存，强杀后自动清扫仍未实现。目录规模、CPU、RSS、P95、描述符和观察时长的实测边界见性能报告，不宣称任意硬件/小时级稳定性已获证明。
+32MiB/256MiB 是每代保留的**正文**预算，不是总进程 RSS 或全部磁盘占用。索引、mmap/OS 页缓存、文件系统块开销、可选 ignore 缓存和调用方副本另计。显式 `Scan` / `Baseline` / `ChangeState` 及旧 Terminal/NDJSON 全清单消费者仍可能按结果规模分配；GUI 运行热路径使用分页/Head/Lookup。大树扫描时间、磁盘占用和轮询延迟仍随规模增长，不承诺固定资源处理无限文件。根目录、权限、文件系统路径长度、可用磁盘和缓存必须位于 root 外等约束仍有效。强杀后的缓存自动清扫、网络盘/远端写入和小时级原生 GUI 认证不由本地压力测试推断。
 
-不会在监控目录写状态/快照/日志，不执行 editor，不联网或上传文件内容。默认日志只保留内存中最近 200 条，单条消息约 2KiB；显式 `--log-file` 才在 root 外创建新的私有文件，拒绝已有文件、symlink 与 root 的大小写/链接别名。文件达到 4MiB 或写入失败后停止增长、保留 ring 并提示，不中断监控；不会自动轮转或清空用户文件。不记录文件/Diff 正文，debug 不写 TUI 的 stdout/stderr。开发时依赖下载与 GitHub 提交不属于应用运行行为。
+应用默认纯本地，不上传文件内容，也不再加载外部字体。GUI 只有用户主动操作才调用无 shell 拼接的编辑器/Finder/剪贴板集成；CLI editor 配置不自动执行。日志仍为有界 metadata-only ring / root 外新建私有文件。开发依赖下载、GitHub 推送和 CI 不属于应用运行行为。
 
 ## 工程结构与验证
 

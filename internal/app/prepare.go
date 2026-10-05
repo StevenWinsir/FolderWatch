@@ -23,6 +23,17 @@ type Prepared struct {
 }
 
 func Prepare(ctx context.Context, root string, overlay config.Overlay, opts config.LoadOptions) (Prepared, error) {
+	prepared, err := PrepareSession(ctx, root, overlay, opts)
+	if err != nil {
+		return Prepared{}, err
+	}
+	prepared.Inventory, err = scan.Scan(ctx, prepared.Config.Root, prepared.Matcher)
+	return prepared, err
+}
+
+// PrepareSession validates inputs without materializing an obsolete inventory.
+// Live sessions establish their baseline only after watcher registration.
+func PrepareSession(ctx context.Context, root string, overlay config.Overlay, opts config.LoadOptions) (Prepared, error) {
 	if err := ctx.Err(); err != nil {
 		return Prepared{}, err
 	}
@@ -37,9 +48,5 @@ func Prepare(ctx context.Context, root string, overlay config.Overlay, opts conf
 	if err != nil {
 		return Prepared{}, &InputError{Err: err}
 	}
-	inventory, err := scan.Scan(ctx, cfg.Root, matcher)
-	if err != nil {
-		return Prepared{}, err
-	}
-	return Prepared{Config: cfg, Matcher: matcher, Inventory: inventory}, nil
+	return Prepared{Config: cfg, Matcher: matcher}, nil
 }
